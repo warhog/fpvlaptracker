@@ -59,6 +59,7 @@ if (!hasProperty('mainClass')) {
 }
 
 compileJava.dependsOn gulp_build
+compileJava.dependsOn generateFltJooqSchemaSource
 
 repositories {
     mavenCentral()
