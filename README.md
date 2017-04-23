@@ -6,7 +6,7 @@ licensed under [MIT](LICENSE.md)
 simple open source diy fpv vtx lap tracking system
 
 
-##features
+## features
 - standalone and networked mode available
 - uses your existing analog vtx to do the lap detection
 - cheap and easy to build (through hole pcb, non SMD)
@@ -14,14 +14,14 @@ simple open source diy fpv vtx lap tracking system
 - networked mode supports up to 8 tracker units
 
 
-##how does it work?
+## how does it work?
 the tracker unit measures the video signal strength (rssi). when it is higher than the 
 defined upper threshold it counts a lap. then the unit enters the wait period 
 were it is locked for adjusted time. after that time the video signal strength must
 be lower than the lower threshold before the next lap can be detected.
 
 
-##which hardware and software is used?
+## which hardware and software is used?
 the hardware consists of an nodemcu (ESP8266) board with a boscam rx5808 receiver module connected. 
 the nodemcu board runs the tracker unit firmware (written using Arduino for ESP8266).
 the backend of the race software for networked mode was written in java using spring boot with jooq as database access 
@@ -31,7 +31,7 @@ every platform that supports java se.
 [detailed hardware instructions](docs/hardware.md)
 
 
-##why you have chosen that technology stack?
+## why you have chosen that technology stack?
 arduino because of its easy handling, nodemcu to keep the hardware development as easy as
 possible.
 spring-boot because it allows rapid and powerful webservice development and easy to
@@ -40,14 +40,14 @@ angular because i always wanted to use and try it out. sadly i started developme
 maybe i'll port it to a newer angular version someday.
 
 
-##build instructions
+## build instructions
 you need gradle, npm and gulp installed. if these requirements are fulfilled you can easily
 run "gradle build" from the command line to build the whole project.
 
 [detailed build instructions](docs/build.md)
 
 
-##tested devices
+## tested devices
 immersion rc vtx
 
 blade inductrix fpv
@@ -58,7 +58,7 @@ eachine et526
 
 
 
-##sound files used
+## sound files used
 _finishing:_ [freesound](https://www.freesound.org/people/jobro/sounds/60444/)
 
 _lap:_ [freesound](https://www.freesound.org/people/StaneStane/sounds/73560/)
