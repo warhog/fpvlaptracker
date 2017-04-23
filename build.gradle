@@ -115,3 +115,5 @@ jooq {
         }
     }
 }
+
+project.tasks.getByName('compileJava').dependsOn -= 'generateFltJooqSchemaSource'
