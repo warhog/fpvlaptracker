@@ -1,0 +1,89 @@
+<h1>race</h1>
+<script type="text/ng-template" id="raceFailure">
+    <div>
+    <h2>race failure</h2>
+    {{ngDialogData.message}}
+    </div>
+</script>
+<script type="text/ng-template" id="dataFailure">
+    <div>
+    <h2>data failure</h2>
+    {{ngDialogData.message}}
+    </div>
+</script>
+
+<div>
+    <div>
+        <div class="floatDivLeft raceStateTopLine" style="width: 120px;">
+            <button class="btn btn-default" ng-disabled="!authenticated || toplist.length === 0 || checkRunning()" ng-click="startRace();">start</button> 
+            <button class="btn btn-default" ng-disabled="!authenticated || !checkRunning()" ng-click="stopRace();">stop</button>
+        </div>
+
+        <div class="floatDivLeft raceStateTopLine" style="width: 100px;">
+            state: {{state.stateText}}
+        </div>
+        <div class="floatDivLeft raceStateTopLine" style="width: 5px;">
+            |
+        </div>
+        <div class="floatDivLeft raceStateTopLine" style="width: 80px;">
+            lap limit: {{state.maxLaps}}
+        </div>
+        <div class="floatDivLeft raceStateTopLine" style="width: 5px;">
+            |
+        </div>
+        <div class="floatDivLeft raceStateTopLine" style="width: 200px;">
+            starting time: {{state.startTime == null ? '-' : convertTime(state.startTime)}}
+        </div>
+        <div ng-show="isMobile" class="floatDivLeft raceStateTopLine" style="width: 200px;">
+            <button class="btn btn-default" ng-hide="sleepDisabled" ng-click="sleepDisable()">disable sleepmode</button>
+            <button class="btn btn-default" ng-show="sleepDisabled" ng-click="sleepEnable()">enable sleepmode</button>
+        </div>
+    </div>
+    <div style="clear: both;"></div>
+
+    <div>
+        <div class="floatDivLeft" style="width: 200px;">
+            <h3>toplist</h3>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th style="padding-right: 10px;">name</th>
+                        <th>total duration</th>
+                    </tr>
+                </thead>
+                <tr ng-hide="toplist.length > 0"><td colspan="2">no participants</td></tr>
+                <tr ng-repeat="x in toplist">
+                    <td style="padding-right: 10px;">{{x.name}}</td>
+                    <td>{{convertDuration(x.duration)}}</td>
+                </tr>
+            </table>
+        </div>
+        <div class="floatDivLeft" style="width: 200px;" ng-repeat="(name, x) in state.raceData">
+            <h3>{{name}}</h3>
+            current lap: {{x.currentLap}}<br />
+            fastest lap: {{convertDuration(x.fastestLapDuration)}} in lap {{x.fastestLap}}<br />
+            average lap: {{convertDuration(x.averageLapDuration)}}<br />
+            total duration: {{convertDuration(x.totalDuration)}}<br />
+            last rssi: {{x.lastRssi}}<br />
+            <br />
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th style="padding-right: 10px;">lap</th>
+                        <th>duration</th>
+                    </tr>
+                </thead>
+                <tr ng-hide="x.currentLap > 1"><td colspan="2">not finished a lap yet</td></tr>
+                <tr ng-repeat="(lap, duration) in x.laps">
+                    <td style="padding-right: 10px;">{{lap}}</td>
+                    <td>{{convertDuration(duration)}}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div style="clear: both;"></div>
+
+    <div style="height: 400px; width: 100%;">
+        <am-chart id="raceChart" options="amChartOptions"></am-chart>
+    </div>
+</div>

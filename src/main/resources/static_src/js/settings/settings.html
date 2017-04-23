@@ -1,0 +1,39 @@
+<h1>settings</h1>
+<div uib-alert ng-repeat="alert in alerts.getAlerts()" ng-class="'alert-' + (alert.type || 'warning')" close="alerts.closeAlert($index)">{{alert.msg}}</div>
+<script type="text/ng-template" id="failedSave">
+    <div>
+    <h2>failed</h2>
+    value cannot be saved: {{ngDialogData.message}}
+    </div>
+</script>
+<script type="text/ng-template" id="dataFailure">
+    <div>
+    <h2>data failure</h2>
+    {{ngDialogData.message}}
+    </div>
+</script>
+<div>
+    <label for="maxLaps">lap limit</label><br />
+    sets the maximum lap limit for a race.
+    <div class="input-group col-lg-4">
+        <input class="form-control" type="number" min="1" max="255" step="1" name="maxLaps" ng-model="maxLaps" required/>
+        <span class="input-group-btn">
+            <button class="btn btn-default" ng-click="setMaxLaps();">save</button>        
+        </span>
+    </div>
+    <br /><br />
+    
+    <label for="timezone">timezone</label><br />
+    sets the timezone (see <a target="_blank" href="https://garygregory.wordpress.com/2013/06/18/what-are-the-java-timezone-ids/">timezone list</a>).
+    <div class="input-group col-lg-4">
+        <input class="form-control" type="text" name="timezone" ng-model="timezone" required/>
+        <span class="input-group-btn">
+            <button class="btn btn-default" ng-click="setTimezone();">save</button>        
+        </span>
+    </div>
+
+    <br /><br />
+    <label for="shutdown">shutdown</label><br />
+    shutdown the system.<br />
+    <button name="shutdown" class="btn btn-default" flt-confirm-click="shutdown();" flt-confirm-click-message="Really shutdown?">shutdown</button>
+</div>

@@ -1,0 +1,14 @@
+.nb-gradle
+.gradle
+build
+log
+flt.h2.*
+FLT.iml
+FLT.ipr
+FLT.iws
+src/main/resources/static
+node_modules/
+fpvlaptracker.log
+/nbproject/private/
+application.properties
+*.log

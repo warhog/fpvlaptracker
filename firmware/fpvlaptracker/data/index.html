@@ -1,0 +1,125 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <title>fpvlaptracker</title>
+        <link href="style/style.css" rel="stylesheet">
+        <link href="style/milligram.min.css" rel="stylesheet">
+        <script src="js/script.js" type="text/javascript"></script>
+        <script>
+            var race = new Race();
+
+            window.onload = function () {
+
+                initAudio();
+                var webSocket = null;
+                var openWebsocket = function () {
+                    webSocket = new WebSocket(wsUrl, ["arduino"]);
+                    webSocket.onopen = function () {
+                        console.log("websocket opened");
+                    };
+
+                    webSocket.onerror = function (error) {
+                        console.log("websocket error, name: " + error.name + ", message: " + error.message);
+                        window.setTimeout(function () {
+                            console.log("try to reconnect websocket");
+                            openWebsocket();
+                        }, 1000);
+                    };
+
+                    webSocket.onclose = function (e) {
+                        console.log("websocket closed, code: " + e.code + ", reason: " + e.reason + ", wasClean: " + e.wasClean);
+                        window.setTimeout(function () {
+                            console.log("try to reconnect websocket");
+                            openWebsocket();
+                        }, 1000);
+                    };
+
+                    webSocket.onmessage = function (e) {
+                        console.log("websocket message", e.data);
+                        if (e.data !== "pong") {
+                            let json = JSON.parse(e.data);
+                            if (json.t === "l") {
+                                race.addLap(json.d);
+                            }
+                        }
+                    };
+                };
+
+                openWebsocket();
+
+                window.setInterval(function () {
+                    if (webSocket !== null && webSocket.readyState === WebSocket.OPEN) {
+                        webSocket.send("ping");
+                    }
+                }, 250000);
+
+                window.setInterval(function () {
+                    updateRaceStats(race.getLapData(), race.getStateText());
+                }, 250);
+
+                var updateRaceStats = function (lapData, state) {
+                    let table = "<table><thead><tr><th>Lap</th><th>Time</th></tr></thead><tbody>";
+                    if (lapData.laps.length === 0) {
+                        table += "<tr><td colspan='2'>no laps</td></tr>";
+                    }
+                    lapData.laps.forEach(function (value) {
+                        table += "<tr><td>" + value.lap + "</td><td>" + convertLapTime(value.time) + "</td></tr>";
+                    });
+                    table += "</tbody></table>";
+                    updateContent("laps", table);
+                    updateContent("fastestLap", lapData.fastestLap + " (" + convertLapTime(lapData.fastestLapTime) + ")");
+                    updateContent("averageLapTime", convertLapTime(lapData.averageLapTime));
+                    updateContent("state", state);
+                    updateContent("currentLap", lapData.currentLap);
+                };
+
+                updateField("maxLaps", race.getMaxLaps());
+                updateContent("maxLapsShow", race.getMaxLaps());
+                setOverlay(false);
+            };
+
+            var restartRace = function () {
+                console.log("restart race");
+                race.restart();
+            };
+
+            var updateMaxLaps = function () {
+                race.setMaxLaps(readField('maxLaps'));
+                updateContent('maxLapsShow', race.getMaxLaps());
+            };
+
+        </script>
+    </head>
+    <body>
+        <div id="overlay" class="loading">Loading&#8230;</div>
+        <div id="container">
+            <div>
+                <h1>fpvlaptracker</h1>
+            </div>
+            <div class="nav">
+                <ul>
+                    <li class="active">race</li>
+                    <li><a href="/settings.html">settings</a></li>
+                </ul>
+            </div>
+
+            <div id="content">
+                <h2>race stats</h2>
+                <input type="button" value="Restart" onclick="restartRace();" /><br />
+                race state: <span id="state">unknown</span><br /><br />
+                current lap: <span id="currentLap">0</span> / <span id="maxLapsShow">10</span><br />
+                fastest lap: <span id="fastestLap">none</span><br />
+                average laptime: <span id="averageLapTime">0.0 s</span><br />
+                <br />
+                <div id="laps"></div>
+
+                <br />
+                <hr />
+                <h2>race settings</h2>
+                <div id="raceSettings">
+                    max laps: <input type="number" min="1" max="255" step="1" id="maxLaps" size="5" /> <input type="button" onclick="updateMaxLaps();" value="save" /><br /><br />
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

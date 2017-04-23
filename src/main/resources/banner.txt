@@ -1,0 +1,7 @@
+${AnsiColor.BRIGHT_BLUE}    ____${AnsiColor.BLUE}           ${AnsiColor.BRIGHT_BLUE}__${AnsiColor.BLUE}            ${AnsiColor.BRIGHT_BLUE}__${AnsiColor.BLUE}                  __            
+${AnsiColor.BRIGHT_BLUE}   / __/${AnsiColor.BLUE}___ _   __${AnsiColor.BRIGHT_BLUE}/ /${AnsiColor.BLUE}___ _____  ${AnsiColor.BRIGHT_BLUE}/ /_${AnsiColor.BLUE}_________ ______/ /_____  _____
+${AnsiColor.BRIGHT_BLUE}  / /_${AnsiColor.BLUE}/ __ \ | / ${AnsiColor.BRIGHT_BLUE}/ /${AnsiColor.BLUE} __ `/ __ \${AnsiColor.BRIGHT_BLUE}/ __/${AnsiColor.BLUE} ___/ __ `/ ___/ //_/ _ \/ ___/
+${AnsiColor.BRIGHT_BLUE} / __/${AnsiColor.BLUE} /_/ / |/ ${AnsiColor.BRIGHT_BLUE}/ /${AnsiColor.BLUE} /_/ / /_/ ${AnsiColor.BRIGHT_BLUE}/ /_${AnsiColor.BLUE}/ /  / /_/ / /__/ ,< /  __/ /    
+${AnsiColor.BRIGHT_BLUE}/_/ ${AnsiColor.BLUE}/ .___/|___${AnsiColor.BRIGHT_BLUE}/_/${AnsiColor.BLUE}\__,_/ .___/${AnsiColor.BRIGHT_BLUE}\__/${AnsiColor.BLUE}_/   \__,_/\___/_/|_|\___/_/     
+${AnsiColor.BRIGHT_BLUE}   ${AnsiColor.BLUE}/_/         ${AnsiColor.BRIGHT_BLUE}  ${AnsiColor.BLUE}     /_/                                          
+${AnsiColor.RED}:: powered by Spring Boot ${spring-boot.version} ::${AnsiStyle.NORMAL}

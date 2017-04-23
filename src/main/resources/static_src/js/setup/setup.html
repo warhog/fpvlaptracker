@@ -1,0 +1,102 @@
+<h1>setup</h1>
+<div uib-alert ng-repeat="alert in alerts.getAlerts()" ng-class="'alert-' + (alert.type || 'warning')" close="alerts.closeAlert($index)">{{alert.msg}}</div>
+<script type="text/ng-template" id="dataFailure">
+    <div>
+    <h2>data failure</h2>
+    {{ngDialogData.message}}
+    </div>
+</script>
+<script type="text/ng-template" id="failedSave">
+    <div>
+    <h2>failed</h2>
+    value cannot be saved
+    </div>
+</script>
+<script type="text/ng-template" id="rssiMeasureResult">
+    <div>
+    <h2>rssi channel overview</h2>
+    <table>
+    <thead>
+    <tr>
+    <th style="padding-right: 10px;">frequency</th>
+    <th>signal strength</th>
+    <th></th>
+    </tr>
+    </thead>
+    <tr ng-repeat="x in ngDialogData.response.channels">
+    <td style="padding-right: 10px;">{{x.band}}</td>
+    <td>{{x.rssi}}</td>
+    <td><span style="color: red;" ng-show="x.freq == ngDialogData.response.maxFreq && x.rssi == ngDialogData.response.maxRssi">maximum</span></td>
+    </tr>
+    </table>
+
+    </div>
+</script>
+
+<div>
+
+    unique chip id: {{chipid}}<br />
+    ip address: {{ipAddress}}<br />
+    <br />
+    <label for="name">name</label><br />
+    set a descriptive name for a participants chip.
+    <div class="input-group col-lg-4">
+        <input type="text" name="name" class="form-control"  ng-model="participantName" required/>
+        <span class="input-group-btn">
+            <button class="btn btn-default" ng-click="setName();">save</button>
+        </span>
+    </div>
+    <br />
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">received signal strength indication (rssi)</h3>
+        </div>
+        <div class="panel-body">
+            current rssi: {{rssi}}<br />
+            <br />
+            <button class="btn btn-default" ng-disabled="promise !== null || loadingRssi === true" ng-click="loadRssi();">reload rssi</button>
+            <button class="btn btn-default" ng-disabled="promise !== null || loadingRssi === true" ng-click="measureRssi();">measure rssi</button>
+            <button class="btn btn-default" ng-disabled="promise !== null || loadingRssi === true" ng-click="startMeasuring();">start measure mode</button>
+            <button class="btn btn-default" ng-disabled="promise === null" ng-click="stopMeasuring();">stop measure mode</button>
+            <br /><br />
+            <label for="thresholdHigh">rssi threshold high limit</label><br />
+            the rssi threshold high limit defines above which signal strenght a lap is detected.
+            <div class="input-group col-lg-4">
+                <input type="number" min="1" max="512" step="1" name="thresholdHigh" class="form-control" ng-model="thresholdHigh" required/>
+                <span class="input-group-btn">
+                    <button class="btn btn-default" ng-click="setThreshold();">save</button>
+                </span>
+            </div>
+            <br />
+            <label for="thresholdLow">rssi threshold low limit</label><br />
+            the rssi threshold low limit defines below which signal strenght the next lap can be detected.<br />
+            needs to be below the rssi threshold high limit.
+            <div class="input-group col-lg-4">
+                <input type="number" min="1" max="512" step="1" name="thresholdLow" class="form-control" ng-model="thresholdLow" required/>
+                <span class="input-group-btn">
+                    <button class="btn btn-default" ng-click="setThreshold();">save</button>
+                </span>
+            </div>
+        </div>
+    </div>
+    <label for="freqSel">frequency</label><br />
+    the fpv frequency the participants tracker is listening to.
+    <div class="input-group col-lg-4">
+        <select name="freqSel" ng-model="selectedFrequency" class="form-control" ng-change="updateFrequency();" ng-options="key as key.name for key in frequencyTable"></select>
+        <span class="input-group-btn">
+            <button class="btn btn-default" ng-click="setFrequency();">save</button><br />
+        </span>
+    </div>
+    <br />
+    <label for="minLapTime">minimum lap time</label><br />
+    the minimum lap time of the participants tracker is used to prevent double lap detections.
+    <!--<input type="text" name="minLapTime" class="form-control" ng-model="minLapTime" required/>ms <button class="btn btn-default" ng-click="setMinLapTime();">save</button>-->
+    <div class="input-group col-lg-4">
+        <input type="number" min="1000" max="10000" step="1" class="form-control" placeholder="-" aria-describedby="basic-addon2" name="minLapTime" ng-model="minLapTime" required/>
+        <span class="input-group-addon" id="basic-addon2">ms</span>
+        <span class="input-group-btn">
+            <button class="btn btn-default" ng-click="setMinLapTime();">save</button>
+        </span>
+    </div>
+
+</div>

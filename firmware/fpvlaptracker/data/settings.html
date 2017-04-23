@@ -1,0 +1,179 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <title>fpvlaptracker - settings</title>
+        <link href="style/style.css" rel="stylesheet">
+        <link href="style/milligram.min.css" rel="stylesheet">
+        <script src="js/script.js" type="text/javascript"></script>
+        <script>
+            var measureRssi = false;
+
+            window.onload = function () {
+                loadData();
+            };
+
+            var loadData = function () {
+                setOverlay(true);
+                getData().then(function (data) {
+                    updateField("minLapTime", data.minLapTime);
+                    updateField("rssiThresholdLow", data.thresholdLow);
+                    updateField("rssiThresholdHigh", data.thresholdHigh);
+                    updateField("frequency", data.frequency);
+                    getWifiData().then(function (data) {
+                        updateField("ssid", data.ssid);
+                        updateField("password", data.password);
+                    }).catch(function () {
+                        alert("failed to fetch data");
+                        updateField("ssid", "failed");
+                        updateField("password", "failed");
+                    }).finally(function () {
+                        setOverlay(false);
+                    });
+                }).catch(function () {
+                    alert("failed to fetchd data");
+                    setOverlay(false);
+                    updateField("minLapTime", -1);
+                    updateField("rssiThresholdLow", -1);
+                    updateField("rssiThresholdHigh", -1);
+                    updateField("frequency", -1);
+                    updateField("ssid", "failed");
+                    updateField("password", "failed");
+                });
+
+                getRssi();
+            };
+
+            var getRssi = function () {
+                console.log("get rssi");
+                getRssiData().then(function (data) {
+                    updateContent("rssi", data.rssi);
+                    if (measureRssi) {
+                        window.setTimeout(getRssi, 500);
+                    }
+                }).catch(function () {
+                    updateContent("rssi", "failed");
+                });
+            };
+
+            var startRssi = function () {
+                measureRssi = true;
+                window.setTimeout(getRssi, 500);
+            };
+
+            var stopRssi = function () {
+                measureRssi = false;
+            };
+
+            var reboot = function () {
+                setOverlay(true);
+                let p = new Promise(function (resolve, reject) {
+                    fetch(restUrl + "reboot", {method: "POST", body: {}}).then(function (response) {
+                        return response.json().then(function (json) {
+                            if (response.status === 200) {
+                                resolve(json);
+                            } else {
+                                reject();
+                            }
+                        });
+                    });
+                });
+                p.then(function () {
+                    alert("rebooting, this may take up to 1 minute, press activate standalone mode button if required!\npress reload after reboot.");
+                }).catch(function () {
+                    setOverlay(false);
+                    alert("cannot reboot");
+                });
+            };
+
+            var setThreshold = function () {
+                var low = readField('rssiThresholdLow');
+                var high = readField('rssiThresholdHigh');
+                if (high <= low || low >= high) {
+                    alert('rssi high threshold must be higher than low threshold');
+                    loadData();
+                } else {
+                    setData('thresholdlow', readField('rssiThresholdLow'), true);
+                    setData('thresholdhigh', readField('rssiThresholdHigh'));
+                }
+            };
+
+        </script>
+    </head>
+    <body>
+        <div id="overlay" class="loading">Loading&#8230;</div>
+        <div id="container">
+            <div>
+                <h1>fpvlaptracker</h1>
+            </div>
+            <div class="nav">
+                <ul>
+                    <li><a href="/index.html">race</a></li>
+                    <li class="active">settings</li>
+                </ul>
+            </div>
+            <div id="content">
+                <h2>lap detection settings</h2>
+                <div id="raceSettings">
+                    <label for="minLapTime">
+                        minimum lap time
+                    </label>
+                    the duration of the lap detection lock in milliseconds
+                    <input type="number" min="1000" max="10000" step="1" id="minLapTime" size="5" />
+                    <input type="button" onclick="setData('minLapTime', readField('minLapTime'));" value="save" />
+                </div>
+                <br />
+                <hr />
+                <h2>rssi</h2>
+                <div id="rssiStatus">
+                    <blockquote>
+                        current rssi value: <span id="rssi">0</span>
+                    </blockquote>
+                    <input type="button" onclick="startRssi();" value="start measurement"/>
+                    <input type="button" onclick="stopRssi();" value="stop measurement"/>
+                    <br />
+                    <label for="rssiThresholdLow">
+                        rssi threshold low
+                    </label>
+                    <input type="text" id="rssiThresholdLow" size="5" />
+                    <label for="rssiThresholdHigh">
+                        rssi threshold high
+                    </label>
+                    <input type="text" id="rssiThresholdHigh" size="5" />
+                    <input type="button" onclick="setThreshold();" value="save" />
+                </div>
+                <br />
+                <hr />
+                <h2>receiver</h2>
+                <div>
+                    <label for="frequency">
+                        frequency
+                    </label>
+                    the frequency this tracker unit is listening to, must be between 5362 and 5945 MHz
+                    <input type="number" min="5362" max="5945" step="1" id="frequency" size="5" />
+                    <input type="button" onclick="setData('frequency', readField('frequency'));" value="save" />
+                </div>
+                <br />
+                <hr />
+                <h2>wifi</h2>
+                <b>only non standalone mode</b><br />
+                the wifi network this tracker unit is connecting to
+                <div>
+                    <label for="ssid">
+                        ssid
+                    </label>
+                    <input type="text" id="ssid" size="50" />
+                    <label for="password">
+                        password
+                    </label>
+                    <input type="password" id="password" size="50" />
+                    <input type="button" onclick="setData('ssid', readField('ssid'), true); setData('password', readField('password'));" value="save" /><br /><br />
+                </div>
+                <br />
+                <hr />
+                <h2>reboot</h2>
+                reboot tracker unit<br />
+                <input type="button" value="reboot" class="button button-outline" onclick="reboot();"/>
+            </div>
+        </div>
+    </body>
+</html>

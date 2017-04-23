@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+    <head>
+        <base href="/" />
+        <title>fpvlaptracker</title>
+        <link href="css/libs.min.css" rel="stylesheet">
+        <link href="css/fpvlaptracker.min.css" rel="stylesheet">
+    </head>
+
+    <body ng-app="wlt" ng-cloak class="ng-cloak">
+        <div style="display: none;" id="overlay" class="loading">Loading&#8230;</div>
+        <div class="container">
+            <span style="font-style: italic; font-size: 28pt;">fpvlaptracker</span>
+        </div>
+        <div ng-controller="navigation" class="container">
+            <ul class="nav nav-tabs">
+                <li ng-class="{'active':isActive('home')}"><a href="/">home</a></li>
+                <li ng-class="{'active':isActive('state')}"><a href="/state">race <span class="badge">{{state}}</span></a></li>
+                <li ng-class="{'active':isActive('settings')}"><a href="/settings">settings</a></li>
+                <li ng-class="{'active':isActive('participants')}"><a href="/participants">participants <span class="badge">{{participants}}</span></a></li>
+                <li ng-class="{'active':isActive('races')}"><a href="/races">stored races</a></li>
+                <li ng-class="{'active':isActive('toplist')}"><a href="/toplist">toplists</a></li>
+                <li ng-class="{'active':isActive('login')}"><a href="/login">login</a></li>
+            </ul>
+        </div>
+        <div ng-view class="container"></div>
+        <footer class="footer">
+            <div class="container">
+                <p class="text-muted">
+                    fpvlaptracker v0.1, <a href="https://github.com/warhog/fpvlaptracker">github</a>, <a href="https://en.wikipedia.org/wiki/MIT_License" target="_blank">MIT licensed</a>
+                </p>
+            </div>
+        </footer>
+        <script src="js/libs.min.js" type="text/javascript"></script>
+        <script src="js/fpvlaptracker.min.js" type="text/javascript"></script>
+    </body>
+</html>

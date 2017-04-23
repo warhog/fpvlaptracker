@@ -1,0 +1,33 @@
+{
+  "name": "fpvlaptracker",
+  "version": "1.0.0",
+  "description": "licensed under [MIT](LICENSE.md)",
+  "main": "wlt.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://tbreckle@bitbucket.org/tbreckle/fpvlaptracker.git"
+  },
+  "author": "warhog",
+  "license": "MIT",
+  "homepage": "https://bitbucket.org/tbreckle/fpvlaptracker#readme",
+  "devDependencies": {
+    "del": "^2.2.2",
+    "gulp": "^3.9.1",
+    "gulp-autoprefixer": "^3.1.1",
+    "gulp-babel": "^6.1.2",
+    "gulp-changed": "^1.3.2",
+    "gulp-clean": "^0.3.2",
+    "gulp-htmlmin": "^3.0.0",
+    "gulp-imagemin": "^3.1.1",
+    "gulp-jshint": "^2.0.4",
+    "gulp-minify-css": "^1.2.4",
+    "gulp-minify-html": "^1.0.6",
+    "gulp-ng-annotate": "^2.0.0",
+    "gulp-sourcemaps": "^1.9.1",
+    "gulp-uglify": "^2.0.0",
+    "run-sequence": "^1.2.2"
+  }
+}

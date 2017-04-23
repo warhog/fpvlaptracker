@@ -1,0 +1,34 @@
+<h1>toplists</h1>
+<script type="text/ng-template" id="dataFailure">
+    <div>
+    <h2>data failure</h2>
+    {{ngDialogData.message}}
+    </div>
+</script>
+
+<div>
+    <ul class="nav nav-pills">
+        <li ng-class="{'active':isActive('today')}"><a href="" ng-click="showToplist('today');">today</a></li>
+        <li ng-class="{'active':isActive('week')}"><a href="" ng-click="showToplist('week');">week</a></li>
+        <li ng-class="{'active':isActive('alltime')}" ><a href="" ng-click="showToplist('alltime');">all-time</a></li>
+    </ul>
+</div>
+
+
+<div>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th style="padding-right: 10px;">lap</th>
+                <th>total duration</th>
+                <th>total number of laps</th>
+            </tr>
+        </thead>
+        <tr ng-repeat="x in topListData">
+            <td style="padding-right: 10px;">{{x.name}} ({{x.chipId}})</td>
+            <td style="padding-right: 10px;">{{x.totalDurationText}}</td>
+            <td>{{x.numberOfTotalLaps}}</td>
+        </tr>
+    </table>
+
+</div>
