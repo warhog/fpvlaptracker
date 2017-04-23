@@ -7,7 +7,7 @@ import de.warhog.fpvlaptracker.jooq.tables.records.RacesRecord;
 import de.warhog.fpvlaptracker.race.entities.Participant;
 import de.warhog.fpvlaptracker.race.entities.ParticipantRaceData;
 import de.warhog.fpvlaptracker.service.ConfigService;
-import de.warhog.fpvlaptracker.service.RaceService;
+import de.warhog.fpvlaptracker.service.RaceDbService;
 import de.warhog.fpvlaptracker.service.ServiceLayerException;
 import de.warhog.fpvlaptracker.util.TimeUtil;
 import java.time.Instant;
@@ -32,7 +32,7 @@ public class RacesController {
     private static final Logger LOG = LoggerFactory.getLogger(RacesController.class);
 
     @Autowired
-    private RaceService raceService;
+    private RaceDbService raceService;
 
     @Autowired
     private ConfigService configService;

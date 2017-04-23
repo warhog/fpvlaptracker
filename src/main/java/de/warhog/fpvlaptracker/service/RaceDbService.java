@@ -24,9 +24,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class RaceService {
+public class RaceDbService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(RaceService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RaceDbService.class);
 
     @Autowired
     private RaceLayer dbLayer;
