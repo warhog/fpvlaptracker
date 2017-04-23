@@ -2,17 +2,17 @@
   "name": "fpvlaptracker",
   "version": "1.0.0",
   "description": "licensed under [MIT](LICENSE.md)",
-  "main": "wlt.js",
+  "main": "flt.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://tbreckle@bitbucket.org/tbreckle/fpvlaptracker.git"
+    "url": "git+https://github.com/warhog/fpvlaptracker.git"
   },
   "author": "warhog",
   "license": "MIT",
-  "homepage": "https://bitbucket.org/tbreckle/fpvlaptracker#readme",
+  "homepage": "https://github.com/warhog/fpvlaptracker.git",
   "devDependencies": {
     "del": "^2.2.2",
     "gulp": "^3.9.1",
