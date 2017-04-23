@@ -15,10 +15,9 @@ simple open source diy fpv vtx lap tracking system
 
 
 ## how does it work?
-the tracker unit measures the video signal strength (rssi). when it is higher than the 
-defined upper threshold it counts a lap. then the unit enters the wait period 
-were it is locked for adjusted time. after that time the video signal strength must
-be lower than the lower threshold before the next lap can be detected.
+the tracker unit measures the video signal strength (rssi). when it is higher than the defined upper threshold it counts a lap. then the unit enters the wait period were it is locked for adjusted time. after that time the video signal strength must be lower than the lower threshold before the next lap can be detected.
+
+the tracker unit has a stand alone mode for single participants or a networked mode supporting multiple participants and a much better web ui. in standalone mode the tracker unit serves a web page that is accessible using wifi network. the networked mode is used with any hardware that can run the java software backend.
 
 
 ## which hardware and software is used?
