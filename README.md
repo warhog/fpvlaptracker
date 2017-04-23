@@ -5,6 +5,9 @@ licensed under [MIT](LICENSE.md)
 
 simple open source diy fpv vtx lap tracking system
 
+## build status
+current status: ![build status image](https://travis-ci.org/warhog/fpvlaptracker.svg?branch=master)
+
 
 ## features
 - standalone and networked mode available
