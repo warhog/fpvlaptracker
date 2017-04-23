@@ -22,7 +22,7 @@ be lower than the lower threshold before the next lap can be detected.
 
 
 ## which hardware and software is used?
-the hardware consists of an nodemcu (ESP8266) board with a boscam rx5808 receiver module connected. 
+the hardware consists of a nodemcu (ESP8266) board with a boscam rx5808 receiver module connected. 
 the nodemcu board runs the tracker unit firmware (written using Arduino for ESP8266).
 the backend of the race software for networked mode was written in java using spring boot with jooq as database access 
 library. the frontend was developed using angular 1. the race software can be run on almost
