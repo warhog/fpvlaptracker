@@ -248,7 +248,6 @@ public class RaceLogic {
     }
 
     public Map<Integer, Duration> getParticipantLapTimes(Participant participant) {
-        Map<Integer, Duration> result = new HashMap<>();
         if (participants.containsKey(participant)) {
             ParticipantRaceData participantRaceData = participants.get(participant);
             return participantRaceData.getLaps();
