@@ -1,9 +1,9 @@
-package de.warhog.fpvlaptracker.comm;
+package de.warhog.fpvlaptracker.service;
 
-import de.warhog.fpvlaptracker.comm.entities.Data;
-import de.warhog.fpvlaptracker.comm.entities.Rssi;
-import de.warhog.fpvlaptracker.comm.entities.RssiMeasure;
-import de.warhog.fpvlaptracker.comm.entities.StatusResult;
+import de.warhog.fpvlaptracker.communication.entities.Data;
+import de.warhog.fpvlaptracker.communication.entities.Rssi;
+import de.warhog.fpvlaptracker.communication.entities.RssiMeasure;
+import de.warhog.fpvlaptracker.communication.entities.StatusResult;
 import de.warhog.fpvlaptracker.race.entities.Participant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,9 +11,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 @Component
-public class Comm {
+public class RestService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(Comm.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RestService.class);
 
     private final RestTemplate restTemplate = new RestTemplate();
 

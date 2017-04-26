@@ -2,10 +2,10 @@ package de.warhog.fpvlaptracker.controllers;
 
 import de.warhog.fpvlaptracker.controllers.dtos.StatusResult;
 import de.warhog.fpvlaptracker.controllers.dtos.requestbodies.Frequency;
-import de.warhog.fpvlaptracker.comm.Comm;
-import de.warhog.fpvlaptracker.comm.entities.Data;
-import de.warhog.fpvlaptracker.comm.entities.Rssi;
-import de.warhog.fpvlaptracker.comm.entities.RssiMeasure;
+import de.warhog.fpvlaptracker.service.RestService;
+import de.warhog.fpvlaptracker.communication.entities.Data;
+import de.warhog.fpvlaptracker.communication.entities.Rssi;
+import de.warhog.fpvlaptracker.communication.entities.RssiMeasure;
 import de.warhog.fpvlaptracker.controllers.dtos.requestbodies.MinLapTime;
 import de.warhog.fpvlaptracker.controllers.dtos.requestbodies.Name;
 import de.warhog.fpvlaptracker.controllers.dtos.requestbodies.Threshold;
@@ -30,7 +30,7 @@ public class ParticipantController {
     private static final Logger LOG = LoggerFactory.getLogger(ParticipantController.class);
 
     @Autowired
-    private Comm comm;
+    private RestService comm;
 
     @Autowired
     private ParticipantsDbService participantsDbService;
