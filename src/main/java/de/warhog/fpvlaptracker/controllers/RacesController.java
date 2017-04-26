@@ -32,7 +32,7 @@ public class RacesController {
     private static final Logger LOG = LoggerFactory.getLogger(RacesController.class);
 
     @Autowired
-    private RaceDbService raceService;
+    private RaceDbService raceDbService;
 
     @Autowired
     private ConfigService configService;
@@ -43,7 +43,7 @@ public class RacesController {
     @RequestMapping(path = "/api/races/all", method = RequestMethod.GET)
     public Map<Integer, String> getRaces() {
         try {
-            List<RacesRecord> races = raceService.getRaces();
+            List<RacesRecord> races = raceDbService.getRaces();
             Map<Integer, String> ret = new HashMap<>();
             for (RacesRecord racesRecord : races) {
                 if (racesRecord.getStarttime() != null) {
@@ -64,7 +64,7 @@ public class RacesController {
     @RequestMapping(path = "/api/races/toplist/today", method = RequestMethod.GET)
     public List<ToplistResult> getToplistToday() {
         try {
-            return raceService.getToplistToday();
+            return raceDbService.getToplistToday();
         } catch (ServiceLayerException ex) {
             LOG.error(ex.getMessage(), ex);
             throw new RuntimeException(ex);
@@ -74,7 +74,7 @@ public class RacesController {
     @RequestMapping(path = "/api/races/toplist/alltime", method = RequestMethod.GET)
     public List<ToplistResult> getToplistAllTime() {
         try {
-            return raceService.getToplistAllTime();
+            return raceDbService.getToplistAllTime();
         } catch (ServiceLayerException ex) {
             LOG.error(ex.getMessage(), ex);
             throw new RuntimeException(ex);
@@ -84,7 +84,7 @@ public class RacesController {
     @RequestMapping(path = "/api/races/toplist/week", method = RequestMethod.GET)
     public List<ToplistResult> getToplistWeek() {
         try {
-            return raceService.getToplistWeek();
+            return raceDbService.getToplistWeek();
         } catch (ServiceLayerException ex) {
             LOG.error(ex.getMessage(), ex);
             throw new RuntimeException(ex);
@@ -94,8 +94,8 @@ public class RacesController {
     @RequestMapping(path = "/api/races/load", method = RequestMethod.GET)
     public RaceStateResult getRaceData(@RequestParam(name = "id", required = true) Integer raceId) {
         try {
-            RacesRecord racesRecord = raceService.getRaceRecordForId(raceId);
-            List<Participant> participants = raceService.getRaceParticipants(raceId);
+            RacesRecord racesRecord = raceDbService.getRaceRecordForId(raceId);
+            List<Participant> participants = raceDbService.getRaceParticipants(raceId);
 
             RaceStateResult raceStateResult = new RaceStateResult();
             raceStateResult.setMaxLaps(racesRecord.getLaps());
@@ -104,7 +104,7 @@ public class RacesController {
             Map<Participant, ParticipantRaceData> raceData = new HashMap<>();
             for (Participant participant : participants) {
                 ParticipantRaceData participantRaceData = new ParticipantRaceData();
-                List<LapsRecord> laps = raceService.getLaps(raceId, participant.getChipId());
+                List<LapsRecord> laps = raceDbService.getLaps(raceId, participant.getChipId());
                 participantRaceData.fillLapDataFromDatabase(laps);
                 raceData.put(participant, participantRaceData);
             }

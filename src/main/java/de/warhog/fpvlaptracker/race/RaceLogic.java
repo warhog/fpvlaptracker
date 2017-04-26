@@ -5,7 +5,7 @@ import de.warhog.fpvlaptracker.race.entities.ParticipantRaceData;
 import de.warhog.fpvlaptracker.race.entities.Participant;
 import de.warhog.fpvlaptracker.service.AudioService;
 import de.warhog.fpvlaptracker.service.ConfigService;
-import de.warhog.fpvlaptracker.service.ParticipantsService;
+import de.warhog.fpvlaptracker.service.ParticipantsDbService;
 import de.warhog.fpvlaptracker.service.RaceDbService;
 import de.warhog.fpvlaptracker.service.ServiceLayerException;
 import java.time.Duration;
@@ -36,10 +36,10 @@ public class RaceLogic {
     private ConfigService configService;
 
     @Autowired
-    private RaceDbService racesService;
+    private RaceDbService racesDbService;
 
     @Autowired
-    private ParticipantsService participantsService;
+    private ParticipantsDbService participantsDbService;
 
     @Autowired
     private AudioService audioService;
@@ -62,7 +62,7 @@ public class RaceLogic {
             stopRace();
             if (currentRaceId != null) {
                 try {
-                    racesService.setState(currentRaceId, RaceState.FINISHED);
+                    racesDbService.setState(currentRaceId, RaceState.FINISHED);
                 } catch (ServiceLayerException ex) {
                     LOG.error("failed to stop current race: " + ex.getMessage(), ex);
                     throw new RuntimeException("failed to stop current race");
@@ -72,14 +72,14 @@ public class RaceLogic {
         if (participants.isEmpty()) {
             throw new IllegalStateException("no participants");
         }
-        participantsService.checkParticipantsStillAvailable();
+        participantsDbService.checkParticipantsStillAvailable();
         LOG.info("initialize new race");
         setState(RaceState.GETREADY);
         setStartTime(LocalDateTime.now());
         try {
-            currentRaceId = racesService.createRace(numberOfLaps, state);
+            currentRaceId = racesDbService.createRace(numberOfLaps, state);
             ZoneOffset zoneOffset = ZoneId.of(configService.getTimezone()).getRules().getOffset(LocalDateTime.now());
-            racesService.setStartTime(currentRaceId, Math.toIntExact(LocalDateTime.now().toEpochSecond(zoneOffset)));
+            racesDbService.setStartTime(currentRaceId, Math.toIntExact(LocalDateTime.now().toEpochSecond(zoneOffset)));
             LOG.debug("created new race id: " + currentRaceId);
         } catch (ServiceLayerException ex) {
             LOG.error("failed to store new race: " + ex.getMessage(), ex);
@@ -127,8 +127,8 @@ public class RaceLogic {
         if (currentRaceId != null) {
             try {
                 ZoneOffset zoneOffset = ZoneId.of(configService.getTimezone()).getRules().getOffset(LocalDateTime.now());
-                racesService.setStartTime(currentRaceId, Math.toIntExact(LocalDateTime.now().toEpochSecond(zoneOffset)));
-                racesService.setState(currentRaceId, state);
+                racesDbService.setStartTime(currentRaceId, Math.toIntExact(LocalDateTime.now().toEpochSecond(zoneOffset)));
+                racesDbService.setState(currentRaceId, state);
             } catch (ServiceLayerException ex) {
                 LOG.error("failed to start race: " + ex.getMessage(), ex);
                 throw new RuntimeException("failed to start race");
@@ -140,7 +140,7 @@ public class RaceLogic {
         LOG.info("stopping race");
         setState(RaceState.FINISHED);
         try {
-            racesService.setState(currentRaceId, state);
+            racesDbService.setState(currentRaceId, state);
         } catch (ServiceLayerException ex) {
             LOG.error("failed to stop race: " + ex.getMessage(), ex);
             throw new RuntimeException("failed to stop race");
@@ -192,7 +192,7 @@ public class RaceLogic {
         } else {
             if (currentRaceId != null) {
                 try {
-                    racesService.addLap(currentRaceId, chipId, data.getCurrentLap(), duration.intValue());
+                    racesDbService.addLap(currentRaceId, chipId, data.getCurrentLap(), duration.intValue());
                 } catch (ServiceLayerException ex) {
                     LOG.error(ex.getMessage(), ex);
                     throw new RuntimeException("cannot add lap");

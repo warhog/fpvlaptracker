@@ -10,7 +10,7 @@ import de.warhog.fpvlaptracker.controllers.dtos.requestbodies.MinLapTime;
 import de.warhog.fpvlaptracker.controllers.dtos.requestbodies.Name;
 import de.warhog.fpvlaptracker.controllers.dtos.requestbodies.Threshold;
 import de.warhog.fpvlaptracker.race.entities.Participant;
-import de.warhog.fpvlaptracker.service.ParticipantsService;
+import de.warhog.fpvlaptracker.service.ParticipantsDbService;
 import de.warhog.fpvlaptracker.service.ServiceLayerException;
 import java.util.HashMap;
 import java.util.List;
@@ -33,18 +33,18 @@ public class ParticipantController {
     private Comm comm;
 
     @Autowired
-    private ParticipantsService participantsService;
+    private ParticipantsDbService participantsDbService;
 
     @RequestMapping(path = "/api/participant/rssi", method = RequestMethod.GET)
     public Rssi getRssi(@RequestParam(name = "chipid", required = true) Integer chipid) {
-        Participant participant = participantsService.getParticipant(chipid);
+        Participant participant = participantsDbService.getParticipant(chipid);
         Rssi rssi = comm.getRssi(participant);
         return rssi;
     }
 
     @RequestMapping(path = "/api/participant/setupData", method = RequestMethod.GET)
     public Map<String, String> getSetupData(@RequestParam(name = "chipid", required = true) Integer chipid) {
-        Participant participant = participantsService.getParticipant(chipid);
+        Participant participant = participantsDbService.getParticipant(chipid);
         Data data = comm.getData(participant);
         Map<String, String> ret = new HashMap<>();
         ret.put("thresholdLow", data.getThresholdLow().toString());
@@ -59,7 +59,7 @@ public class ParticipantController {
 
     @RequestMapping(path = "/api/participant/minlaptime", method = RequestMethod.GET)
     public Map<String, Long> getMinLapTime(@RequestParam(name = "chipid", required = true) Integer chipid) {
-        Participant participant = participantsService.getParticipant(chipid);
+        Participant participant = participantsDbService.getParticipant(chipid);
         Long minLapTime = comm.getMinLapTime(participant);
         Map<String, Long> lapTime = new HashMap<>();
         lapTime.put("minLapTime", minLapTime);
@@ -68,28 +68,28 @@ public class ParticipantController {
 
     @RequestMapping(path = "/api/participant/measure", method = RequestMethod.GET)
     public RssiMeasure getMeasure(@RequestParam(name = "chipid", required = true) Integer chipid) {
-        Participant participant = participantsService.getParticipant(chipid);
+        Participant participant = participantsDbService.getParticipant(chipid);
         RssiMeasure rssiMeasure = comm.getRssiMeasure(participant);
         return rssiMeasure;
     }
 
     @RequestMapping(path = "/api/auth/participant/minlaptime", method = RequestMethod.POST)
     public StatusResult setMinLapTime(@RequestBody MinLapTime minLapTime) {
-        Participant participant = participantsService.getParticipant(minLapTime.getChipid());
+        Participant participant = participantsDbService.getParticipant(minLapTime.getChipid());
         comm.setMinLapTime(participant, minLapTime.getMinlaptime().longValue());
         return new StatusResult(StatusResult.Status.OK);
     }
 
     @RequestMapping(path = "/api/auth/participant/frequency", method = RequestMethod.POST)
     public StatusResult setFrequency(@RequestBody Frequency frequency) {
-        Participant participant = participantsService.getParticipant(frequency.getChipid());
+        Participant participant = participantsDbService.getParticipant(frequency.getChipid());
         comm.setFrequency(participant, frequency.getFrequency());
         return new StatusResult(StatusResult.Status.OK);
     }
 
     @RequestMapping(path = "/api/participant/threshold", method = RequestMethod.GET)
     public Map<String, Integer> getThreshold(@RequestParam(name = "chipid", required = true) Integer chipid) {
-        Participant participant = participantsService.getParticipant(chipid);
+        Participant participant = participantsDbService.getParticipant(chipid);
         Integer thresholdLowValue = comm.getThresholdLow(participant);
         Integer thresholdHighValue = comm.getThresholdHigh(participant);
         Map<String, Integer> threshold = new HashMap<>();
@@ -100,17 +100,17 @@ public class ParticipantController {
 
     @RequestMapping(path = "/api/auth/participant/threshold", method = RequestMethod.POST)
     public StatusResult setThreshold(@RequestBody Threshold threshold) {
-        Participant participant = participantsService.getParticipant(threshold.getChipid());
+        Participant participant = participantsDbService.getParticipant(threshold.getChipid());
         comm.setThresholds(participant, threshold.getThresholdLow(), threshold.getThresholdHigh());
         return new StatusResult(StatusResult.Status.OK);
     }
 
     @RequestMapping(path = "/api/auth/participant/name", method = RequestMethod.POST)
     public StatusResult setName(@RequestBody Name name) {
-        Participant participant = participantsService.getParticipant(name.getChipid());
+        Participant participant = participantsDbService.getParticipant(name.getChipid());
         participant.setName(name.getName());
         try {
-            participantsService.createOrUpdateParticipantInDb(name.getChipid(), name.getName());
+            participantsDbService.createOrUpdateParticipantInDb(name.getChipid(), name.getName());
         } catch (ServiceLayerException ex) {
             LOG.error("cannot store name to database", ex);
         }
@@ -119,7 +119,7 @@ public class ParticipantController {
 
     @RequestMapping(path = "/api/participants", method = RequestMethod.GET)
     public List<Participant> getAll() {
-        return participantsService.getAllParticipants();
+        return participantsDbService.getAllParticipants();
     }
 
 }

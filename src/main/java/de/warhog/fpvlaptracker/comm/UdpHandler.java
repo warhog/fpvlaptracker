@@ -8,7 +8,7 @@ import de.warhog.fpvlaptracker.controllers.WebSocketController;
 import de.warhog.fpvlaptracker.race.entities.Participant;
 import de.warhog.fpvlaptracker.race.RaceLogic;
 import de.warhog.fpvlaptracker.service.AudioService;
-import de.warhog.fpvlaptracker.service.ParticipantsService;
+import de.warhog.fpvlaptracker.service.ParticipantsDbService;
 import de.warhog.fpvlaptracker.service.ServiceLayerException;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -35,7 +35,7 @@ public class UdpHandler implements Runnable {
     private RaceLogic race;
 
     @Autowired
-    private ParticipantsService participantsService;
+    private ParticipantsDbService participantsDbService;
 
     @Autowired
     private WebSocketController webSocketController;
@@ -80,16 +80,16 @@ public class UdpHandler implements Runnable {
         try {
             String name = udpPacketRegister.getChipid().toString();
             try {
-                name = participantsService.getNameForChipIdFromDb(udpPacketRegister.getChipid());
+                name = participantsDbService.getNameForChipIdFromDb(udpPacketRegister.getChipid());
             } catch (ServiceLayerException ex) {
                 LOG.debug("no name for chipid " + udpPacketRegister.getChipid());
             }
             Participant participant = new Participant(name, udpPacketRegister.getChipid(), inetAddress);
-            if (participantsService.hasParticipant(participant)) {
+            if (participantsDbService.hasParticipant(participant)) {
                 LOG.error("participant already existing: " + udpPacketRegister.getChipid(), participant);
                 return;
             }
-            participantsService.addParticipant(participant);
+            participantsDbService.addParticipant(participant);
             webSocketController.sendNewParticipantMessage(udpPacketRegister.getChipid());
             webSocketController.sendAudioRegisteredMessage();
             audioService.playRegistered();
@@ -138,7 +138,7 @@ public class UdpHandler implements Runnable {
     }
 
     private void processLap(UdpPacketLap udpPacketLap, InetAddress address) {
-        if (!participantsService.hasParticipant(udpPacketLap.getChipid())) {
+        if (!participantsDbService.hasParticipant(udpPacketLap.getChipid())) {
             LOG.info("got lap from non registered participant, try to get registration");
             requestRegistration(address);
         } else {

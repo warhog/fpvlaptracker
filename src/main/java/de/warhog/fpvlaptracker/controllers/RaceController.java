@@ -6,7 +6,7 @@ import de.warhog.fpvlaptracker.controllers.dtos.StatusResult;
 import de.warhog.fpvlaptracker.race.entities.Participant;
 import de.warhog.fpvlaptracker.race.RaceLogic;
 import de.warhog.fpvlaptracker.service.ConfigService;
-import de.warhog.fpvlaptracker.service.ParticipantsService;
+import de.warhog.fpvlaptracker.service.ParticipantsDbService;
 import de.warhog.fpvlaptracker.service.ServiceLayerException;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -32,7 +32,7 @@ public class RaceController {
     private ConfigService configService;
 
     @Autowired
-    private ParticipantsService participantsService;
+    private ParticipantsDbService participantsDbService;
 
     @RequestMapping(path = "/api/auth/race/maxlaps", method = RequestMethod.POST)
     public StatusResult setMaxLaps(@RequestParam(name = "laps", defaultValue = "10") Integer laps) {
@@ -55,7 +55,7 @@ public class RaceController {
     @RequestMapping(path = "/api/race/chartdata", method = RequestMethod.GET)
     public ChartResult chartdata() {
         ChartResult chartResult = new ChartResult();
-        List<Participant> participants = participantsService.getAllParticipants();
+        List<Participant> participants = participantsDbService.getAllParticipants();
         for (Participant participant : participants) {
             chartResult.addParticipant(participant.getChipId(), participant.getName());
             if (race.hasParticipant(participant.getChipId())) {
@@ -77,7 +77,7 @@ public class RaceController {
     @RequestMapping(path = "/api/auth/race/participants/add", method = RequestMethod.GET)
     public StatusResult addParticipant(@RequestParam(name = "chipid", required = true) String chipid) {
         Integer chipId = Integer.parseInt(chipid);
-        Participant participant = participantsService.getParticipant(chipId);
+        Participant participant = participantsDbService.getParticipant(chipId);
         race.addParticipant(participant);
         return new StatusResult(StatusResult.Status.OK);
     }
@@ -85,7 +85,7 @@ public class RaceController {
     @RequestMapping(path = "/api/auth/race/participants/remove", method = RequestMethod.GET)
     public StatusResult removeParticipant(@RequestParam(name = "chipid", required = true) String chipid) {
         Integer chipId = Integer.parseInt(chipid);
-        Participant participant = participantsService.getParticipant(chipId);
+        Participant participant = participantsDbService.getParticipant(chipId);
         race.removeParticipant(participant);
         return new StatusResult(StatusResult.Status.OK);
     }

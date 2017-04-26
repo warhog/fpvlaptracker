@@ -19,15 +19,15 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ParticipantsService {
+public class ParticipantsDbService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ParticipantsService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ParticipantsDbService.class);
 
     @Autowired
     private ParticipantsLayer dbLayer;
 
     @Autowired
-    private ParticipantsService participantsService;
+    private ParticipantsDbService participantsDbService;
 
     @Autowired
     private Comm comm;
@@ -88,14 +88,14 @@ public class ParticipantsService {
     public void checkParticipantsStillAvailable() {
         LOG.debug("checking for non-existing participants");
         if (!race.isRunning()) {
-            for (Participant participant : participantsService.getAllParticipants()) {
+            for (Participant participant : participantsDbService.getAllParticipants()) {
                 InetAddress inetAddress = participant.getIp();
                 try {
                     Rssi rssi = comm.getRssi(participant);
                     LOG.debug("participant with chipid " + participant.getChipId() + " found");
                 } catch (Exception ex) {
                     LOG.info("participant with chipid " + participant.getChipId() + " not found, removing");
-                    participantsService.removeParticipant(participant);
+                    participantsDbService.removeParticipant(participant);
                     webSocketController.sendNewParticipantMessage(participant.getChipId());
                 }
             }
