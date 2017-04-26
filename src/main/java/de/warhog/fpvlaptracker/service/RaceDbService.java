@@ -3,7 +3,7 @@ package de.warhog.fpvlaptracker.service;
 import de.warhog.fpvlaptracker.controllers.dtos.ToplistResult;
 import de.warhog.fpvlaptracker.db.DbLayerException;
 import de.warhog.fpvlaptracker.db.RaceLayer;
-import de.warhog.fpvlaptracker.race.RaceState;
+import de.warhog.fpvlaptracker.race.entities.RaceState;
 import de.warhog.fpvlaptracker.jooq.tables.records.LapsRecord;
 import de.warhog.fpvlaptracker.jooq.tables.records.ParticipantsRecord;
 import de.warhog.fpvlaptracker.jooq.tables.records.RacesRecord;

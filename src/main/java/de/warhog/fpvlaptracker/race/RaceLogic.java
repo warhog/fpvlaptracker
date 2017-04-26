@@ -1,5 +1,6 @@
 package de.warhog.fpvlaptracker.race;
 
+import de.warhog.fpvlaptracker.race.entities.RaceState;
 import de.warhog.fpvlaptracker.controllers.WebSocketController;
 import de.warhog.fpvlaptracker.race.entities.ParticipantRaceData;
 import de.warhog.fpvlaptracker.race.entities.Participant;

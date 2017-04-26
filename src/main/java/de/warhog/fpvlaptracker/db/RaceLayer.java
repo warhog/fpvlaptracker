@@ -1,6 +1,6 @@
 package de.warhog.fpvlaptracker.db;
 
-import de.warhog.fpvlaptracker.race.RaceState;
+import de.warhog.fpvlaptracker.race.entities.RaceState;
 import de.warhog.fpvlaptracker.jooq.Tables;
 import de.warhog.fpvlaptracker.jooq.tables.records.LapsRecord;
 import de.warhog.fpvlaptracker.jooq.tables.records.RacesRecord;
