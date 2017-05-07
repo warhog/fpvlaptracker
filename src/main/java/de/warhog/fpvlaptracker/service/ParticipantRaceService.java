@@ -63,7 +63,7 @@ public class ParticipantRaceService {
         for (Map.Entry<Participant, ParticipantRaceData> entry : participants.entrySet()) {
             Participant participant = entry.getKey();
             if (entry.getValue().getCurrentLap() <= numberOfLaps) {
-                LOG.debug("participant has not completed yet: " + participant.getName());
+                LOG.debug("participant has not completed yet: " + participant.getName() + ", numberOfLaps: " + numberOfLaps + ", currentLap: " + entry.getValue().getCurrentLap());
                 return false;
             }
         }

@@ -34,7 +34,7 @@ public class RaceLogic {
 
     @Autowired
     private ParticipantRaceService participantRaceService;
-    
+
     @Autowired
     private ConfigService configService;
 
@@ -142,6 +142,7 @@ public class RaceLogic {
     public void addLap(Integer chipId, Long duration, Integer rssi) {
         LOG.debug("add lap", chipId, duration, rssi);
         boolean raceStartedInThisLap = false;
+        boolean oneParticipantReachedEnd = false;
         if (!isRunning()) {
             LOG.info("cannot add lap when race is not running, chipid: " + chipId);
             audioService.playInvalidLap();
@@ -174,8 +175,7 @@ public class RaceLogic {
             data.addLap(duration, rssi);
             if (data.hasEnded(numberOfLaps)) {
                 LOG.info("participant reached lap limit " + participant.getName());
-                audioService.playParticipantEnded();
-                webSocketController.sendAudioParticipantEndedMessage();
+                oneParticipantReachedEnd = true;
             } else if (!raceStartedInThisLap) {
                 audioService.playLap();
                 webSocketController.sendAudioLapMessage();
@@ -189,6 +189,11 @@ public class RaceLogic {
             audioService.playFinished();
             webSocketController.sendAudioRaceEndedMessage();
             stopRace();
+        } else {
+            if (oneParticipantReachedEnd) {
+                audioService.playParticipantEnded();
+                webSocketController.sendAudioParticipantEndedMessage();
+            }
         }
 
     }
