@@ -11,4 +11,4 @@
 ### computer 
 
 ### raspberry pi
-[raspberry pi  tutorial](docs/base_rpi.md)
+[raspberry pi  tutorial](base_rpi.md)
