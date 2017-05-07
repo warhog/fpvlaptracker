@@ -1,6 +1,6 @@
 package de.warhog.fpvlaptracker;
 
-import de.warhog.fpvlaptracker.comm.UdpHandler;
+import de.warhog.fpvlaptracker.communication.UdpHandler;
 import de.warhog.fpvlaptracker.db.Db;
 import de.warhog.fpvlaptracker.service.AudioService;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

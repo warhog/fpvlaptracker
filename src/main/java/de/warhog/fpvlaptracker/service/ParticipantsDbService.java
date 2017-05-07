@@ -1,7 +1,6 @@
 package de.warhog.fpvlaptracker.service;
 
-import de.warhog.fpvlaptracker.comm.Comm;
-import de.warhog.fpvlaptracker.comm.entities.Rssi;
+import de.warhog.fpvlaptracker.communication.entities.Rssi;
 import de.warhog.fpvlaptracker.controllers.WebSocketController;
 import de.warhog.fpvlaptracker.db.DbLayerException;
 import de.warhog.fpvlaptracker.db.ParticipantsLayer;
@@ -30,7 +29,7 @@ public class ParticipantsDbService {
     private ParticipantsDbService participantsDbService;
 
     @Autowired
-    private Comm comm;
+    private RestService comm;
 
     @Autowired
     private WebSocketController webSocketController;

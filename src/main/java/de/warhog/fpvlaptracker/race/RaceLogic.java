@@ -1,5 +1,6 @@
 package de.warhog.fpvlaptracker.race;
 
+import de.warhog.fpvlaptracker.race.entities.RaceState;
 import de.warhog.fpvlaptracker.controllers.WebSocketController;
 import de.warhog.fpvlaptracker.race.entities.ParticipantRaceData;
 import de.warhog.fpvlaptracker.race.entities.Participant;
@@ -7,6 +8,7 @@ import de.warhog.fpvlaptracker.service.AudioService;
 import de.warhog.fpvlaptracker.service.ConfigService;
 import de.warhog.fpvlaptracker.service.ParticipantsDbService;
 import de.warhog.fpvlaptracker.service.RaceDbService;
+import de.warhog.fpvlaptracker.service.ParticipantRaceService;
 import de.warhog.fpvlaptracker.service.ServiceLayerException;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -25,12 +27,13 @@ public class RaceLogic {
 
     private static final Logger LOG = LoggerFactory.getLogger(RaceLogic.class);
 
-    private final Map<Participant, ParticipantRaceData> participants = new HashMap<>();
-
     private LocalDateTime startTime = null;
     private Integer numberOfLaps = 10;
     private RaceState state = RaceState.WAITING;
     private Integer currentRaceId = null;
+
+    @Autowired
+    private ParticipantRaceService participantRaceService;
 
     @Autowired
     private ConfigService configService;
@@ -69,7 +72,7 @@ public class RaceLogic {
                 }
             }
         }
-        if (participants.isEmpty()) {
+        if (!participantRaceService.hasParticipants()) {
             throw new IllegalStateException("no participants");
         }
         participantsDbService.checkParticipantsStillAvailable();
@@ -85,10 +88,7 @@ public class RaceLogic {
             LOG.error("failed to store new race: " + ex.getMessage(), ex);
             throw new RuntimeException("failed to store new race");
         }
-        for (Map.Entry<Participant, ParticipantRaceData> entry : participants.entrySet()) {
-            // reset the data fro every participant
-            entry.setValue(new ParticipantRaceData());
-        }
+        participantRaceService.resetParticipantsData();
 
     }
 
@@ -96,23 +96,15 @@ public class RaceLogic {
         if (isRunning()) {
             throw new IllegalStateException("cannot add participants to running race");
         }
-        participants.put(participant, new ParticipantRaceData());
-    }
-
-    public HashMap<Participant, ParticipantRaceData> getParticipants() {
-        return new HashMap<>(participants);
+        participantRaceService.addParticipant(participant);
     }
 
     public void removeParticipant(Participant participant) {
         if (isRunning()) {
             throw new IllegalStateException("cannot remove participants from running race");
         }
-        if (participants.containsKey(participant)) {
-            participants.remove(participant);
-        } else {
-            LOG.debug("participant not in race " + participant.getChipId());
-        }
-        if (participants.isEmpty()) {
+        participantRaceService.removeParticipant(participant);
+        if (!participantRaceService.hasParticipants()) {
             LOG.info("no participants anymore, setting state to waiting");
             setState(RaceState.WAITING);
         }
@@ -147,28 +139,10 @@ public class RaceLogic {
         }
     }
 
-    public Boolean hasParticipant(Integer chipId) {
-        try {
-            findParticipant(chipId);
-            return true;
-        } catch (Exception ex) {
-            return false;
-        }
-    }
-
-    private Participant findParticipant(Integer chipId) {
-        for (Map.Entry<Participant, ParticipantRaceData> entry : participants.entrySet()) {
-            Participant participant = entry.getKey();
-            if (participant.getChipId().equals(chipId)) {
-                return participant;
-            }
-        }
-        throw new RuntimeException("participant for chipid not found " + chipId);
-    }
-
     public void addLap(Integer chipId, Long duration, Integer rssi) {
         LOG.debug("add lap", chipId, duration, rssi);
         boolean raceStartedInThisLap = false;
+        boolean oneParticipantReachedEnd = false;
         if (!isRunning()) {
             LOG.info("cannot add lap when race is not running, chipid: " + chipId);
             audioService.playInvalidLap();
@@ -180,8 +154,8 @@ public class RaceLogic {
             startRace();
             raceStartedInThisLap = true;
         }
-        Participant participant = findParticipant(chipId);
-        ParticipantRaceData data = participants.get(participant);
+        Participant participant = participantRaceService.getParticipantByChipId(chipId);
+        ParticipantRaceData data = participantRaceService.getParticipantRaceData(participant);
         if (data == null) {
             throw new RuntimeException("no data for participant found: " + participant.toString());
         }
@@ -201,8 +175,7 @@ public class RaceLogic {
             data.addLap(duration, rssi);
             if (data.hasEnded(numberOfLaps)) {
                 LOG.info("participant reached lap limit " + participant.getName());
-                audioService.playParticipantEnded();
-                webSocketController.sendAudioParticipantEndedMessage();
+                oneParticipantReachedEnd = true;
             } else if (!raceStartedInThisLap) {
                 audioService.playLap();
                 webSocketController.sendAudioLapMessage();
@@ -211,28 +184,18 @@ public class RaceLogic {
         }
 
         // test if all of the participants has reached the lap limit
-        if (checkEnded()) {
+        if (participantRaceService.checkEnded(numberOfLaps)) {
             LOG.info("race ended");
             audioService.playFinished();
             webSocketController.sendAudioRaceEndedMessage();
             stopRace();
-        }
-
-    }
-
-    private Boolean checkEnded() {
-        for (Map.Entry<Participant, ParticipantRaceData> entry : participants.entrySet()) {
-            Participant participant = entry.getKey();
-            if (entry.getValue().getCurrentLap() <= numberOfLaps) {
-                LOG.debug("participant has not completed yet: " + participant.getName());
-                return false;
+        } else {
+            if (oneParticipantReachedEnd) {
+                audioService.playParticipantEnded();
+                webSocketController.sendAudioParticipantEndedMessage();
             }
         }
-        return true;
-    }
 
-    public HashMap<Participant, ParticipantRaceData> getLaps() {
-        return new HashMap<>(participants);
     }
 
     public LocalDateTime getStartTime() {
@@ -245,14 +208,6 @@ public class RaceLogic {
 
     public Integer getNumberOfLaps() {
         return numberOfLaps;
-    }
-
-    public Map<Integer, Duration> getParticipantLapTimes(Participant participant) {
-        if (participants.containsKey(participant)) {
-            ParticipantRaceData participantRaceData = participants.get(participant);
-            return participantRaceData.getLaps();
-        }
-        throw new IllegalArgumentException("participant not found: " + participant.toString());
     }
 
     public Boolean isRunning() {

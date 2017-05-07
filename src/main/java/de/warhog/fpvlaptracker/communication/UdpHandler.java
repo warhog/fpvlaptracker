@@ -1,9 +1,9 @@
-package de.warhog.fpvlaptracker.comm;
+package de.warhog.fpvlaptracker.communication;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.warhog.fpvlaptracker.comm.entities.UdpPacketLap;
-import de.warhog.fpvlaptracker.comm.entities.UdpPacketRegister;
+import de.warhog.fpvlaptracker.communication.entities.UdpPacketLap;
+import de.warhog.fpvlaptracker.communication.entities.UdpPacketRegister;
 import de.warhog.fpvlaptracker.controllers.WebSocketController;
 import de.warhog.fpvlaptracker.race.entities.Participant;
 import de.warhog.fpvlaptracker.race.RaceLogic;

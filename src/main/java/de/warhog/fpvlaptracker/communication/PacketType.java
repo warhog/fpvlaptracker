@@ -1,4 +1,4 @@
-package de.warhog.fpvlaptracker.comm;
+package de.warhog.fpvlaptracker.communication;
 
 public enum PacketType {
     REGISTER,

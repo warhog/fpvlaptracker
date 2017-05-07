@@ -5,11 +5,13 @@ import de.warhog.fpvlaptracker.controllers.dtos.RaceStateResult;
 import de.warhog.fpvlaptracker.controllers.dtos.StatusResult;
 import de.warhog.fpvlaptracker.race.entities.Participant;
 import de.warhog.fpvlaptracker.race.RaceLogic;
+import de.warhog.fpvlaptracker.race.entities.ParticipantRaceData;
 import de.warhog.fpvlaptracker.service.ConfigService;
 import de.warhog.fpvlaptracker.service.ParticipantsDbService;
+import de.warhog.fpvlaptracker.service.ParticipantRaceService;
 import de.warhog.fpvlaptracker.service.ServiceLayerException;
 import java.time.Duration;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -26,17 +28,20 @@ public class RaceController {
     private static final Logger LOG = LoggerFactory.getLogger(RaceController.class);
 
     @Autowired
-    private RaceLogic race;
+    private RaceLogic raceLogic;
 
     @Autowired
     private ConfigService configService;
 
     @Autowired
     private ParticipantsDbService participantsDbService;
+    
+    @Autowired
+    private ParticipantRaceService participantRaceService;
 
     @RequestMapping(path = "/api/auth/race/maxlaps", method = RequestMethod.POST)
     public StatusResult setMaxLaps(@RequestParam(name = "laps", defaultValue = "10") Integer laps) {
-        race.setNumberOfLaps(laps);
+        raceLogic.setNumberOfLaps(laps);
         try {
             configService.setNumberOfLaps(laps);
         } catch (ServiceLayerException ex) {
@@ -47,8 +52,8 @@ public class RaceController {
 
     @RequestMapping(path = "/api/auth/race/start", method = RequestMethod.GET)
     public StatusResult start(@RequestParam(name = "laps", defaultValue = "10") Integer laps) {
-        race.setNumberOfLaps(laps);
-        race.initializeNewRace();
+        raceLogic.setNumberOfLaps(laps);
+        raceLogic.initializeNewRace();
         return new StatusResult(StatusResult.Status.OK);
     }
 
@@ -58,8 +63,8 @@ public class RaceController {
         List<Participant> participants = participantsDbService.getAllParticipants();
         for (Participant participant : participants) {
             chartResult.addParticipant(participant.getChipId(), participant.getName());
-            if (race.hasParticipant(participant.getChipId())) {
-                Map<Integer, Duration> laps = race.getParticipantLapTimes(participant);
+            if (participantRaceService.hasParticipant(participant.getChipId())) {
+                Map<Integer, Duration> laps = participantRaceService.getParticipantLapTimes(participant);
                 for (Map.Entry<Integer, Duration> entry : laps.entrySet()) {
                     chartResult.addLapTimes(entry.getKey(), participant.getChipId(), entry.getValue());
                 }
@@ -70,7 +75,7 @@ public class RaceController {
 
     @RequestMapping(path = "/api/auth/race/stop", method = RequestMethod.GET)
     public StatusResult stop() {
-        race.stopRace();
+        raceLogic.stopRace();
         return new StatusResult(StatusResult.Status.OK);
     }
 
@@ -78,7 +83,7 @@ public class RaceController {
     public StatusResult addParticipant(@RequestParam(name = "chipid", required = true) String chipid) {
         Integer chipId = Integer.parseInt(chipid);
         Participant participant = participantsDbService.getParticipant(chipId);
-        race.addParticipant(participant);
+        raceLogic.addParticipant(participant);
         return new StatusResult(StatusResult.Status.OK);
     }
 
@@ -86,30 +91,27 @@ public class RaceController {
     public StatusResult removeParticipant(@RequestParam(name = "chipid", required = true) String chipid) {
         Integer chipId = Integer.parseInt(chipid);
         Participant participant = participantsDbService.getParticipant(chipId);
-        race.removeParticipant(participant);
+        raceLogic.removeParticipant(participant);
         return new StatusResult(StatusResult.Status.OK);
-    }
-
-    private List<Participant> getRaceParticipants() {
-        List<Participant> ret = new ArrayList<>();
-        race.getParticipants().entrySet().forEach((entry) -> {
-            ret.add(entry.getKey());
-        });
-        return ret;
     }
 
     @RequestMapping(path = "/api/race/participants", method = RequestMethod.GET)
     public List<Participant> getParticipants() {
-        return getRaceParticipants();
+        return participantRaceService.getParticipants();
     }
 
     @RequestMapping(path = "/api/race/state", method = RequestMethod.GET)
     public RaceStateResult getState() {
+        
+        HashMap<Participant, ParticipantRaceData> data = new HashMap<>();
+        for (Participant participant : participantRaceService.getParticipants()) {
+            data.put(participant, participantRaceService.getParticipantRaceData(participant));
+        }
         RaceStateResult rsr = new RaceStateResult();
-        rsr.setState(race.getState());
-        rsr.setRaceData(race.getLaps());
-        rsr.setStartTime(race.getStartTime());
-        rsr.setMaxLaps(race.getNumberOfLaps());
+        rsr.setState(raceLogic.getState());
+        rsr.setRaceData(data);
+        rsr.setStartTime(raceLogic.getStartTime());
+        rsr.setMaxLaps(raceLogic.getNumberOfLaps());
 
         return rsr;
     }

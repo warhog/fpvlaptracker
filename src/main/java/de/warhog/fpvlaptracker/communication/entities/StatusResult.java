@@ -1,4 +1,4 @@
-package de.warhog.fpvlaptracker.comm.entities;
+package de.warhog.fpvlaptracker.communication.entities;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

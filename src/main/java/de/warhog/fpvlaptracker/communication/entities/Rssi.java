@@ -1,4 +1,4 @@
-package de.warhog.fpvlaptracker.comm.entities;
+package de.warhog.fpvlaptracker.communication.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.slf4j.Logger;
