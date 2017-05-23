@@ -1,20 +1,17 @@
 package de.warhog.fpvlaptracker.service;
 
-import de.warhog.fpvlaptracker.communication.entities.Rssi;
 import de.warhog.fpvlaptracker.controllers.WebSocketController;
 import de.warhog.fpvlaptracker.db.DbLayerException;
 import de.warhog.fpvlaptracker.db.ParticipantsLayer;
 import de.warhog.fpvlaptracker.jooq.tables.records.ParticipantsRecord;
 import de.warhog.fpvlaptracker.race.entities.Participant;
 import de.warhog.fpvlaptracker.race.RaceLogic;
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -24,15 +21,6 @@ public class ParticipantsDbService {
 
     @Autowired
     private ParticipantsLayer dbLayer;
-
-    @Autowired
-    private ParticipantsDbService participantsDbService;
-
-    @Autowired
-    private RestService comm;
-
-    @Autowired
-    private WebSocketController webSocketController;
 
     @Autowired
     private RaceLogic race;
@@ -80,26 +68,6 @@ public class ParticipantsDbService {
         if (participants.contains(participant)) {
             race.removeParticipant(participant);
             participants.remove(participant);
-        }
-    }
-
-    @Scheduled(fixedDelay = 60000L)
-    public void checkParticipantsStillAvailable() {
-        LOG.debug("checking for non-existing participants");
-        if (!race.isRunning()) {
-            for (Participant participant : participantsDbService.getAllParticipants()) {
-                InetAddress inetAddress = participant.getIp();
-                try {
-                    Rssi rssi = comm.getRssi(participant);
-                    LOG.debug("participant with chipid " + participant.getChipId() + " found");
-                } catch (Exception ex) {
-                    LOG.info("participant with chipid " + participant.getChipId() + " not found, removing");
-                    participantsDbService.removeParticipant(participant);
-                    webSocketController.sendNewParticipantMessage(participant.getChipId());
-                }
-            }
-        } else {
-            LOG.debug("race is running, skipping check");
         }
     }
 

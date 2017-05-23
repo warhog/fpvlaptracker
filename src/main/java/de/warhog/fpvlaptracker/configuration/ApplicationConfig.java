@@ -19,8 +19,15 @@ public class ApplicationConfig {
     @Value("${admin.password}")
     private String adminPassword;
 
+    @Value("${audio.language}")
+    private String audioLanguage;
+
     public Boolean isAudioPlayLocal() {
         return audioPlayLocal;
+    }
+
+    public String getAudioLanguage() {
+        return audioLanguage;
     }
 
     public Boolean isShutdownMachine() {

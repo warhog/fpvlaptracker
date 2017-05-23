@@ -91,7 +91,6 @@ public class UdpHandler implements Runnable {
             }
             participantsDbService.addParticipant(participant);
             webSocketController.sendNewParticipantMessage(udpPacketRegister.getChipid());
-            webSocketController.sendAudioRegisteredMessage();
             audioService.playRegistered();
             LOG.info("registered participant: " + participant.toString());
         } catch (Exception ex) {

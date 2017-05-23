@@ -77,7 +77,7 @@ public class ParticipantRaceService {
         }
         throw new IllegalArgumentException("participant not found: " + participant.toString());
     }
-    
+
     public boolean hasParticipant(final Integer chipId) {
         try {
             getParticipantByChipId(chipId);
@@ -86,7 +86,7 @@ public class ParticipantRaceService {
             return false;
         }
     }
-    
+
     public List<Participant> getParticipants() {
         List<Participant> ret = new ArrayList<>();
         participants.entrySet().forEach((entry) -> {

@@ -9,17 +9,17 @@ import de.warhog.fpvlaptracker.service.ConfigService;
 import de.warhog.fpvlaptracker.service.ParticipantsDbService;
 import de.warhog.fpvlaptracker.service.RaceDbService;
 import de.warhog.fpvlaptracker.service.ParticipantRaceService;
+import de.warhog.fpvlaptracker.service.RestService;
 import de.warhog.fpvlaptracker.service.ServiceLayerException;
-import java.time.Duration;
+import java.net.InetAddress;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.HashMap;
-import java.util.Map;
 import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -50,6 +50,9 @@ public class RaceLogic {
     @Autowired
     private WebSocketController webSocketController;
 
+    @Autowired
+    private RestService comm;
+
     @PostConstruct
     public void init() {
         try {
@@ -75,7 +78,7 @@ public class RaceLogic {
         if (!participantRaceService.hasParticipants()) {
             throw new IllegalStateException("no participants");
         }
-        participantsDbService.checkParticipantsStillAvailable();
+        checkParticipantsStillAvailable();
         LOG.info("initialize new race");
         setState(RaceState.GETREADY);
         setStartTime(LocalDateTime.now());
@@ -113,7 +116,6 @@ public class RaceLogic {
     private void startRace() {
         LOG.info("starting race");
         audioService.playStart();
-        webSocketController.sendAudioRaceStartedMessage();
         setState(RaceState.RUNNING);
         setStartTime(LocalDateTime.now());
         if (currentRaceId != null) {
@@ -146,7 +148,6 @@ public class RaceLogic {
         if (!isRunning()) {
             LOG.info("cannot add lap when race is not running, chipid: " + chipId);
             audioService.playInvalidLap();
-            webSocketController.sendAudioInvalidLapMessage();
             return;
         }
         if (getState() == RaceState.GETREADY) {
@@ -162,7 +163,6 @@ public class RaceLogic {
         if (data.hasEnded(numberOfLaps)) {
             LOG.info("participant already ended race " + participant.getName());
             audioService.playInvalidLap();
-            webSocketController.sendAudioInvalidLapMessage();
         } else {
             if (currentRaceId != null) {
                 try {
@@ -178,7 +178,6 @@ public class RaceLogic {
                 oneParticipantReachedEnd = true;
             } else if (!raceStartedInThisLap) {
                 audioService.playLap();
-                webSocketController.sendAudioLapMessage();
             }
 
         }
@@ -187,12 +186,10 @@ public class RaceLogic {
         if (participantRaceService.checkEnded(numberOfLaps)) {
             LOG.info("race ended");
             audioService.playFinished();
-            webSocketController.sendAudioRaceEndedMessage();
             stopRace();
         } else {
             if (oneParticipantReachedEnd) {
                 audioService.playParticipantEnded();
-                webSocketController.sendAudioParticipantEndedMessage();
             }
         }
 
@@ -227,6 +224,26 @@ public class RaceLogic {
 
     private void setState(RaceState state) {
         this.state = state;
+    }
+
+    @Scheduled(fixedDelay = 60000L)
+    public void checkParticipantsStillAvailable() {
+        LOG.debug("checking for non-existing participants");
+        if (!isRunning()) {
+            for (Participant participant : participantsDbService.getAllParticipants()) {
+                try {
+                    comm.getRssi(participant);
+                    LOG.debug("participant with chipid " + participant.getChipId() + " found");
+                } catch (Exception ex) {
+                    LOG.info("participant with chipid " + participant.getChipId() + " not found, removing");
+                    participantsDbService.removeParticipant(participant);
+                    webSocketController.sendNewParticipantMessage(participant.getChipId());
+                    audioService.playUnregistered();
+                }
+            }
+        } else {
+            LOG.debug("race is running, skipping check");
+        }
     }
 
 }

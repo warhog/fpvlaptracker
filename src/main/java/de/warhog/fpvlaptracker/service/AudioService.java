@@ -1,10 +1,9 @@
 package de.warhog.fpvlaptracker.service;
 
 import de.warhog.fpvlaptracker.configuration.ApplicationConfig;
-import java.io.File;
+import de.warhog.fpvlaptracker.controllers.WebSocketController;
+import de.warhog.fpvlaptracker.util.AudioFile;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
@@ -23,44 +22,34 @@ public class AudioService {
 
     @Autowired
     private ApplicationConfig applicationConfig;
-    
+
+    @Autowired
+    private WebSocketController webSocketController;
+
     public void init() {
         if (!applicationConfig.isAudioPlayLocal()) {
             LOG.info("skipping audio file check because no local playback is configured");
             return;
         }
-        
-        if (!Files.exists(Paths.get("audio/lap.wav"))) {
-            throw new RuntimeException("audio/lap.wav not found");
+
+        for (AudioFile audioFile : AudioFile.values()) {
+            audioFile.testIfExisting();
         }
 
-        if (!Files.exists(Paths.get("audio/register.wav"))) {
-            throw new RuntimeException("audio/register.wav not found");
-        }
-
-        if (!Files.exists(Paths.get("audio/finished.wav"))) {
-            throw new RuntimeException("audio/finished.wav not found");
-        }
-        
-        if (!Files.exists(Paths.get("audio/participant_ended.wav"))) {
-            throw new RuntimeException("audio/participant_ended.wav not found");
-        }
-        
-        if (!Files.exists(Paths.get("audio/invalidlap.wav"))) {
-            throw new RuntimeException("audio/invalidlap.wav not found");
-        }
     }
 
-    public void play(String filename) {
-        play(filename, 1);
+    public void play(AudioFile file) {
+        play(file, 1);
     }
 
     public static String ordinal(int i) {
         return i % 100 == 11 || i % 100 == 12 || i % 100 == 13 ? i + "th" : i + new String[]{"th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th"}[i % 10];
     }
 
-    public void play(String filename, Integer repeat) {
-        LOG.debug("request for playing audio file " + filename);
+    public void play(AudioFile file, Integer repeat) {
+        LOG.debug("sending websocket audio message " + file.getFilename() + ", repeat " + repeat);
+        webSocketController.sendAudioMessage(file, repeat);
+        LOG.debug("request for playing audio file " + file.getFilename() + ", repeat " + repeat);
         if (!applicationConfig.isAudioPlayLocal()) {
             LOG.info("not playing audio because local audio playback is not configured");
             return;
@@ -70,7 +59,7 @@ public class AudioService {
             public void run() {
                 AudioInputStream inputStream = null;
                 try {
-                    inputStream = AudioSystem.getAudioInputStream(new File(filename));
+                    inputStream = AudioSystem.getAudioInputStream(file.getFile());
                     DataLine.Info info = new DataLine.Info(Clip.class, inputStream.getFormat());
                     Clip clip = (Clip) AudioSystem.getLine(info);
                     clip.open(inputStream);
@@ -80,7 +69,7 @@ public class AudioService {
                         for (Integer i = 1; i < repeat; i++) {
                             LOG.debug("playing " + ordinal(i + 1) + " time");
                             Thread.sleep(clip.getMicrosecondLength() / 1000);
-                            play(filename);
+                            play(file);
                         }
                     }
                 } catch (UnsupportedAudioFileException | IOException | LineUnavailableException | InterruptedException ex) {
@@ -99,27 +88,31 @@ public class AudioService {
     }
 
     public void playStart() {
-        play("audio/lap.wav", 3);
+        play(AudioFile.LAP, 3);
     }
 
     public void playLap() {
-        play("audio/lap.wav");
+        play(AudioFile.LAP);
     }
 
     public void playRegistered() {
-        play("audio/register.wav");
+        play(AudioFile.REGISTER);
+    }
+
+    public void playUnregistered() {
+        play(AudioFile.UNREGISTER);
     }
 
     public void playFinished() {
-        play("audio/finished.wav");
+        play(AudioFile.FINISHED);
     }
 
     public void playInvalidLap() {
-        play("audio/invalidlap.wav");
+        play(AudioFile.INVALID_LAP);
     }
 
     public void playParticipantEnded() {
-        play("audio/participant_ended.wav");
+        play(AudioFile.PARTICIPANT_ENDED);
     }
 
 }

@@ -1,5 +1,8 @@
 package de.warhog.fpvlaptracker.controllers;
 
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import de.warhog.fpvlaptracker.util.AudioFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,34 +35,16 @@ public class WebSocketController {
         this.template.convertAndSend("/topic/participant", chipId);
     }
 
-    public void sendAudioRaceEndedMessage() {
-        LOG.debug("sending audio race ended message");
-        this.template.convertAndSend("/topic/audio", "raceEnded");
+    public void sendAudioMessage(AudioFile file) {
+        sendAudioMessage(file, 1);
     }
 
-    public void sendAudioRaceStartedMessage() {
-        LOG.debug("sending audio race started message");
-        this.template.convertAndSend("/topic/audio", "raceStarted");
-    }
-
-    public void sendAudioLapMessage() {
-        LOG.debug("sending audio lap message");
-        this.template.convertAndSend("/topic/audio", "lap");
-    }
-
-    public void sendAudioInvalidLapMessage() {
-        LOG.debug("sending audio invalid lap message");
-        this.template.convertAndSend("/topic/audio", "invalidLap");
-    }
-
-    public void sendAudioRegisteredMessage() {
-        LOG.debug("sending audio registered message");
-        this.template.convertAndSend("/topic/audio", "registered");
-    }
-
-    public void sendAudioParticipantEndedMessage() {
-        LOG.debug("sending audio participant ended message");
-        this.template.convertAndSend("/topic/audio", "participantEnded");
+    public void sendAudioMessage(AudioFile file, Integer repeat) {
+        LOG.debug("seinding audio message for " + file + ", repeated " + repeat);
+        ObjectNode node = JsonNodeFactory.instance.objectNode();
+        node.put("file", file.getFilename());
+        node.put("repeat", repeat);
+        this.template.convertAndSend("/topic/audio", node.toString());
     }
 
 }
