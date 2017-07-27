@@ -113,7 +113,7 @@ void handleMeasure() {
     Serial.print(F("scanning channel "));
     uint16_t channelFreq = pgm_read_word_near(channelFreqTable + i);
     Serial.print(channelFreq);
-    delay(25);
+    delay(50);
     unsigned int rssi = getRssi();
     if (rssi > rssiMax) {
       rssiMax = rssi;
