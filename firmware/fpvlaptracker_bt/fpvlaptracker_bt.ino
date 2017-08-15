@@ -85,8 +85,8 @@ struct StoreStruct {
 } storage = {
   CONFIG_VERSION,
   0,
-  4000,
-  140,
+  8000,
+  100,
   150,
   "flt-base",
   "flt-base"
@@ -199,9 +199,19 @@ void setup() {
   Serial.print(F("pin command: "));
   Serial.println(pin);
 #else
-  if (!btSendAndWaitForOK(F("AT+VERSION"))) {
+  uint8_t count = 5;
+  while (count > 0) {
+    count--;
+    if (btSendAndWaitForOK(F("AT+VERSION"))) {
+      break;
+    }
+  }
+  if  (count == 0) {
     blinkError(2);
   }
+/*  if (!btSendAndWaitForOK(F("AT+VERSION"))) {
+    blinkError(2);
+  }*/
   if (!btSendAndWaitForOK(name)) {
     blinkError(3);
   }
