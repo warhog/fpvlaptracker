@@ -304,18 +304,3 @@ void loop() {
 
 }
 
-
-/*---------------------------------------------------
- * event handler for incoming serial events (hc-06)
- *-------------------------------------------------*/
-void processSerialData() {
-  // process serial data
-  while (Serial.available()) {
-    char c = (char)Serial.read();
-    serialString += c;
-    if (c == '\n') {
-      serialGotLine = true;
-    }
-  }
-}
-
