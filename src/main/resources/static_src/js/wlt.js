@@ -67,7 +67,7 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
         .factory('UAUtil', function ($window) {
             let factory = {};
             let ua = $window.navigator.userAgent;
-            factory.isMobile = function() {
+            factory.isMobile = function () {
                 return ua.includes('iPad') || ua.includes('iPhone') || ua.includes('iPod') || ua.includes('Android') || ua.includes('Windows Phone');
             };
             return factory;
@@ -271,53 +271,25 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
             };
             return factory;
         })
-        .factory('SoundService', function ($timeout) {
-            let soundLap = new Howl({
-                src: ['/audio/lap.wav']
-            });
-            let soundInvalidLap = new Howl({
-                src: ['/audio/invalidlap.wav']
-            });
-            let soundFinished = new Howl({
-                src: ['/audio/finished.wav']
-            });
-            let soundRegister = new Howl({
-                src: ['/audio/register.wav']
-            });
-            let soundParticipantEnded = new Howl({
-                src: ['/audio/participant_ended.wav']
-            });
-
+        .factory('AudioService', function ($timeout) {
+            let audioMap = [];
             let factory = {};
-            factory.playFinished = function () {
-                soundFinished.play();
-            };
-            factory.playLap = function () {
-                soundLap.play();
-            };
-            factory.playStarted = function () {
-                $timeout(function () {
-                    soundLap.play();
-                    $timeout(function () {
-                        soundLap.play();
+            factory.play = function (file, repeat) {
+                if (!(file in audioMap)) {
+                    audioMap[file] = new Howl({src: [file]});
+                }
+                audioMap[file].play();
+                if (repeat > 1) {
+                    for (let i = 1; i < repeat; i++) {
                         $timeout(function () {
-                            soundLap.play();
-                        }, 250);
-                    }, 250);
-                }, 250);
-            };
-            factory.playParticipantEnded = function () {
-                soundParticipantEnded.play();
-            };
-            factory.playInvalidLap = function () {
-                soundInvalidLap.play();
-            };
-            factory.playRegister = function () {
-                soundRegister.play();
+                            audioMap[file].play();
+                        }, i * 250);
+                    }
+                }
             };
             return factory;
         })
-        .factory('WebSocketService', function ($timeout, NotificationService, Constants, SoundService) {
+        .factory('WebSocketService', function ($timeout, NotificationService, Constants, AudioService) {
             let factory = {};
             let subscriberLap = null;
             let subscriberParticipant = null;
@@ -383,26 +355,8 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
                 if (connected) {
                     subscriberAudio = stomp.subscribe("/topic/audio", function (data) {
                         console.log("got audio websocket message", data);
-                        switch (data.body) {
-                            case "raceEnded":
-                                SoundService.playFinished()();
-                                break;
-                            case "lap":
-                                SoundService.playLap();
-                                break;
-                            case "invalidLap":
-                                SoundService.playInvalidLap();
-                                break;
-                            case "raceStarted":
-                                SoundService.playStarted();
-                                break;
-                            case "registered":
-                                SoundService.playRegister();
-                                break;
-                            case "participantEnded":
-                                SoundService.playParticipantEnded();
-                                break;
-                        }
+                        let soundData = JSON.parse(data.body);
+                        AudioService.play(soundData.file, soundData.repeat);
                     });
                 } else {
                     console.log("not connected, scheduling");
