@@ -231,14 +231,16 @@ public class RaceLogic {
         LOG.debug("checking for non-existing participants");
         if (!isRunning()) {
             for (Participant participant : participantsDbService.getAllParticipants()) {
-                try {
-                    comm.getRssi(participant);
-                    LOG.debug("participant with chipid " + participant.getChipId() + " found");
-                } catch (Exception ex) {
-                    LOG.info("participant with chipid " + participant.getChipId() + " not found, removing");
-                    participantsDbService.removeParticipant(participant);
-                    webSocketController.sendNewParticipantMessage(participant.getChipId());
-                    audioService.playUnregistered();
+                if (participant.isCallable()) {
+                    try {
+                        comm.getRssi(participant);
+                        LOG.debug("participant with chipid " + participant.getChipId() + " found");
+                    } catch (Exception ex) {
+                        LOG.info("participant with chipid " + participant.getChipId() + " not found, removing");
+                        participantsDbService.removeParticipant(participant);
+                        webSocketController.sendNewParticipantMessage(participant.getChipId());
+                        audioService.playUnregistered();
+                    }
                 }
             }
         } else {

@@ -22,18 +22,30 @@ public class RestService {
     }
 
     public Rssi getRssi(Participant participant) {
-        Rssi rssi = restTemplate.getForObject(buildUrl(participant, "rssi"), Rssi.class);
-        return rssi;
+        if (participant.isCallable()) {
+            Rssi rssi = restTemplate.getForObject(buildUrl(participant, "rssi"), Rssi.class);
+            return rssi;
+        } else {
+            return new Rssi();
+        }
     }
 
     public Data getData(Participant participant) {
-        Data data = restTemplate.getForObject(buildUrl(participant, "data"), Data.class);
-        return data;
+        if (participant.isCallable()) {
+            Data data = restTemplate.getForObject(buildUrl(participant, "data"), Data.class);
+            return data;
+        } else {
+            return new Data();
+        }
     }
 
     public RssiMeasure getRssiMeasure(Participant participant) {
-        RssiMeasure rssiMeasure = restTemplate.getForObject(buildUrl(participant, "measure"), RssiMeasure.class);
-        return rssiMeasure;
+        if (participant.isCallable()) {
+            RssiMeasure rssiMeasure = restTemplate.getForObject(buildUrl(participant, "measure"), RssiMeasure.class);
+            return rssiMeasure;
+        } else {
+            return new RssiMeasure();
+        }
     }
 
     public Long getMinLapTime(Participant participant) {
@@ -52,23 +64,29 @@ public class RestService {
     }
 
     public void setThresholds(Participant participant, Integer thresholdLow, Integer thresholdHigh) {
-        StatusResult ret = restTemplate.postForObject(buildUrl(participant, "data?thresholdlow=" + thresholdLow + "&thresholdhigh=" + thresholdHigh), null, StatusResult.class);
-        if (!"OK".equals(ret.getStatus())) {
-            throw new RuntimeException("cannot set thresholds");
+        if (participant.isCallable()) {
+            StatusResult ret = restTemplate.postForObject(buildUrl(participant, "data?thresholdlow=" + thresholdLow + "&thresholdhigh=" + thresholdHigh), null, StatusResult.class);
+            if (!"OK".equals(ret.getStatus())) {
+                throw new RuntimeException("cannot set thresholds");
+            }
         }
     }
 
     public void setMinLapTime(Participant participant, Long minLapTime) {
-        StatusResult ret = restTemplate.postForObject(buildUrl(participant, "data?minlaptime=" + minLapTime), null, StatusResult.class);
-        if (!"OK".equals(ret.getStatus())) {
-            throw new RuntimeException("cannot set minimum lap time");
+        if (participant.isCallable()) {
+            StatusResult ret = restTemplate.postForObject(buildUrl(participant, "data?minlaptime=" + minLapTime), null, StatusResult.class);
+            if (!"OK".equals(ret.getStatus())) {
+                throw new RuntimeException("cannot set minimum lap time");
+            }
         }
     }
 
     public void setFrequency(Participant participant, Integer frequency) {
-        StatusResult ret = restTemplate.postForObject(buildUrl(participant, "data?frequency=" + frequency), null, StatusResult.class);
-        if (!"OK".equals(ret.getStatus())) {
-            throw new RuntimeException("cannot set frequency");
+        if (participant.isCallable()) {
+            StatusResult ret = restTemplate.postForObject(buildUrl(participant, "data?frequency=" + frequency), null, StatusResult.class);
+            if (!"OK".equals(ret.getStatus())) {
+                throw new RuntimeException("cannot set frequency");
+            }
         }
     }
 

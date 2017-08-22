@@ -12,6 +12,8 @@ public class Participant {
     private String name;
     private Integer chipId;
     private InetAddress ip;
+    private boolean allowConfiguration = true;
+    private boolean callable = true;
 
     public Participant(String name, Integer chipId, InetAddress ip) {
         this.name = name;
@@ -27,6 +29,22 @@ public class Participant {
         this.name = name;
     }
 
+    public boolean isAllowConfiguration() {
+        return allowConfiguration;
+    }
+
+    public void setAllowConfiguration(boolean allowConfiguration) {
+        this.allowConfiguration = allowConfiguration;
+    }
+
+    public boolean isCallable() {
+        return callable;
+    }
+
+    public void setCallable(boolean callable) {
+        this.callable = callable;
+    }
+    
     public Integer getChipId() {
         return chipId;
     }

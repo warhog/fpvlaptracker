@@ -62,6 +62,11 @@ public class UdpHandler implements Runnable {
     }
 
     private void processRegister(UdpPacketRegister udpPacketRegister) {
+        processRegister(udpPacketRegister, true, true);
+    }
+    
+    
+    private void processRegister(UdpPacketRegister udpPacketRegister, boolean allowConfiguration, boolean callable) {
         Long ip = udpPacketRegister.getIp();
         String ipStr = String.format("%d.%d.%d.%d",
                 (ip & 0xff),
@@ -85,6 +90,8 @@ public class UdpHandler implements Runnable {
                 LOG.debug("no name for chipid " + udpPacketRegister.getChipid());
             }
             Participant participant = new Participant(name, udpPacketRegister.getChipid(), inetAddress);
+            participant.setAllowConfiguration(allowConfiguration);
+            participant.setCallable(callable);
             if (participantsDbService.hasParticipant(participant)) {
                 LOG.error("participant already existing: " + udpPacketRegister.getChipid(), participant);
                 return;
@@ -119,6 +126,10 @@ public class UdpHandler implements Runnable {
                     case REGISTER:
                         UdpPacketRegister udpPacketRegister = mapper.readValue(packet.getData(), UdpPacketRegister.class);
                         processRegister(udpPacketRegister);
+                        break;
+                    case REGISTERBT:
+                        UdpPacketRegister udpPacketRegisterBt = mapper.readValue(packet.getData(), UdpPacketRegister.class);
+                        processRegister(udpPacketRegisterBt, false, false);
                         break;
                     case LAP:
                         UdpPacketLap udpPacketLap = mapper.readValue(packet.getData(), UdpPacketLap.class);

@@ -9,7 +9,7 @@ public class Rssi {
 
     private static final Logger LOG = LoggerFactory.getLogger(Rssi.class);
 
-    private Integer rssi;
+    private Integer rssi = 0;
 
     public Integer getRssi() {
         return rssi;
