@@ -3,9 +3,10 @@
 image
 
 ## schematics
-
+![Schematics](https://github.com/warhog/fpvlaptracker/blob/master/hardware/schematics.png "Schematics")
 
 ## board
+the eagle files are located in /hardware
 
 ## parts
 all parts through hole!
@@ -33,8 +34,18 @@ The RX5808 receiver needs to be modified to support the SPI protocol.
 An excellent description can be found here:
 https://github.com/sheaivey/rx5808-pro-diversity/blob/master/docs/rx5808-spi-mod.md
 
+## case
+the STL files are located in the /hardware folder.
+
+## bluetooth tracker unit
+the difference between the normal and the bluetooth tracker unit is the addition of a HC-06 bluetooth module that is attached to the RX and TX pins of the nodemcu module.
+
 ## setup software
+tested with arduino 1.8.3 and the esp8266 targets added.
+
+you need the ArduinoJson library installed (use arduino library manager)
 
 ## flash the firmware
+the nodemcu board cannot be installed on the board during flashing. you need to flash it separatly.
 
 ## test
