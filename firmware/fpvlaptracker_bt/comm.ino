@@ -20,7 +20,7 @@ void sendLap(unsigned long time) {
  * send register message
  *-------------------------------------------------*/
 void sendRegister() {
-  String msg = "{\"type\":\"register\",\"chipid\":";
+  String msg = "{\"type\":\"registerbt\",\"chipid\":";
   msg += ESP.getChipId();
   msg += ",\"ip\":";
   msg += WiFi.localIP();

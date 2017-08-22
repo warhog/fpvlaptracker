@@ -3,8 +3,7 @@
 image
 
 ## schematics
-eagle files
-schematics pdf
+
 
 ## board
 
@@ -15,7 +14,7 @@ all parts through hole!
 
 [boscam RX5808 5,8 GHz receiver](https://www.banggood.com/FPV-5_8G-Wireless-Audio-Video-Receiving-Module-RX5808-p-84775.html?rmmds=search)
 
-LED (i choosed 5mm yellow)
+LED (i have chosen 5mm yellow)
 
 2x resistor 1/4w 10k ohm
 
