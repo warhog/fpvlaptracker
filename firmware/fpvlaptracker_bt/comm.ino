@@ -1,7 +1,4 @@
 /*---------------------------------------------------
- * send data to base station functions
- *-------------------------------------------------*/
-/*---------------------------------------------------
  * send a new lap
  *-------------------------------------------------*/
 void sendLap(unsigned long time) {
@@ -10,7 +7,7 @@ void sendLap(unsigned long time) {
   msg += ",\"duration\":";
   msg += time;
   msg += ",\"rssi\":";
-  msg += currentRssiStrength;
+  msg += rssi.getRssi();
   msg += "}";
   sendUdpMessage(msg);
   sendBtMessage("LAP: " + String(time), true);
@@ -32,7 +29,7 @@ void sendRegister() {
  * send an udp broadcast message
  *-------------------------------------------------*/
 void sendUdpMessage(String msg) {
-  if (connectedMode) {
+  if (networkMode) {
     Udp.beginPacket(getBroadcastIP().c_str(), UDP_PORT);
     Udp.write(msg.c_str());
     Udp.endPacket();
@@ -88,6 +85,70 @@ void processSerialData() {
     if (c == '\n') {
       serialGotLine = true;
     }
+  }
+}
+
+/*---------------------------------------------------
+ * processor for incoming serial line
+ *-------------------------------------------------*/
+void processSerialLine() {
+  // process serial line
+  if (serialGotLine) {
+    if (serialString.length() >= 11 && serialString.substring(0, 11) == "GET version") {
+      // get the version
+      String v = F("VERSION: ");
+      v += CONFIG_VERSION;
+      sendBtMessage(v, true);
+    } else if (serialString.length() >= 8 && serialString.substring(0, 8) == "GET rssi") {
+      // get the current rssi
+      String r = F("RSSI: ");
+      r += rssi.getRssi();
+      sendBtMessage(r, true);
+    } else if (serialString.length() >= 6 && serialString.substring(0, 6) == "REBOOT") {
+      // reboot the device
+      // currently the hc06 is not responding after a reboot
+      ESP.reset();
+    } else if (serialString.length() >= 10 && serialString.substring(0, 10) == "GET config") {
+      // get the current config data
+      DynamicJsonBuffer jsonBuffer(200);
+      JsonObject& root = jsonBuffer.createObject();
+      root["frequency"] = getFrequencyForChannelIndex(storage.channelIndex);
+      root["minimumLapTime"] = storage.minLapTime;
+      root["thresholdLow"] = storage.rssiThresholdLow;
+      root["thresholdHigh"] = storage.rssiThresholdHigh;
+      root["ssid"] = storage.ssid;
+      root["password"] = storage.password;
+      String c = F("CONFIG: ");
+      root.printTo(c);
+      sendBtMessage(c, true);
+    } else if (serialString.length() >= 11 && serialString.substring(0, 11) == "PUT config ") {
+      // store the given config data
+      // received config
+      DynamicJsonBuffer jsonBuffer(200);
+      JsonObject& root = jsonBuffer.parseObject(serialString.substring(11));
+      if (!root.success()) {
+#ifdef DEBUG
+        Serial.println(F("failed to parse config"));
+#endif
+        sendBtMessage(F("SETCONFIG: NOK"), true);
+      } else {
+        storage.minLapTime = root["minimumLapTime"];
+        storage.rssiThresholdLow = root["thresholdLow"];
+        storage.rssiThresholdHigh = root["thresholdHigh"];
+        strncpy(storage.ssid, root["ssid"], sizeof(storage.ssid));
+        strncpy(storage.password, root["password"], sizeof(storage.password));
+        storage.channelIndex = getChannelIndexForFrequency(root["frequency"]);
+        lap.setMinLapTime(storage.minLapTime);
+        lap.setRssiThresholdLow(storage.rssiThresholdLow);
+        lap.setRssiThresholdHigh(storage.rssiThresholdHigh);
+        saveConfig();
+        sendBtMessage(F("SETCONFIG: OK"), true);
+      }
+    } else {
+      sendBtMessage(F("UNKNOWN_COMMAND"), true);
+    }
+    serialGotLine = false;
+    serialString = "";
   }
 }
 

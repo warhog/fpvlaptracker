@@ -45,6 +45,8 @@
 #include <WiFiClient.h>
 #include <WiFiUdp.h>
 #include <ArduinoJson.h>
+#include "rssi.h"
+#include "lap.h"
 
 // debug mode flag
 //#define DEBUG
@@ -53,9 +55,7 @@
 const unsigned int UDP_PORT = 31337;
 
 // defines the interval for rssi measurings
-const unsigned int RSSI_MEASURE_INTERVAL = 10;
-// defines the number of rssi measure cycles (average is calculated over that number of cycles)
-const unsigned int NUMBER_OF_RSSI_CYCLES = 3;
+const unsigned int RSSI_MEASURE_INTERVAL = 5;
 
 // pin configurations
 const unsigned int PIN_SLAVE_SELECT = 12;
@@ -64,12 +64,12 @@ const unsigned int PIN_SPI_DATA = 14;
 const unsigned int PIN_LED = 5;
 
 WiFiUDP Udp;
+Rssi rssi(RSSI_MEASURE_INTERVAL);
+Lap lap;
 
 String serialString = "";
 bool serialGotLine = false;
-bool connectedMode = false;
-unsigned int currentRssiStrength = 0;
-unsigned long currentLapTime = 0L;
+bool networkMode = false;
 
 #define CONFIG_VERSION "007"
 #define CONFIG_START 32
@@ -110,7 +110,6 @@ void setup() {
   delay(1000);
 #endif
 
-  pinMode(A0, INPUT);
   randomSeed(analogRead(0));
 
 #ifdef DEBUG
@@ -131,6 +130,7 @@ void setup() {
 #endif
   EEPROM.begin(512);
   loadConfig();
+  
   uint16_t channelData = getSPIFrequencyForChannelIndex(storage.channelIndex);
   RCV_FREQ(channelData);
 #ifdef DEBUG
@@ -161,11 +161,11 @@ void setup() {
 #ifdef DEBUG
     Serial.println(F("connected"));
 #endif
-    connectedMode = true;
+    networkMode = true;
   }
 
 #ifdef DEBUG
-  if (connectedMode) {
+  if (networkMode) {
     Serial.println(F("WiFi set up"));
     Serial.print(F("IP address: "));
     Serial.println(WiFi.localIP());
@@ -174,7 +174,7 @@ void setup() {
   }
 #endif
 
-  if (connectedMode) {
+  if (networkMode) {
 #ifdef DEBUG
     Serial.println(F("starting udp"));
 #endif
@@ -209,9 +209,6 @@ void setup() {
   if  (count == 0) {
     blinkError(2);
   }
-/*  if (!btSendAndWaitForOK(F("AT+VERSION"))) {
-    blinkError(2);
-  }*/
   if (!btSendAndWaitForOK(name)) {
     blinkError(3);
   }
@@ -220,6 +217,9 @@ void setup() {
   }
 #endif
 
+  lap.setMinLapTime(storage.minLapTime);
+  lap.setRssiThresholdLow(storage.rssiThresholdLow);
+  lap.setRssiThresholdHigh(storage.rssiThresholdHigh);
 }
 
 /*---------------------------------------------------
@@ -228,78 +228,18 @@ void setup() {
 void loop() {
 
   processSerialData();
-    
-  // process serial line
-  if (serialGotLine) {
-    if (serialString.length() >= 11 && serialString.substring(0, 11) == "GET version") {
-      String v = F("VERSION: ");
-      v += CONFIG_VERSION;
-      sendBtMessage(v, true);
-    } else if (serialString.length() >= 8 && serialString.substring(0, 8) == "GET rssi") {
-      String r = F("RSSI: ");
-      r += currentRssiStrength;
-      sendBtMessage(r, true);
-    } else if (serialString.length() >= 6 && serialString.substring(0, 6) == "REBOOT") {
-      ESP.reset();
-    } else if (serialString.length() >= 10 && serialString.substring(0, 10) == "GET config") {
-      DynamicJsonBuffer jsonBuffer(200);
-      JsonObject& root = jsonBuffer.createObject();
-      root["frequency"] = getFrequencyForChannelIndex(storage.channelIndex);
-      root["minimumLapTime"] = storage.minLapTime;
-      root["thresholdLow"] = storage.rssiThresholdLow;
-      root["thresholdHigh"] = storage.rssiThresholdHigh;
-      root["ssid"] = storage.ssid;
-      root["password"] = storage.password;
-      String c = F("CONFIG: ");
-      root.printTo(c);
-      sendBtMessage(c, true);
-    } else if (serialString.length() >= 11 && serialString.substring(0, 11) == "PUT config ") {
-      // received config
-      DynamicJsonBuffer jsonBuffer(200);
-      JsonObject& root = jsonBuffer.parseObject(serialString.substring(11));
-      if (!root.success()) {
-#ifdef DEBUG
-        Serial.println(F("failed to parse config"));
-#endif
-        sendBtMessage(F("SETCONFIG: NOK"), true);
-      } else {
-        storage.minLapTime = root["minimumLapTime"];
-        storage.rssiThresholdLow = root["thresholdLow"];
-        storage.rssiThresholdHigh = root["thresholdHigh"];
-        strncpy(storage.ssid, root["ssid"], sizeof(storage.ssid));
-        strncpy(storage.password, root["password"], sizeof(storage.password));
-        storage.channelIndex = getChannelIndexForFrequency(root["frequency"]);
-        saveConfig();
-        sendBtMessage(F("SETCONFIG: OK"), true);
-      }
-    } else {
-      sendBtMessage(F("UNKNOWN_COMMAND"), true);
-    }
-    serialGotLine = false;
-    serialString = "";
-  }
+  processSerialLine();
 
   // if we are not in standalone mode, process udp
-  if (connectedMode) {
+  if (networkMode) {
     processUdp();
   }
 
-  // test if we need to measure new rssi value
-  static unsigned long timerRssi = 0L;
-  static unsigned int rssiOld = 0;
-  if (timerRssi <= millis()) {
-    unsigned int rssi = getRssi();
-    // smooth rssi (at least a bit)
-    currentRssiStrength = rssiOld * 0.25 + rssi * 0.75;
-    rssiOld = rssi;
-
-    // do the lap detection
-    processLapDetection();
-    
-    // restart rssi timer
-    timerRssi = millis() + RSSI_MEASURE_INTERVAL;
+  rssi.process();
+  if (lap.process(rssi.getRssi())) {
+    sendLap(lap.getLastLapTime());
   }
-
+  
   processLed();
 
 }

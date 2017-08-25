@@ -82,7 +82,7 @@ void processLed() {
   static unsigned long ledTimerNextRun = 0L;
   static unsigned int ledStage = 0;
   if (ledTimerNextRun < millis()) {
-    if (connectedMode) {
+    if (networkMode) {
       if (ledStage == 0) {
         ledStage = 1;
         ledTimerNextRun = millis() + 50;
@@ -112,32 +112,3 @@ unsigned int getRssi() {
   return (unsigned int) sum;
 }
 
-/*---------------------------------------------------
- * process a lap
- *-------------------------------------------------*/
-void processLapDetection() {
-  static unsigned long currentLapStart = 0;
-  static boolean isLocked = false;
-  
-  unsigned long tempLapTime = millis() - currentLapStart;
-  if (tempLapTime < storage.minLapTime) {
-/*    Serial.print(F("too fast lap, ignore for "));
-    Serial.println(storage.minLapTime - tempLapTime);*/
-  } else {
-    if (isLocked && currentRssiStrength <= storage.rssiThresholdLow) {
-      isLocked = false;
-#ifdef DEBUG
-      Serial.println(F("unlock"));
-      Serial.println(currentRssiStrength);
-#endif
-    } else if (!isLocked && currentRssiStrength >= storage.rssiThresholdHigh) {
-      isLocked = true;
-#ifdef DEBUG
-      Serial.println(F("detected lap, lock"));
-#endif
-      currentLapTime = millis() - currentLapStart;
-      sendLap(currentLapTime);
-      currentLapStart = millis();
-    }
-  }
-}
