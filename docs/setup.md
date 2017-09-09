@@ -21,3 +21,6 @@ just run the jar file from a command line (using java -jar fpvlaptracker-1.0.jar
 ### raspberry pi
 i'm using a raspberry pi 3 with a power bank and a small case for outdoor usage. setup is described here:
 [raspberry pi  tutorial](base_rpi.md)
+
+### configuration
+the host software can be configured using a [config file](/docs/configuration.md).
