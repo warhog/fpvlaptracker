@@ -8,5 +8,5 @@ the following options are available:
 |admin.password|the admin password for the race admin|
 |audio.playLocal|play local audio (in addition to remote websocket audio)|
 |shutdown.machine|if a shutdown command using webui is made shutdown the operating system as well|
-|audio.language|audio language to use. basically just the folder name of the language folder inside the /audio folder|
+|audio.language|audio language to use. basically just the folder name of the language folder inside the /audio folder (currently en (english) and de (german)|
 |server.port|webserver port to use (should be 80)|
