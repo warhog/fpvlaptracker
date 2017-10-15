@@ -71,7 +71,7 @@ String serialString = "";
 bool serialGotLine = false;
 bool networkMode = false;
 
-#define CONFIG_VERSION "007"
+#define CONFIG_VERSION "008"
 #define CONFIG_START 32
 // eeprom storage structure and default values
 struct StoreStruct {
@@ -80,16 +80,18 @@ struct StoreStruct {
   unsigned long minLapTime;
   unsigned int rssiThresholdLow;
   unsigned int rssiThresholdHigh;
+  unsigned int offset;
   char ssid[64];
   char password[64];
 } storage = {
   CONFIG_VERSION,
-  0,
-  8000,
-  100,
-  150,
-  "flt-base",
-  "flt-base"
+  0,                  // channelIndex
+  8000,               // minLapTime
+  100,                // rssiThresholdLow
+  150,                // rssiThresholdHigh
+  50,                 // offset
+  "flt-base",         // ssid
+  "flt-base"          // password
 };
 
 /*---------------------------------------------------

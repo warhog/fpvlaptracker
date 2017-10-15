@@ -44,6 +44,9 @@ void sendBtMessage(String msg) {
   sendBtMessage(msg, false);
 #endif
 }
+void sendBtMessageWithNewline(String msg) {
+  sendBtMessage(msg, true);
+}
 void sendBtMessage(String msg, boolean newLine) {
 #ifndef DEBUG
   if (newLine) {
@@ -98,57 +101,73 @@ void processSerialLine() {
       // get the version
       String v = F("VERSION: ");
       v += CONFIG_VERSION;
-      sendBtMessage(v, true);
+      sendBtMessageWithNewline(v);
     } else if (serialString.length() >= 8 && serialString.substring(0, 8) == "GET rssi") {
       // get the current rssi
       String r = F("RSSI: ");
       r += rssi.getRssi();
-      sendBtMessage(r, true);
+      sendBtMessageWithNewline(r);
     } else if (serialString.length() >= 6 && serialString.substring(0, 6) == "REBOOT") {
       // reboot the device
-      // currently the hc06 is not responding after a reboot
+      // TODO currently the hc06 is not responding after a reboot
       ESP.reset();
     } else if (serialString.length() >= 10 && serialString.substring(0, 10) == "GET config") {
       // get the current config data
-      DynamicJsonBuffer jsonBuffer(200);
-      JsonObject& root = jsonBuffer.createObject();
-      root["frequency"] = getFrequencyForChannelIndex(storage.channelIndex);
-      root["minimumLapTime"] = storage.minLapTime;
-      root["thresholdLow"] = storage.rssiThresholdLow;
-      root["thresholdHigh"] = storage.rssiThresholdHigh;
-      root["ssid"] = storage.ssid;
-      root["password"] = storage.password;
-      String c = F("CONFIG: ");
-      root.printTo(c);
-      sendBtMessage(c, true);
+      processGetConfig();
     } else if (serialString.length() >= 11 && serialString.substring(0, 11) == "PUT config ") {
       // store the given config data
-      // received config
-      DynamicJsonBuffer jsonBuffer(200);
-      JsonObject& root = jsonBuffer.parseObject(serialString.substring(11));
-      if (!root.success()) {
-#ifdef DEBUG
-        Serial.println(F("failed to parse config"));
-#endif
-        sendBtMessage(F("SETCONFIG: NOK"), true);
-      } else {
-        storage.minLapTime = root["minimumLapTime"];
-        storage.rssiThresholdLow = root["thresholdLow"];
-        storage.rssiThresholdHigh = root["thresholdHigh"];
-        strncpy(storage.ssid, root["ssid"], sizeof(storage.ssid));
-        strncpy(storage.password, root["password"], sizeof(storage.password));
-        storage.channelIndex = getChannelIndexForFrequency(root["frequency"]);
-        lap.setMinLapTime(storage.minLapTime);
-        lap.setRssiThresholdLow(storage.rssiThresholdLow);
-        lap.setRssiThresholdHigh(storage.rssiThresholdHigh);
-        saveConfig();
-        sendBtMessage(F("SETCONFIG: OK"), true);
-      }
+      processStoreConfig();
     } else {
-      sendBtMessage(F("UNKNOWN_COMMAND"), true);
+      sendBtMessageWithNewline(F("UNKNOWN_COMMAND"));
     }
     serialGotLine = false;
     serialString = "";
+  }
+}
+
+/*---------------------------------------------------
+ * received get config message
+ *-------------------------------------------------*/
+void processGetConfig() {
+  DynamicJsonBuffer jsonBuffer(200);
+  JsonObject& root = jsonBuffer.createObject();
+  root["frequency"] = getFrequencyForChannelIndex(storage.channelIndex);
+  root["minimumLapTime"] = storage.minLapTime;
+  root["thresholdLow"] = storage.rssiThresholdLow;
+  root["thresholdHigh"] = storage.rssiThresholdHigh;
+  root["offset"] = storage.offset;
+  root["ssid"] = storage.ssid;
+  root["password"] = storage.password;
+  String c = F("CONFIG: ");
+  root.printTo(c);
+  sendBtMessageWithNewline(c);
+}
+
+/*---------------------------------------------------
+ * received store config message
+ *-------------------------------------------------*/
+void processStoreConfig() {
+  // received config
+  DynamicJsonBuffer jsonBuffer(200);
+  JsonObject& root = jsonBuffer.parseObject(serialString.substring(11));
+  if (!root.success()) {
+#ifdef DEBUG
+    Serial.println(F("failed to parse config"));
+#endif
+    sendBtMessageWithNewline(F("SETCONFIG: NOK"));
+  } else {
+    storage.minLapTime = root["minimumLapTime"];
+    storage.rssiThresholdLow = root["thresholdLow"];
+    storage.rssiThresholdHigh = root["thresholdHigh"];
+    storage.offset = root["offset"];
+    strncpy(storage.ssid, root["ssid"], sizeof(storage.ssid));
+    strncpy(storage.password, root["password"], sizeof(storage.password));
+    storage.channelIndex = getChannelIndexForFrequency(root["frequency"]);
+    lap.setMinLapTime(storage.minLapTime);
+    lap.setRssiThresholdLow(storage.rssiThresholdLow);
+    lap.setRssiThresholdHigh(storage.rssiThresholdHigh);
+    saveConfig();
+    sendBtMessageWithNewline(F("SETCONFIG: OK"));
   }
 }
 
@@ -157,7 +176,7 @@ void processSerialLine() {
  *-------------------------------------------------*/
 bool btSendAndWaitForOK(String data) {
   sendBtMessage(data);
-  unsigned int waitProtection = 200;
+  unsigned int waitProtection = 500;
   while (Serial.available() == 0 && waitProtection > 0) {
     delay(10);
     waitProtection--;
