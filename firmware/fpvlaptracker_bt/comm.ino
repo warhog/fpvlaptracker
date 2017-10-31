@@ -117,6 +117,9 @@ void processSerialLine() {
     } else if (serialString.length() >= 11 && serialString.substring(0, 11) == "PUT config ") {
       // store the given config data
       processStoreConfig();
+    } else if (serialString.length() >= 12 && serialString.substring(0, 12) == "GET channels") {
+      // scan all channels
+      processScanChannels();
     } else {
       sendBtMessageWithNewline(F("UNKNOWN_COMMAND"));
     }
@@ -169,12 +172,22 @@ void processStoreConfig() {
     strncpy(storage.ssid, root["ssid"], sizeof(storage.ssid));
     strncpy(storage.password, root["password"], sizeof(storage.password));
     storage.channelIndex = getChannelIndexForFrequency(root["frequency"]);
+    rssi.setRssiOffset(storage.offset);
     lap.setMinLapTime(storage.minLapTime);
     lap.setRssiThresholdLow(storage.rssiThresholdLow);
     lap.setRssiThresholdHigh(storage.rssiThresholdHigh);
     saveConfig();
     sendBtMessageWithNewline(F("SETCONFIG: OK"));
   }
+}
+
+/*---------------------------------------------------
+ * received scan channels message
+ *-------------------------------------------------*/
+void processScanChannels() {
+  String c = F("CHANNELS: ");
+  c += scanChannels();
+  sendBtMessageWithNewline(c);
 }
 
 /*---------------------------------------------------

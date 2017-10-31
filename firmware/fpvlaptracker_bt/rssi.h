@@ -17,6 +17,7 @@ public:
     Rssi(unsigned long interval);
     void process();
     unsigned int getRssi();
+    unsigned int scan();
 
     unsigned int getRssiOffset() const {
         return rssiOffset;
