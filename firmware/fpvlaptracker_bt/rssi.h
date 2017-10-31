@@ -8,7 +8,7 @@ class Rssi {
 private:
     unsigned int currentRssiValue = 0;
     unsigned int rssiOffset = 50;
-    unsigned long interval = 1000L;
+    unsigned long interval = 5L;
 
     unsigned int filter(unsigned int rssi);
     unsigned int measure();

@@ -12,6 +12,7 @@ boolean Lap::process(unsigned int currentRssiStrength) {
         } else if (!isLocked && currentRssiStrength >= this->rssiThresholdHigh) {
             this->isLocked = true;
             unsigned long currentLapTime = millis() - currentLapStart;
+            this->lastLapTime = currentLapTime;
             this->currentLapStart = millis();
             return true;
         }

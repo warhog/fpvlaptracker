@@ -99,16 +99,4 @@ void processLed() {
   }
 }
 
-/*---------------------------------------------------
- * get current rssi strength
- *-------------------------------------------------*/
-unsigned int getRssi() {
-  // do multiple reads and calculate average value
-  unsigned long sum = 0L;
-  for (unsigned int i = 0; i < NUMBER_OF_RSSI_CYCLES; i++) {
-    sum += analogRead(0);
-  }
-  sum /= NUMBER_OF_RSSI_CYCLES;
-  return (unsigned int) sum;
-}
 

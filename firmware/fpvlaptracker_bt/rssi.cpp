@@ -9,14 +9,10 @@ void Rssi::process() {
     static unsigned long timerRssi = 0L;
     if (timerRssi <= millis()) {
         unsigned int rssi = this->measure();
-        if (rssi >= this->rssiOffset) {
-            unsigned int filteredRssi = this->filter(rssi);
-            this->currentRssiValue = filteredRssi;
-        }
+        this->currentRssiValue = this->filter(rssi);
+        // restart rssi timer
+        timerRssi = millis() + this->interval;
     }
-
-    // restart rssi timer
-    timerRssi = millis() + this->interval;
 }
 
 unsigned int Rssi::getRssi() {
@@ -41,5 +37,9 @@ unsigned int Rssi::measure() {
         sum += analogRead(0);
     }
     sum /= NUMBER_OF_RSSI_CYCLES;
-    return (unsigned int) (sum - this->getRssiOffset());
+    int rssi = (unsigned int) (sum - this->getRssiOffset());
+    if (rssi < 0) {
+      rssi = 0;
+    }
+    return rssi;
 }

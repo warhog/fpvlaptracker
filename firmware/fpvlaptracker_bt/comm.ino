@@ -138,6 +138,12 @@ void processGetConfig() {
   root["offset"] = storage.offset;
   root["ssid"] = storage.ssid;
   root["password"] = storage.password;
+  lap.setRssiThresholdHigh(storage.rssiThresholdHigh);
+  lap.setRssiThresholdLow(storage.rssiThresholdLow);
+  lap.setMinLapTime(storage.minLapTime);
+  rssi.setRssiOffset(storage.offset);
+  uint16_t channelData = getSPIFrequencyForChannelIndex(storage.channelIndex);
+  RCV_FREQ(channelData);
   String c = F("CONFIG: ");
   root.printTo(c);
   sendBtMessageWithNewline(c);
