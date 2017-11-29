@@ -1,31 +1,35 @@
 #ifndef RSSI
 #define RSSI
 
-// defines the number of rssi measure cycles (average is calculated over that number of cycles)
-const unsigned int NUMBER_OF_RSSI_CYCLES = 3;
-
 class Rssi {
 private:
-    unsigned int currentRssiValue = 0;
-    unsigned int rssiOffset = 50;
-    unsigned long interval = 5L;
+  unsigned int currentRssiValue = 0;
+  unsigned int currentRssiRawValue = 0;
+  unsigned int rssiOffset = 50;
 
-    unsigned int filter(unsigned int rssi);
-    unsigned int measure();
+  void filter();
+  unsigned int measure();
 
 public:
-    Rssi(unsigned long interval);
-    void process();
-    unsigned int getRssi();
-    unsigned int scan();
+  Rssi();
+  void process();
+  unsigned int scan();
 
-    unsigned int getRssiOffset() const {
-        return rssiOffset;
-    }
+  unsigned int getRssi() {
+    return this->currentRssiValue;
+  }
 
-    void setRssiOffset(unsigned int rssiOffset) {
-        this->rssiOffset = rssiOffset;
-    }
+  unsigned int getRssiRaw() {
+    return this->currentRssiRawValue;
+  }
+
+  unsigned int getRssiOffset() const {
+    return rssiOffset;
+  }
+
+  void setRssiOffset(unsigned int rssiOffset) {
+    this->rssiOffset = rssiOffset;
+  }
 
 };
 #endif

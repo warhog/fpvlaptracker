@@ -11,6 +11,8 @@ private:
     unsigned int rssiThresholdLow = 100;
     unsigned int rssiThresholdHigh = 140;
     unsigned long lastLapTime = 0L;
+    unsigned int rssiPeak = 0;
+    unsigned long rssiPeakTime = 0L;
     
 public:
     boolean process(unsigned int currentRssiStrength);

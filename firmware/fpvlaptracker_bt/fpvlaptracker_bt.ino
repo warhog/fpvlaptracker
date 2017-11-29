@@ -54,9 +54,6 @@
 // udp port
 const unsigned int UDP_PORT = 31337;
 
-// defines the interval for rssi measurings
-const unsigned int RSSI_MEASURE_INTERVAL = 5;
-
 // pin configurations
 const unsigned int PIN_SLAVE_SELECT = 12;
 const unsigned int PIN_SPI_CLOCK = 13;
@@ -64,7 +61,7 @@ const unsigned int PIN_SPI_DATA = 14;
 const unsigned int PIN_LED = 5;
 
 WiFiUDP Udp;
-Rssi rssi(RSSI_MEASURE_INTERVAL);
+Rssi rssi;
 Lap lap;
 
 String serialString = "";
@@ -89,7 +86,7 @@ struct StoreStruct {
   8000,               // minLapTime
   100,                // rssiThresholdLow
   150,                // rssiThresholdHigh
-  50,                 // offset
+  55,                 // offset
   "flt-base",         // ssid
   "flt-base"          // password
 };
@@ -139,31 +136,51 @@ void setup() {
   Serial.print(F("channel info: "));
   Serial.print(getFrequencyForChannelIndex(storage.channelIndex));
   Serial.print(F(" MHz, "));
-  Serial.println(getChannelNameForChannelIndex(storage.channelIndex), HEX);
+  Serial.println(getChannelNameForChannelIndex(storage.channelIndex));
 #endif
 
+  bool wifiSsidFound = false;
+  int nrOfWifis = WiFi.scanNetworks();
 #ifdef DEBUG
-  Serial.print(F("wifi connecting to ssid "));
-  Serial.print(storage.ssid);
+  Serial.print(nrOfWifis);
+  Serial.println(" network(s) found");
 #endif
-  WiFi.begin(storage.ssid, storage.password);
-  unsigned int wait = 0;
-  while (WiFi.status() != WL_CONNECTED && wait < 15000) {
-    delay(500);
-    wait += 500;
+  for (unsigned int i = 0; i < nrOfWifis; i++) {
 #ifdef DEBUG
-    Serial.print(F("."));
+    Serial.println(WiFi.SSID(i));
 #endif
+    if (WiFi.SSID(i) == storage.ssid) {
+      wifiSsidFound = true;
+#ifdef DEBUG
+      Serial.println("found ssid, connecting");
+#endif
+    }
   }
-  if (WiFi.status() != WL_CONNECTED) {
+
+  if (wifiSsidFound) {
 #ifdef DEBUG
-    Serial.println(F("cannot connect to ssid, switching to standalone mode"));
+    Serial.print(F("wifi connecting to ssid "));
+    Serial.print(storage.ssid);
 #endif
-  } else if (WiFi.status() == WL_CONNECTED) {
+    WiFi.begin(storage.ssid, storage.password);
+    unsigned int wait = 0;
+    while (WiFi.status() != WL_CONNECTED && wait < 15000) {
+      delay(500);
+      wait += 500;
 #ifdef DEBUG
-    Serial.println(F("connected"));
+      Serial.print(F("."));
 #endif
-    networkMode = true;
+    }
+    if (WiFi.status() != WL_CONNECTED) {
+#ifdef DEBUG
+      Serial.println(F("cannot connect to ssid, switching to standalone mode"));
+#endif
+    } else if (WiFi.status() == WL_CONNECTED) {
+#ifdef DEBUG
+      Serial.println(F("connected"));
+#endif
+      networkMode = true;
+    }
   }
 
 #ifdef DEBUG
@@ -222,6 +239,10 @@ void setup() {
   lap.setMinLapTime(storage.minLapTime);
   lap.setRssiThresholdLow(storage.rssiThresholdLow);
   lap.setRssiThresholdHigh(storage.rssiThresholdHigh);
+
+#ifdef DEBUG
+  Serial.println("entering main loop");
+#endif
 }
 
 /*---------------------------------------------------

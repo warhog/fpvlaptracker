@@ -99,9 +99,10 @@ void processLed() {
   }
 }
 
-
+/*---------------------------------------------------
+ * scan all channels
+ *-------------------------------------------------*/
 String scanChannels() {
-
   String result = "{\"channels\":[";
   unsigned int channelIndexMax = 0;
   unsigned int rssiMax = 0;
@@ -135,6 +136,5 @@ String scanChannels() {
   uint16_t channelData = pgm_read_word_near(channelTable + storage.channelIndex);
   RCV_FREQ(channelData);
   return result;
-  
 }
 
