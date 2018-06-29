@@ -120,7 +120,8 @@ void setup() {
 #endif
 	EEPROM.begin(512);
 	storage.load();
-
+	lapDetector.init();
+	
 #ifdef DEBUG
 	Serial.println(F("setting radio frequency"));
 #endif

@@ -13,6 +13,12 @@ LapDetector::LapDetector(util::Storage *storage, Rssi *rssi) : _storage(storage)
 
 }
 
+void LapDetector::init() {
+	this->_calibrationOffset = this->_storage->getCalibrationOffset();
+	this->_triggerThreshold = this->_storage->getTriggerThreshold();
+	this->_triggerThresholdCalibration = this->_storage->getTriggerThresholdCalibration();
+}
+
 /**
  * process lap detection
  * @return true if new lap is detected, false otherwise

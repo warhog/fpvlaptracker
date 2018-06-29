@@ -10,6 +10,7 @@ namespace lap {
     public:
         LapDetector(util::Storage *storage, Rssi *rssi);
 
+        void init();
         boolean process();
 
         unsigned long getLastLapTime() const {

@@ -30,6 +30,27 @@ namespace util {
             return this->_rssiThreshold;
         }
 
+        void setTriggerThresholdCalibration(unsigned int triggerThresholdCalibration) {
+            this->_triggerThresholdCalibration = triggerThresholdCalibration;
+        }
+        unsigned int getTriggerThresholdCalibration() {
+            return this->_triggerThresholdCalibration;
+        }
+
+        void setTriggerThreshold(unsigned int triggerThreshold) {
+            this->_triggerThreshold = triggerThreshold;
+        }
+        unsigned int getTriggerThreshold() {
+            return this->_triggerThreshold;
+        }
+
+        void setCalibrationOffset(unsigned int calibrationOffset) {
+            this->_calibrationOffset = calibrationOffset;
+        }
+        unsigned int getCalibrationOffset() {
+            return this->_calibrationOffset;
+        }
+
         void setRssiTriggerOffset(unsigned int rssiTriggerOffset) {
             this->_rssiTriggerOffset = rssiTriggerOffset;
         }
@@ -62,6 +83,9 @@ namespace util {
         unsigned long _minLapTime;
         unsigned int _rssiThreshold;
         unsigned int _rssiTriggerOffset;
+        unsigned int _triggerThreshold;
+        unsigned int _triggerThresholdCalibration;
+        unsigned int _calibrationOffset;
         String _ssid;
         String _wifiPassword;
 
@@ -71,6 +95,9 @@ namespace util {
             unsigned long minLapTime;
             unsigned int rssiThreshold;
             unsigned int rssiTriggerOffset;
+            unsigned int triggerThreshold;
+            unsigned int triggerThresholdCalibration;
+            unsigned int calibrationOffset;
             char ssid[64];
             char wifiPassword[64];
         };

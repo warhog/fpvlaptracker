@@ -4,7 +4,7 @@ using namespace util;
 
 //#define DEBUG
 
-const char* CONFIG_VERSION = "00E";
+const char* CONFIG_VERSION = "00F";
 const unsigned int CONFIG_START = 32;
 
 #ifndef max
@@ -12,7 +12,8 @@ const unsigned int CONFIG_START = 32;
 #endif
 
 Storage::Storage() : _channelIndex(37), _minLapTime(4000), _rssiThreshold(50), _rssiTriggerOffset(8),
-        _ssid("flt-base"), _wifiPassword("flt-base") {
+        _ssid("flt-base"), _wifiPassword("flt-base"), _triggerThresholdCalibration(60), _triggerThreshold(30),
+        _calibrationOffset(8) {
 }
 
 void Storage::load() {
@@ -30,6 +31,9 @@ void Storage::load() {
         this->_minLapTime = storage.minLapTime;
         this->_rssiThreshold = storage.rssiThreshold;
         this->_rssiTriggerOffset = storage.rssiTriggerOffset;
+        this->_triggerThreshold = storage.triggerThreshold;
+        this->_triggerThresholdCalibration = storage.triggerThresholdCalibration;
+        this->_calibrationOffset = storage.calibrationOffset;
     } else {
 #ifdef DEBUG
         Serial.println(F("load default values"));
@@ -51,6 +55,9 @@ void Storage::store() {
     storage.minLapTime = this->_minLapTime;
     storage.rssiThreshold = this->_rssiThreshold;
     storage.rssiTriggerOffset = this->_rssiTriggerOffset;
+    storage.triggerThreshold = this->_triggerThreshold;
+    storage.triggerThresholdCalibration = this->_triggerThresholdCalibration;
+    storage.calibrationOffset = this->_calibrationOffset;
 
     for (unsigned int t = 0; t < sizeof(storage); t++) {
         EEPROM.write(CONFIG_START + t, *((char*)&storage + t));
