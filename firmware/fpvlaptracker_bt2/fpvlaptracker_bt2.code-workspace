@@ -1,0 +1,29 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"atomic": "cpp",
+			"chrono": "cpp",
+			"limits": "cpp",
+			"valarray": "cpp",
+			"ratio": "cpp",
+			"array": "cpp",
+			"functional": "cpp",
+			"tuple": "cpp",
+			"type_traits": "cpp",
+			"utility": "cpp",
+			"rope": "cpp",
+			"*.tcc": "cpp",
+			"system_error": "cpp",
+			"condition_variable": "cpp",
+			"future": "cpp",
+			"istream": "cpp",
+			"typeindex": "cpp",
+			"typeinfo": "cpp"
+		}
+	}
+}
