@@ -4,16 +4,15 @@ using namespace util;
 
 //#define DEBUG
 
-const char* CONFIG_VERSION = "00F";
+const char* CONFIG_VERSION = "010";
 const unsigned int CONFIG_START = 32;
 
 #ifndef max
     #define max(a,b) ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a > _b ? _a : _b; })
 #endif
 
-Storage::Storage() : _channelIndex(37), _minLapTime(4000), _rssiThreshold(50), _rssiTriggerOffset(8),
-        _ssid("flt-base"), _wifiPassword("flt-base"), _triggerThresholdCalibration(60), _triggerThreshold(30),
-        _calibrationOffset(8) {
+Storage::Storage() : _channelIndex(0), _minLapTime(4000), _ssid("flt-base"), _wifiPassword("flt-base"),
+    _triggerThresholdCalibration(60), _triggerThreshold(30), _calibrationOffset(8) {
 }
 
 void Storage::load() {
@@ -29,8 +28,6 @@ void Storage::load() {
         this->_wifiPassword = String(storage.wifiPassword);
         this->_channelIndex = storage.channelIndex;
         this->_minLapTime = storage.minLapTime;
-        this->_rssiThreshold = storage.rssiThreshold;
-        this->_rssiTriggerOffset = storage.rssiTriggerOffset;
         this->_triggerThreshold = storage.triggerThreshold;
         this->_triggerThresholdCalibration = storage.triggerThresholdCalibration;
         this->_calibrationOffset = storage.calibrationOffset;
@@ -53,8 +50,6 @@ void Storage::store() {
     strncpy(storage.wifiPassword, this->_wifiPassword.c_str(), max(63, strlen(this->_wifiPassword.c_str())));
     storage.channelIndex = this->_channelIndex;
     storage.minLapTime = this->_minLapTime;
-    storage.rssiThreshold = this->_rssiThreshold;
-    storage.rssiTriggerOffset = this->_rssiTriggerOffset;
     storage.triggerThreshold = this->_triggerThreshold;
     storage.triggerThresholdCalibration = this->_triggerThresholdCalibration;
     storage.calibrationOffset = this->_calibrationOffset;

@@ -23,13 +23,6 @@ namespace util {
             return this->_minLapTime;
         }
 
-        void setRssiThreshold(unsigned int rssiThreshold) {
-            this->_rssiThreshold = rssiThreshold;
-        }
-        unsigned int getRssiThreshold() {
-            return this->_rssiThreshold;
-        }
-
         void setTriggerThresholdCalibration(unsigned int triggerThresholdCalibration) {
             this->_triggerThresholdCalibration = triggerThresholdCalibration;
         }
@@ -49,13 +42,6 @@ namespace util {
         }
         unsigned int getCalibrationOffset() {
             return this->_calibrationOffset;
-        }
-
-        void setRssiTriggerOffset(unsigned int rssiTriggerOffset) {
-            this->_rssiTriggerOffset = rssiTriggerOffset;
-        }
-        unsigned int getRssiTriggerOffset() {
-            return this->_rssiTriggerOffset;
         }
 
         void setSsid(String ssid) {
@@ -81,8 +67,6 @@ namespace util {
     private:
         unsigned int _channelIndex;
         unsigned long _minLapTime;
-        unsigned int _rssiThreshold;
-        unsigned int _rssiTriggerOffset;
         unsigned int _triggerThreshold;
         unsigned int _triggerThresholdCalibration;
         unsigned int _calibrationOffset;
@@ -93,8 +77,6 @@ namespace util {
             char version[4];
             unsigned int channelIndex;
             unsigned long minLapTime;
-            unsigned int rssiThreshold;
-            unsigned int rssiTriggerOffset;
             unsigned int triggerThreshold;
             unsigned int triggerThresholdCalibration;
             unsigned int calibrationOffset;

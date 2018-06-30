@@ -39,11 +39,12 @@ namespace freq {
 
     class Frequency {
     public:
-        unsigned int getChannelIndexForFrequency(unsigned int frequency);
-        unsigned int getFrequencyForChannelIndex(unsigned int channelIndex);
-        String getChannelNameForChannelIndex(unsigned int channelIndex);
-        unsigned int getSPIFrequencyForChannelIndex(unsigned int channelIndex);
+        static unsigned int getChannelIndexForFrequency(unsigned int frequency);
+        static unsigned int getFrequencyForChannelIndex(unsigned int channelIndex);
+        static String getChannelNameForChannelIndex(unsigned int channelIndex);
+        static unsigned int getSPIFrequencyForChannelIndex(unsigned int channelIndex);
     private:
+        Frequency() {};
     };
 
 

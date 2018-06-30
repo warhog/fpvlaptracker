@@ -1,10 +1,12 @@
 #pragma once
 
 #include <Arduino.h>
+#include <ArduinoJson.h>
 
 #include "comm.h"
 #include "storage.h"
 #include "rssi.h"
+#include "frequency.h"
 
 namespace comm {
 
@@ -17,15 +19,19 @@ namespace comm {
         void lap(unsigned long lapTime, unsigned int rssi);
         int connect();
         void processIncommingMessage();
+        void setState(String state);
         
     private:
-        lap::Rssi *_rssi;
         bool btSendAndWaitForOK(String data);
         void sendBtMessage(String msg);
         void sendBtMessage(String msg, boolean newLine);
         void sendBtMessageWithNewline(String msg);
+        void processGetConfig();
+        void processStoreConfig();
+        lap::Rssi *_rssi;
         bool _serialGotLine;
         String _serialString;
+        String _state;
     };
 
 }

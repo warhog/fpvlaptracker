@@ -6,15 +6,15 @@ using namespace freq;
 * channel mapping functions
 *-------------------------------------------------*/
 unsigned int Frequency::getChannelIndexForFrequency(unsigned int frequency) {
-unsigned int ci = -1;
-for (unsigned int i = 0; i < NR_OF_FREQUENCIES; i++) {
-    unsigned int freq = pgm_read_word_near(channelFreqTable + i);
-    if (freq == frequency) {
-        ci = i;
-        break;
+    unsigned int ci = -1;
+    for (unsigned int i = 0; i < NR_OF_FREQUENCIES; i++) {
+        unsigned int freq = pgm_read_word_near(channelFreqTable + i);
+        if (freq == frequency) {
+            ci = i;
+            break;
+        }
     }
-}
-return ci;
+    return ci;
 }
 
 unsigned int Frequency::getFrequencyForChannelIndex(unsigned int channelIndex) {

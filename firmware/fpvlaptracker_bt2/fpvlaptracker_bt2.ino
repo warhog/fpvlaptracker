@@ -65,7 +65,6 @@ lap::Rssi rssi;
 ledio::LedControl led(PIN_LED);
 util::Storage storage;
 lap::LapDetector lapDetector(&storage, &rssi);
-freq::Frequency frequency;
 comm::WifiComm wifiComm(&storage);
 comm::BtComm btComm(&storage, &rssi);
 radio::Rx5808 rx5808(PIN_SPI_CLOCK, PIN_SPI_DATA, PIN_SPI_SLAVE_SELECT);
@@ -79,6 +78,18 @@ enum class stateEnum {
 	ERROR
 };
 stateEnum state = stateEnum::STARTUP;
+void setState(stateEnum state2) {
+	state = state2;
+	if (state == stateEnum::CALIBRATION) {
+		btComm.setState("Calibration");
+	} else if (state == stateEnum::RACE) {
+		btComm.setState("Race");
+	} else if (state == stateEnum::ERROR) {
+		btComm.setState("Error");
+	} else if (state == stateEnum::SCAN) {
+		btComm.setState("Scan");
+	}
+}
 
 /*---------------------------------------------------
  * application setup
@@ -121,17 +132,17 @@ void setup() {
 	EEPROM.begin(512);
 	storage.load();
 	lapDetector.init();
-	
+
 #ifdef DEBUG
 	Serial.println(F("setting radio frequency"));
 #endif
-	unsigned int channelData = frequency.getSPIFrequencyForChannelIndex(storage.getChannelIndex());
+	unsigned int channelData = freq::Frequency::getSPIFrequencyForChannelIndex(storage.getChannelIndex());
 	rx5808.freq(channelData);
 #ifdef DEBUG
 	Serial.print(F("channel info: "));
-	Serial.print(frequency.getFrequencyForChannelIndex(storage.getChannelIndex()));
+	Serial.print(freq::Frequency::getFrequencyForChannelIndex(storage.getChannelIndex()));
 	Serial.print(F(" MHz, "));
-	Serial.println(frequency.getChannelNameForChannelIndex(storage.getChannelIndex()));
+	Serial.println(freq::Frequency::getChannelNameForChannelIndex(storage.getChannelIndex()));
 #endif
 
 #ifdef DEBUG
@@ -208,7 +219,7 @@ void loop() {
 		Serial.print("VAR: rssi_offset=");
 		Serial.println(rssiRaw);
 #endif
-		state = stateEnum::CALIBRATION;
+		setState(stateEnum::CALIBRATION);
 		lapDetector.enableCalibrationMode();
 		led.interval(50);
 		led.mode(ledio::modes::BLINK);
@@ -220,13 +231,13 @@ void loop() {
 #ifdef MEASURE
 			Serial.println(F("INFO: lap detected, calibration is done"));
 #endif
-			state = stateEnum::CALIBRATION_DONE;
+			setState(stateEnum::CALIBRATION_DONE);
 		}
 	} else if (state == stateEnum::CALIBRATION_DONE) {
 #if defined(DEBUG) || defined(MEASURE)
 		Serial.println(F("STATE: CALIBRATION_DONE"));
 #endif
-		state = stateEnum::RACE;
+		setState(stateEnum::RACE);
 		led.mode(ledio::modes::OFF);
 	} else if (state == stateEnum::RACE) {
 #ifdef MEASURE

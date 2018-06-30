@@ -9,8 +9,19 @@ BtComm::BtComm(util::Storage *storage, lap::Rssi *rssi) : Comm(storage), _serial
 
 }
 
+extern "C" {
+    #include "user_interface.h"
+    extern struct rst_info resetInfo;
+}
 
 int BtComm::connect() {
+
+    if (resetInfo.reason == REASON_SOFT_RESTART) {
+        // do not initialize bt module on soft restarts, it is already initialized from previous init
+        this->_connected = true;
+        return btErrorCode::OK;
+    }
+
     unsigned long chipId = ESP.getChipId();
     char strChipId[10];
     sprintf(strChipId, "%u", chipId);
@@ -95,14 +106,18 @@ void BtComm::processIncommingMessage() {
             this->sendBtMessageWithNewline(r);
         } else if (this->_serialString.length() >= 6 && this->_serialString.substring(0, 6) == "REBOOT") {
             // reboot the device
-            // TODO currently the hc06 is not responding after a reboot
-            ESP.reset();
+            ESP.restart();
+        } else if (this->_serialString.length() >= 9 && this->_serialString.substring(0, 9) == "GET state") {
+            // get the current state
+            String s = F("STATE: ");
+            s += this->_state;
+            this->sendBtMessageWithNewline(s);
         } else if (this->_serialString.length() >= 10 && this->_serialString.substring(0, 10) == "GET config") {
             // get the current config data
-            // TODO
+            this->processGetConfig();
         } else if (this->_serialString.length() >= 11 && this->_serialString.substring(0, 11) == "PUT config ") {
             // store the given config data
-            // TODO
+            this->processStoreConfig();
         } else if (this->_serialString.length() >= 12 && this->_serialString.substring(0, 12) == "GET channels") {
             // scan all channels
             //TODO processScanChannels();
@@ -112,6 +127,49 @@ void BtComm::processIncommingMessage() {
         this->_serialGotLine = false;
         this->_serialString = "";
     }
+}
+
+/*---------------------------------------------------
+ * received get config message
+ *-------------------------------------------------*/
+void BtComm::processGetConfig() {
+    DynamicJsonBuffer jsonBuffer(200);
+    JsonObject& root = jsonBuffer.createObject();
+    root["frequency"] = freq::Frequency::getFrequencyForChannelIndex(this->_storage->getChannelIndex());
+    root["minimumLapTime"] = this->_storage->getMinLapTime();
+    root["ssid"] = this->_storage->getSsid();
+    root["password"] = this->_storage->getWifiPassword();
+    root["triggerThreshold"] = this->_storage->getTriggerThreshold();
+    root["triggerThresholdCalibration"] = this->_storage->getTriggerThresholdCalibration();
+    root["calibrationOffset"] = this->_storage->getCalibrationOffset();
+    String c = F("CONFIG: ");
+    root.printTo(c);
+    this->sendBtMessageWithNewline(c);
+}
+
+/*---------------------------------------------------
+ * received store config message
+ *-------------------------------------------------*/
+void BtComm::processStoreConfig() {
+  // received config
+  DynamicJsonBuffer jsonBuffer(200);
+  JsonObject& root = jsonBuffer.parseObject(this->_serialString.substring(11));
+  if (!root.success()) {
+#ifdef DEBUG
+    Serial.println(F("failed to parse config"));
+#endif
+    this->sendBtMessageWithNewline(F("SETCONFIG: NOK"));
+  } else {
+    this->_storage->setMinLapTime(root["minimumLapTime"]);
+    this->_storage->setSsid(root["ssid"]);
+    this->_storage->setWifiPassword(root["password"]);
+    this->_storage->setChannelIndex(freq::Frequency::getChannelIndexForFrequency(root["frequency"]));
+    this->_storage->setTriggerThreshold(root["triggerThreshold"]);
+    this->_storage->setTriggerThresholdCalibration(root["triggerThresholdCalibration"]);
+    this->_storage->setCalibrationOffset(root["calibrationOffset"]);
+    this->_storage->store();
+    this->sendBtMessageWithNewline(F("SETCONFIG: OK"));
+  }
 }
 
 /*---------------------------------------------------
@@ -148,3 +206,6 @@ bool BtComm::btSendAndWaitForOK(String data) {
     return false;
 }
 
+void BtComm::setState(String state) {
+    this->_state = state;
+}
