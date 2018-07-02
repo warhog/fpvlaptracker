@@ -60,16 +60,17 @@ const unsigned int PIN_SPI_SLAVE_SELECT = 12;
 const unsigned int PIN_SPI_CLOCK = 13;
 const unsigned int PIN_SPI_DATA = 14;
 const unsigned int PIN_LED = 5;
+const unsigned int PIN_ANALOG_RSSI = A0;
 
-lap::Rssi rssi;
+lap::Rssi rssi(PIN_ANALOG_RSSI);
 ledio::LedControl led(PIN_LED);
 util::Storage storage;
 lap::LapDetector lapDetector(&storage, &rssi);
 comm::WifiComm wifiComm(&storage);
-comm::BtComm btComm(&storage, &rssi);
-radio::Rx5808 rx5808(PIN_SPI_CLOCK, PIN_SPI_DATA, PIN_SPI_SLAVE_SELECT);
+radio::Rx5808 rx5808(PIN_SPI_CLOCK, PIN_SPI_DATA, PIN_SPI_SLAVE_SELECT, PIN_ANALOG_RSSI);
+comm::BtComm btComm(&storage, &rssi, &rx5808);
 
-enum class stateEnum {
+enum class state_enum {
 	STARTUP,
 	CALIBRATION,
 	CALIBRATION_DONE,
@@ -77,16 +78,18 @@ enum class stateEnum {
 	RACE,
 	ERROR
 };
-stateEnum state = stateEnum::STARTUP;
-void setState(stateEnum state2) {
+state_enum state = state_enum::STARTUP;
+state_enum oldState = state_enum::STARTUP;
+
+void setState(state_enum state2) {
 	state = state2;
-	if (state == stateEnum::CALIBRATION) {
+	if (state == state_enum::CALIBRATION) {
 		btComm.setState("Calibration");
-	} else if (state == stateEnum::RACE) {
+	} else if (state == state_enum::RACE) {
 		btComm.setState("Race");
-	} else if (state == stateEnum::ERROR) {
+	} else if (state == state_enum::ERROR) {
 		btComm.setState("Error");
-	} else if (state == stateEnum::SCAN) {
+	} else if (state == state_enum::SCAN) {
 		btComm.setState("Scan");
 	}
 }
@@ -195,7 +198,7 @@ void loop() {
 	Serial.println(rssi.getRssi());
 #endif
 
-	if (state == stateEnum::STARTUP) {
+	if (state == state_enum::STARTUP) {
 #if defined(DEBUG) || defined(MEASURE)
 		Serial.println(F("STATE: STARTUP"));
 #endif
@@ -216,33 +219,56 @@ void loop() {
 		Serial.println(rssiRaw);
 #endif
 #ifdef MEASURE
-		Serial.print("VAR: rssi_offset=");
+		Serial.print(F("VAR: rssi_offset="));
 		Serial.println(rssiRaw);
 #endif
-		setState(stateEnum::CALIBRATION);
+		setState(state_enum::CALIBRATION);
 		lapDetector.enableCalibrationMode();
 		led.interval(50);
 		led.mode(ledio::modes::BLINK);
-	} else if (state == stateEnum::CALIBRATION) {
+	} else if (state == state_enum::SCAN) {
+		rx5808.scan();
+		if (rx5808.isScanStopped()) {
+			setState(oldState);
+			unsigned int channelData = freq::Frequency::getSPIFrequencyForChannelIndex(storage.getChannelIndex());
+			rx5808.freq(channelData);
+		} else if (rx5808.isScanDone()) {
+			unsigned int currentChannel = rx5808.getScanChannelIndex();
+			btComm.sendScanData(freq::Frequency::getFrequencyForChannelIndex(currentChannel), rx5808.getScanResult());
+			currentChannel++;
+			if (currentChannel >= freq::NR_OF_FREQUENCIES) {
+				currentChannel = 0;
+			}
+			rx5808.startScan(currentChannel);
+		}
+	} else if (state == state_enum::CALIBRATION) {
 #ifdef MEASURE
 		Serial.println(F("STATE: CALIBRATION"));
 #endif
+		if (rx5808.isScan()) {
+			oldState = state;
+			setState(state_enum::SCAN);
+		}
 		if (lapDetector.process()) {
 #ifdef MEASURE
 			Serial.println(F("INFO: lap detected, calibration is done"));
 #endif
-			setState(stateEnum::CALIBRATION_DONE);
+			setState(state_enum::CALIBRATION_DONE);
 		}
-	} else if (state == stateEnum::CALIBRATION_DONE) {
+	} else if (state == state_enum::CALIBRATION_DONE) {
 #if defined(DEBUG) || defined(MEASURE)
 		Serial.println(F("STATE: CALIBRATION_DONE"));
 #endif
-		setState(stateEnum::RACE);
+		setState(state_enum::RACE);
 		led.mode(ledio::modes::OFF);
-	} else if (state == stateEnum::RACE) {
+	} else if (state == state_enum::RACE) {
 #ifdef MEASURE
 		Serial.println(F("STATE: RACE"));
 #endif
+		if (rx5808.isScan()) {
+			oldState = state;
+			setState(state_enum::SCAN);
+		}
 		if (lapDetector.process()) {
 #ifdef MEASURE
 			Serial.println(F("INFO: lap detected"));
@@ -259,18 +285,17 @@ void loop() {
 				btComm.lap(lapDetector.getLastLapTime(), lapDetector.getLastLapRssi());
 			}
 #ifdef DEBUG
-			Serial.println("lap detected");
-			Serial.print("rssi=");
+			Serial.println(F("lap detected"));
+			Serial.print(F("rssi="));
 			Serial.println(lapDetector.getLastLapRssi());
 			Serial.print(F("laptime="));
 			Serial.println(lapDetector.getLastLapTime());
 #endif
 		}
-	} else if (state == stateEnum::ERROR) {
+	} else if (state == state_enum::ERROR) {
 #ifdef MEASURE
 		Serial.println(F("STATE: ERROR"));
 #endif
-
 	} else {
 		blinkError(10);
 	}

@@ -4,7 +4,7 @@ namespace lap {
 
   class Rssi {
   public:
-    Rssi();
+    Rssi(unsigned int pin);
     void process();
 
     unsigned int getRssi() {
@@ -31,6 +31,7 @@ namespace lap {
     unsigned int _currentRssiRawValue;
     unsigned int _rssiOffset;
     unsigned long _lastRun;
+    unsigned int _pin;
   };
 
 }

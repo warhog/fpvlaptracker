@@ -4,8 +4,8 @@ using namespace comm;
 
 //#define DEBUG
 
-BtComm::BtComm(util::Storage *storage, lap::Rssi *rssi) : Comm(storage), _serialGotLine(false), _serialString(false),
-    _rssi(rssi) {
+BtComm::BtComm(util::Storage *storage, lap::Rssi *rssi, radio::Rx5808 *rx5808) : Comm(storage), _serialGotLine(false), _serialString(false),
+    _rssi(rssi), _rx5808(rx5808) {
 
 }
 
@@ -118,11 +118,18 @@ void BtComm::processIncommingMessage() {
         } else if (this->_serialString.length() >= 11 && this->_serialString.substring(0, 11) == "PUT config ") {
             // store the given config data
             this->processStoreConfig();
-        } else if (this->_serialString.length() >= 12 && this->_serialString.substring(0, 12) == "GET channels") {
-            // scan all channels
-            //TODO processScanChannels();
+        } else if (this->_serialString.length() >= 10 && this->_serialString.substring(0, 10) == "SCAN start") {
+            // start channel scan
+            this->_rx5808->startScan(this->_storage->getChannelIndex());
+            this->sendBtMessageWithNewline("SCAN: started");
+        } else if (this->_serialString.length() >= 9 && this->_serialString.substring(0, 9) == "SCAN stop") {
+            // stop channel scan
+            this->_rx5808->stopScan();
+            this->sendBtMessageWithNewline("SCAN: stopped");
         } else {
-            this->sendBtMessageWithNewline(F("UNKNOWN_COMMAND"));
+            String cmd = F("UNKNOWN_COMMAND: ");
+            cmd += this->_serialString;
+            this->sendBtMessageWithNewline(cmd);
         }
         this->_serialGotLine = false;
         this->_serialString = "";
@@ -208,4 +215,12 @@ bool BtComm::btSendAndWaitForOK(String data) {
 
 void BtComm::setState(String state) {
     this->_state = state;
+}
+
+void BtComm::sendScanData(unsigned int frequency, unsigned int rssi) {
+    String scan = F("SCAN: ");
+    scan += frequency;
+    scan += "=";
+    scan += rssi;
+    this->sendBtMessageWithNewline(scan);
 }

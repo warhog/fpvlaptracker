@@ -1,5 +1,6 @@
 // the following code is taken directly from chickadee laptimer58 project
 // the only change is putting it in a class and changing variable and function names
+// scanner functionality was also added
 // https://github.com/chickadee-tech/laptimer58
 /*
  * SPI driver based on fs_skyrf_58g-main.c Written by Simon Chambers
@@ -33,22 +34,63 @@ SOFTWARE.
 #pragma once
 
 #include <Arduino.h>
+#include "frequency.h"
 
 namespace radio {
 
+    enum class scan_state {
+        STOP,
+        SET,
+        SCAN,
+        DONE
+    };
+
     class Rx5808 {
     public:
-        Rx5808(unsigned int pinSpiClock, unsigned int pinSpiData, unsigned int pinSpiSlaveSelect);
+        Rx5808(unsigned int pinSpiClock, unsigned int pinSpiData, unsigned int pinSpiSlaveSelect, unsigned int pinRssi);
         void freq(uint16_t channelData);
         void init();
+        void startScan(unsigned int channelIndex) {
+            this->_scanState = scan_state::SET;
+            this->_scanChannelIndex = channelIndex;
+        }
+        unsigned int getScanChannelIndex() {
+            return this->_scanChannelIndex;
+        }
+        bool isScanDone() {
+            return this->_scanState == scan_state::DONE;
+        }
+        bool isScanStopped() {
+            return this->_scanState == scan_state::STOP;
+        }
+        bool isScan() {
+            return this->_scanState == scan_state::SCAN || this->_scanState == scan_state::SET;
+        }
+        unsigned int getScanResult() {
+            return this->_scanLastRssi;
+        }
+        scan_state getScanState() {
+            return this->_scanState;
+        }
+        void stopScan() {
+            this->_scanState = scan_state::STOP;
+        }
+        void scan();
+
     private:
+        unsigned int _pinSpiClock;;
+        unsigned int _pinSpiData;
+        unsigned int _pinSpiSlaveSelect;
+        unsigned int _pinRssi;
+        
+        unsigned long _scanLastRun;
+        unsigned int _scanLastRssi;
+        scan_state _scanState;
+        unsigned int _scanChannelIndex;
+        
         void serialSendBit0();
         void serialSendBit1();
         void serialEnableLow();
         void serialEnableHigh();
-        unsigned int _pinSpiClock;;
-        unsigned int _pinSpiData;
-        unsigned int _pinSpiSlaveSelect;
     };
-
 }

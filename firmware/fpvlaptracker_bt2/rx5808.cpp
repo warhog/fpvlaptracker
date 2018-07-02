@@ -2,8 +2,12 @@
 
 using namespace radio;
 
-Rx5808::Rx5808(unsigned int pinSpiClock, unsigned int pinSpiData, unsigned int pinSpiSlaveSelect) : 
-    _pinSpiClock(pinSpiClock), _pinSpiData(pinSpiData), _pinSpiSlaveSelect(pinSpiSlaveSelect) {
+//#define DEBUG
+
+Rx5808::Rx5808(unsigned int pinSpiClock, unsigned int pinSpiData, unsigned int pinSpiSlaveSelect, unsigned int pinRssi) : 
+    _pinSpiClock(pinSpiClock), _pinSpiData(pinSpiData), _pinSpiSlaveSelect(pinSpiSlaveSelect), _pinRssi(pinRssi),
+	_scanLastRun(0L), _scanLastRssi(0), _scanState(scan_state::STOP), _scanChannelIndex(0) {
+
 }
 
 void Rx5808::init() {
@@ -96,4 +100,22 @@ void Rx5808::serialEnableHigh() {
 	delayMicroseconds(1);
 	digitalWrite(this->_pinSpiSlaveSelect, HIGH);
 	delayMicroseconds(1);
+}
+
+void Rx5808::scan() {
+	if (this->_scanState == scan_state::SET) {
+		this->_scanLastRun = millis();
+		this->freq(freq::Frequency::getSPIFrequencyForChannelIndex(this->_scanChannelIndex));
+		this->_scanState = scan_state::SCAN;
+	} else if (this->_scanState == scan_state::SCAN) {
+		if ((this->_scanLastRun + 50) < millis()) {
+			unsigned long rssi = 0L;
+			for (unsigned int i = 0; i < 20; i++) {
+				rssi += analogRead(this->_pinRssi);
+			}
+			rssi /= 20;
+			this->_scanLastRssi = static_cast<unsigned int>(rssi);
+			this->_scanState = scan_state::DONE;
+		}
+	}
 }

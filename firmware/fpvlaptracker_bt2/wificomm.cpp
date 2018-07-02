@@ -16,7 +16,7 @@ int WifiComm::connect() {
 	int nrOfWifis = WiFi.scanNetworks();
 #ifdef DEBUG
 	Serial.print(nrOfWifis);
-	Serial.println(" network(s) found");
+	Serial.println(F(" network(s) found"));
 #endif
 	for (unsigned int i = 0; i < nrOfWifis; i++) {
 #ifdef DEBUG
@@ -25,7 +25,7 @@ int WifiComm::connect() {
 		if (WiFi.SSID(i) == this->_storage->getSsid()) {
 			this->_wifiSsidFound = true;
 #ifdef DEBUG
-			Serial.println("found ssid, connecting");
+			Serial.println(F("found ssid, connecting"));
 #endif
 		}
 	}
@@ -55,14 +55,14 @@ int WifiComm::connect() {
 			this->_connected = true;
 
             if (this->_connected) {
-            #ifdef DEBUG
+#ifdef DEBUG
                 Serial.println(F("WiFi set up"));
                 Serial.print(F("IP address: "));
                 Serial.println(WiFi.localIP());
                 Serial.print(F("broadcast IP is "));
                 Serial.println(getBroadcastIP());
                 Serial.println(F("starting udp"));
-            #endif
+#endif
                 this->_udp.begin(UDP_PORT);
             }
 		}

@@ -3,15 +3,15 @@
 
 using namespace lap;
 
-Rssi::Rssi() : _currentRssiRawValue(0), _currentRssiValue(0), _rssiOffset(0) {
-	pinMode(A0, INPUT);
+Rssi::Rssi(unsigned int pin) : _currentRssiRawValue(0), _currentRssiValue(0), _rssiOffset(0), _pin(pin) {
+	pinMode(pin, INPUT);
 }
 
 void Rssi::process() {
 	if ((this->_lastRun + 1) < millis()) {
 		this->_lastRun = millis();
 
-		int rssi = analogRead(A0);
+		int rssi = analogRead(this->_pin);
 		rssi -= this->getRssiOffset();
 		if (rssi < 0) {
 			rssi = 0;
