@@ -11,7 +11,7 @@ WifiComm::WifiComm(util::Storage *storage) : Comm(storage), _wifiSsidFound(false
 
 int WifiComm::connect() {
     this->_wifiSsidFound = false;
-	this->_connected = true;
+	this->_connected = false;
 
 	int nrOfWifis = WiFi.scanNetworks();
 #ifdef DEBUG
