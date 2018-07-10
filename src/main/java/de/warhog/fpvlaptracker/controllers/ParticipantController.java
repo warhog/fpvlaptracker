@@ -47,13 +47,20 @@ public class ParticipantController {
         Participant participant = participantsDbService.getParticipant(chipid);
         Data data = comm.getData(participant);
         Map<String, String> ret = new HashMap<>();
-        ret.put("thresholdLow", data.getThresholdLow().toString());
-        ret.put("thresholdHigh", data.getThresholdHigh().toString());
-        ret.put("minLapTime", data.getMinLapTime().toString());
-        ret.put("rssi", data.getRssi().toString());
-        ret.put("name", participant.getName());
-        ret.put("frequency", data.getFrequency().toString());
+        if (participant.isAllowConfiguration()) {
+            ret.put("thresholdLow", data.getThresholdLow().toString());
+            ret.put("thresholdHigh", data.getThresholdHigh().toString());
+            ret.put("minLapTime", data.getMinLapTime().toString());
+            ret.put("rssi", data.getRssi().toString());
+            ret.put("frequency", data.getFrequency().toString());
+        }
+        if (participant.isAllowConfiguration() || participant.isAllowConfigureName()) {
+            ret.put("name", participant.getName());
+        }
         ret.put("ipAddress", participant.getIp().getHostAddress());
+        ret.put("isAllowConfiguration", String.valueOf(participant.isAllowConfiguration()));
+        ret.put("isAllowConfigureName", String.valueOf(participant.isAllowConfigureName()));
+        ret.put("isCallable", String.valueOf(participant.isCallable()));
         return ret;
     }
 

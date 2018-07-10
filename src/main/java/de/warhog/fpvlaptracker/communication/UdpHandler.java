@@ -62,11 +62,6 @@ public class UdpHandler implements Runnable {
     }
 
     private void processRegister(UdpPacketRegister udpPacketRegister) {
-        processRegister(udpPacketRegister, true, true);
-    }
-    
-    
-    private void processRegister(UdpPacketRegister udpPacketRegister, boolean allowConfiguration, boolean callable) {
         Long ip = udpPacketRegister.getIp();
         String ipStr = String.format("%d.%d.%d.%d",
                 (ip & 0xff),
@@ -90,8 +85,12 @@ public class UdpHandler implements Runnable {
                 LOG.debug("no name for chipid " + udpPacketRegister.getChipid());
             }
             Participant participant = new Participant(name, udpPacketRegister.getChipid(), inetAddress);
-            participant.setAllowConfiguration(allowConfiguration);
-            participant.setCallable(callable);
+            if (udpPacketRegister.getPacketType() == PacketType.REGISTERBT || udpPacketRegister.getPacketType() == PacketType.REGISTERBT2) {
+                participant.setAllowConfigureName(true);
+            } else if (udpPacketRegister.getPacketType() == PacketType.REGISTER) {
+                participant.setAllowFullConfiguration(true);
+                participant.setCallable(true);
+            }
             if (participantsDbService.hasParticipant(participant)) {
                 LOG.error("participant already existing: " + udpPacketRegister.getChipid(), participant);
                 return;
@@ -125,14 +124,18 @@ public class UdpHandler implements Runnable {
                 switch (packetType) {
                     case REGISTER:
                         UdpPacketRegister udpPacketRegister = mapper.readValue(packet.getData(), UdpPacketRegister.class);
+                        udpPacketRegister.setPacketType(packetType);
                         processRegister(udpPacketRegister);
                         break;
                     case REGISTERBT:
+                    case REGISTERBT2:
                         UdpPacketRegister udpPacketRegisterBt = mapper.readValue(packet.getData(), UdpPacketRegister.class);
-                        processRegister(udpPacketRegisterBt, false, false);
+                        udpPacketRegisterBt.setPacketType(packetType);
+                        processRegister(udpPacketRegisterBt);
                         break;
                     case LAP:
                         UdpPacketLap udpPacketLap = mapper.readValue(packet.getData(), UdpPacketLap.class);
+                        udpPacketLap.setPacketType(packetType);
                         processLap(udpPacketLap, packet.getAddress());
                         break;
                     default:

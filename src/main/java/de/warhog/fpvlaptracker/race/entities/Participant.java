@@ -12,8 +12,9 @@ public class Participant {
     private String name;
     private Integer chipId;
     private InetAddress ip;
-    private boolean allowConfiguration = true;
-    private boolean callable = true;
+    private boolean allowFullConfiguration = false;
+    private boolean allowConfigureName = false;
+    private boolean callable = false;
 
     public Participant(String name, Integer chipId, InetAddress ip) {
         this.name = name;
@@ -30,11 +31,19 @@ public class Participant {
     }
 
     public boolean isAllowConfiguration() {
-        return allowConfiguration;
+        return allowFullConfiguration;
     }
 
-    public void setAllowConfiguration(boolean allowConfiguration) {
-        this.allowConfiguration = allowConfiguration;
+    public void setAllowFullConfiguration(boolean allowConfiguration) {
+        this.allowFullConfiguration = allowConfiguration;
+    }
+
+    public boolean isAllowConfigureName() {
+        return allowConfigureName;
+    }
+
+    public void setAllowConfigureName(boolean allowConfigureName) {
+        this.allowConfigureName = allowConfigureName;
     }
 
     public boolean isCallable() {

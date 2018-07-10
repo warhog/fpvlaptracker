@@ -35,6 +35,7 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
     $scope.loadingRssi = false;
     $scope.participantName = "-";
     $scope.alerts = Alerts;
+    $scope.isAllowConfiguration = false;
 
     let getInitialValue = function (frequency) {
         frequency = parseInt(frequency);
@@ -144,13 +145,17 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
             $scope.loadingRssi = true;
             SetupService.loadSetupData($scope.chipid)
                     .then(function (data) {
-                        $scope.thresholdHigh = parseInt(data.thresholdHigh);
-                        $scope.thresholdLow = parseInt(data.thresholdLow);
-                        $scope.minLapTime = parseInt(data.minLapTime);
-                        $scope.rssi = data.rssi;
+                        if (data.isAllowConfiguration) {
+                            $scope.thresholdHigh = parseInt(data.thresholdHigh);
+                            $scope.thresholdLow = parseInt(data.thresholdLow);
+                            $scope.minLapTime = parseInt(data.minLapTime);
+                            $scope.rssi = data.rssi;
+                            $scope.selectedFrequency = getInitialValue(data.frequency);
+                        }
+                        if (data.isAllowConfiguration || data.isAllowConfigureName) {
+                            $scope.participantName = data.name;
+                        }
                         $scope.ipAddress = data.ipAddress;
-                        $scope.participantName = data.name;
-                        $scope.selectedFrequency = getInitialValue(data.frequency);
                         console.log($scope.selectedFrequency);
                     })
                     .catch(function (response) {
@@ -241,6 +246,9 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
                 });
     };
 
+    if (1) {
+        $scope.onlyLocalData = true;
+    }
     $scope.loadSetupData();
 
 }).factory('SetupService', function ($http) {
@@ -252,8 +260,8 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
         });
     };
 
-    factory.loadSetupData = function (chipid) {
-        return $http.get("/api/participant/setupData", {params: {chipid: chipid}, timeout: 5000}).then(function (response) {
+    factory.loadSetupData = function (chipid, onlylocal) {
+        return $http.get("/api/participant/setupData", {params: {chipid: chipid, onlylocal: onlylocal}, timeout: 5000}).then(function (response) {
             return response.data;
         });
     };
