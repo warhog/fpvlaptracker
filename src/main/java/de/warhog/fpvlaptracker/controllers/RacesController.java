@@ -10,11 +10,6 @@ import de.warhog.fpvlaptracker.service.ConfigService;
 import de.warhog.fpvlaptracker.service.RaceDbService;
 import de.warhog.fpvlaptracker.service.ServiceLayerException;
 import de.warhog.fpvlaptracker.util.TimeUtil;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,9 +42,7 @@ public class RacesController {
             Map<Integer, String> ret = new HashMap<>();
             for (RacesRecord racesRecord : races) {
                 if (racesRecord.getStarttime() != null) {
-                    ZoneOffset zoneOffset = ZoneId.of(configService.getTimezone()).getRules().getOffset(LocalDateTime.now());
-                    LocalDateTime date = LocalDateTime.ofInstant(Instant.ofEpochSecond(racesRecord.getStarttime()), zoneOffset);
-                    ret.put(racesRecord.getId(), date.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+                    ret.put(racesRecord.getId(), timeUtil.getUnixTimestampInIsoFormat(racesRecord.getStarttime()));
                 } else {
                     ret.put(racesRecord.getId(), "-");
                 }

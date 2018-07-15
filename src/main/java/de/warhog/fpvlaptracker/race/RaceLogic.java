@@ -11,10 +11,8 @@ import de.warhog.fpvlaptracker.service.RaceDbService;
 import de.warhog.fpvlaptracker.service.ParticipantRaceService;
 import de.warhog.fpvlaptracker.service.RestService;
 import de.warhog.fpvlaptracker.service.ServiceLayerException;
-import java.net.InetAddress;
+import de.warhog.fpvlaptracker.util.TimeUtil;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
 import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +50,9 @@ public class RaceLogic {
 
     @Autowired
     private RestService comm;
+    
+    @Autowired
+    private TimeUtil timeUtil;
 
     @PostConstruct
     public void init() {
@@ -84,8 +85,7 @@ public class RaceLogic {
         setStartTime(LocalDateTime.now());
         try {
             currentRaceId = racesDbService.createRace(numberOfLaps, state);
-            ZoneOffset zoneOffset = ZoneId.of(configService.getTimezone()).getRules().getOffset(LocalDateTime.now());
-            racesDbService.setStartTime(currentRaceId, Math.toIntExact(LocalDateTime.now().toEpochSecond(zoneOffset)));
+            racesDbService.setStartTime(currentRaceId, timeUtil.localDateTimeToUnix(LocalDateTime.now()));
             LOG.debug("created new race id: " + currentRaceId);
         } catch (ServiceLayerException ex) {
             LOG.error("failed to store new race: " + ex.getMessage(), ex);
@@ -120,8 +120,7 @@ public class RaceLogic {
         setStartTime(LocalDateTime.now());
         if (currentRaceId != null) {
             try {
-                ZoneOffset zoneOffset = ZoneId.of(configService.getTimezone()).getRules().getOffset(LocalDateTime.now());
-                racesDbService.setStartTime(currentRaceId, Math.toIntExact(LocalDateTime.now().toEpochSecond(zoneOffset)));
+                racesDbService.setStartTime(currentRaceId, timeUtil.localDateTimeToUnix(LocalDateTime.now()));
                 racesDbService.setState(currentRaceId, state);
             } catch (ServiceLayerException ex) {
                 LOG.error("failed to start race: " + ex.getMessage(), ex);
