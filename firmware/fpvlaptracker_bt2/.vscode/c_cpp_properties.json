@@ -3,6 +3,8 @@
         {
             "name": "Linux",
             "includePath": [
+                "/home/tobi/.arduino15/packages/esp8266/tools/**",
+                "/home/tobi/.arduino15/packages/esp8266/hardware/esp8266/2.4.1/**",
                 "/home/tobi/.arduino15/packages/esp8266/hardware/esp8266/2.4.0/cores/esp8266",
                 "/home/tobi/arduino-1.8.5/hardware/esp8266com/esp8266",
                 "/home/tobi/Arduino/libraries",
@@ -15,7 +17,7 @@
                     "/home/tobi/arduino-1.8.5/hardware/esp8266com/esp8266",
                     "/home/tobi/Arduino/libraries",
                     "/home/tobi/NetBeansProjects/fpvlaptracker/firmware/fpvlaptracker_bt2"
-                    ]
+                ]
             },
             "intelliSenseMode": "clang-x64",
             "compilerPath": "/usr/bin/clang",
