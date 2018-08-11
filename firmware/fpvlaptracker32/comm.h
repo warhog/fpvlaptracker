@@ -11,8 +11,6 @@ namespace comm {
         void reg();
         void lap();
         int connect();
-        void storeConfig();
-        void loadConfig();
         bool isConnected() const {
             return this->_connected;
         }
