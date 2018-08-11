@@ -76,7 +76,7 @@ lap::LapDetector lapDetector(&storage, &rssi);
 comm::WifiComm wifiComm(&storage);
 radio::Rx5808 rx5808(PIN_SPI_CLOCK, PIN_SPI_DATA, PIN_SPI_SLAVE_SELECT, PIN_ANALOG_RSSI);
 BluetoothSerial btSerial;
-comm::BtComm btComm(&btSerial, &storage, &rssi, &rx5808);
+comm::BtComm btComm(&btSerial, &storage, &rssi, &rx5808, &lapDetector);
 statemanagement::StateManager stateManager;
 unsigned long fastRssiTimeout = 0L;
 bool webUpdateMode = false;

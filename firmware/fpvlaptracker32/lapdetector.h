@@ -33,6 +33,10 @@ namespace lap {
             return this->_lastLapRssi;
         }
 
+        int getTriggerValue() const {
+            return this->_triggerValue;
+        }
+
     private:
         util::Storage* _storage;
         Rssi* _rssi;

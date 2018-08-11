@@ -4,8 +4,8 @@ using namespace comm;
 
 //#define DEBUG
 
-BtComm::BtComm(BluetoothSerial *btSerial, util::Storage *storage, lap::Rssi *rssi, radio::Rx5808 *rx5808) : Comm(storage), _serialGotLine(false),
-    _serialString(false), _rssi(rssi), _rx5808(rx5808), _btSerial(btSerial) {
+BtComm::BtComm(BluetoothSerial *btSerial, util::Storage *storage, lap::Rssi *rssi, radio::Rx5808 *rx5808, lap::LapDetector *lapDetector) : Comm(storage), _serialGotLine(false),
+    _serialString(false), _rssi(rssi), _rx5808(rx5808), _btSerial(btSerial), _lapDetector(lapDetector) {
 
 }
 
@@ -33,7 +33,7 @@ void BtComm::reg() {
 }
 
 void BtComm::lap(unsigned long lapTime, unsigned int rssi) {
-    this->sendBtMessageWithNewline("LAP: " + String(lapTime));
+    this->sendBtMessageWithNewline("LAP: {\"lapTime\":" + String(lapTime) + ",\"rssi\": " + String(rssi) + "}");
 }
 
 void BtComm::sendBtMessage(String msg) {
@@ -101,6 +101,9 @@ void BtComm::processIncommingMessage() {
         } else if (this->_serialString.length() >= 11 && this->_serialString.substring(0, 11) == "PUT config ") {
             // store the given config data
             this->processStoreConfig();
+        } else if (this->_serialString.length() >= 15 && this->_serialString.substring(0, 15) == "GET runtimedata") {
+            // get runtime data
+            this->processGetRuntimeData();
         } else if (this->_serialString.length() >= 10 && this->_serialString.substring(0, 10) == "START scan") {
             // start channel scan
             this->_rx5808->startScan(this->_storage->getChannelIndex());
@@ -129,11 +132,20 @@ void BtComm::processIncommingMessage() {
     }
 }
 
+void BtComm::processGetRuntimeData() {
+    DynamicJsonBuffer jsonBuffer(100);
+    JsonObject& root = jsonBuffer.createObject();
+    root["triggerValue"] = this->_lapDetector->getTriggerValue();
+    String c = F("RUNTIME: ");
+    root.printTo(c);
+    this->sendBtMessageWithNewline(c);
+}
+
 /*---------------------------------------------------
  * received get config message
  *-------------------------------------------------*/
 void BtComm::processGetConfig() {
-    DynamicJsonBuffer jsonBuffer(200);
+    DynamicJsonBuffer jsonBuffer(300);
     JsonObject& root = jsonBuffer.createObject();
     root["frequency"] = freq::Frequency::getFrequencyForChannelIndex(this->_storage->getChannelIndex());
     root["minimumLapTime"] = this->_storage->getMinLapTime();
@@ -143,6 +155,7 @@ void BtComm::processGetConfig() {
     root["triggerThresholdCalibration"] = this->_storage->getTriggerThresholdCalibration();
     root["calibrationOffset"] = this->_storage->getCalibrationOffset();
     root["state"] = this->_state;
+    root["triggerValue"] = this->_lapDetector->getTriggerValue();
     String c = F("CONFIG: ");
     root.printTo(c);
     this->sendBtMessageWithNewline(c);

@@ -11,6 +11,7 @@
 #include "rx5808.h"
 #include "publisher.h"
 #include "statemanager.h"
+#include "lapdetector.h"
 
 namespace comm {
 
@@ -18,7 +19,7 @@ namespace comm {
 
     class BtComm : public Comm, public pubsub::Publisher<statemanagement::state_enum> {
     public:
-        BtComm(BluetoothSerial *btSerial, util::Storage *storage, lap::Rssi *rssi, radio::Rx5808 *rx5808);
+        BtComm(BluetoothSerial *btSerial, util::Storage *storage, lap::Rssi *rssi, radio::Rx5808 *rx5808, lap::LapDetector *lapDetector);
         void reg();
         void lap(unsigned long lapTime, unsigned int rssi);
         int connect();
@@ -33,9 +34,11 @@ namespace comm {
         void sendBtMessageWithNewline(String msg);
         void processGetConfig();
         void processStoreConfig();
+        void processGetRuntimeData();
         BluetoothSerial *_btSerial;
         lap::Rssi *_rssi;
         radio::Rx5808 *_rx5808;
+        lap::LapDetector *_lapDetector;
         bool _serialGotLine;
         String _serialString;
         String _state;

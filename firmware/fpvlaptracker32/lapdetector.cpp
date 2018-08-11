@@ -123,7 +123,7 @@ boolean LapDetector::process() {
 #endif
 				this->_reachedGate = false;
     			this->_lastLapTime = this->_rssiPeakTime - this->_currentLapStart;
-				this->_lastLapRssi = this->_rssi->getRssi();
+				this->_lastLapRssi = this->_rssiPeak;
 				this->_currentLapStart = this->_rssiPeakTime;
 				this->_lastLapEnd = millis();
 				this->_rssiPeak = 0;
