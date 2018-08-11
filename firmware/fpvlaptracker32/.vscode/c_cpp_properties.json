@@ -1,0 +1,30 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "/home/tobi/.arduino15/packages/esp32/hardware/esp32/1.0.0/libraries/BluetoothSerial/src",
+                "/home/tobi/.arduino15/packages/esp32/tools/**",
+                "/home/tobi/.arduino15/packages/esp32/hardware/esp32/1.0.0/**",
+                "/home/tobi/.arduino15/packages/esp8266/hardware/esp8266/2.4.0/cores/esp8266",
+                "/home/tobi/arduino-1.8.5/hardware/esp8266com/esp8266",
+                "/home/tobi/Arduino/libraries",
+                "/home/tobi/NetBeansProjects/fpvlaptracker/firmware/fpvlaptracker32"
+            ],
+            "browse": {
+                "limitSymbolsToIncludedHeaders": false,
+                "path": [
+                    "/home/tobi/.arduino15/packages/esp32/hardware/esp32/1.0.0/cores/esp32",
+                    "/home/tobi/.arduino15/packages/esp32/hardware/esp32/1.0.0/libraries",
+                    "/home/tobi/Arduino/libraries",
+                    "/home/tobi/NetBeansProjects/fpvlaptracker/firmware/fpvlaptracker32"
+                ]
+            },
+            "intelliSenseMode": "clang-x64",
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c11",
+            "cppStandard": "c++17"
+        }
+    ],
+    "version": 4
+}
