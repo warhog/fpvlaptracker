@@ -203,3 +203,8 @@ void BtComm::sendFastRssiData(unsigned int rssi) {
     rssi2 += rssi;
     this->sendBtMessageWithNewline(rssi2);
 }
+
+void BtComm::sendCalibrationDone() {
+    String done = F("CALIBRATION: done");
+    this->sendBtMessageWithNewline(done);
+}

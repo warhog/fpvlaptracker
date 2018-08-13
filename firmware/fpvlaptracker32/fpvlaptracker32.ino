@@ -294,6 +294,9 @@ void loop() {
 #if defined(DEBUG) || defined(MEASURE)
 			Serial.println(F("STATE: CALIBRATION_DONE"));
 #endif
+			if (btComm.isConnected()) {
+				btComm.sendCalibrationDone();
+			}
 			setState(statemanagement::state_enum::RACE);
 			led.mode(ledio::modes::OFF);
 		} else if (stateManager.isStateRace()) {

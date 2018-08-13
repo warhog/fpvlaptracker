@@ -27,6 +27,7 @@ namespace comm {
         void setState(String state);
         void sendScanData(unsigned int frequency, unsigned int rssi);
         void sendFastRssiData(unsigned int rssi);
+        void sendCalibrationDone();
         
     private:
         void sendBtMessage(String msg);
