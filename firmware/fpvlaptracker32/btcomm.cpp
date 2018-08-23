@@ -14,7 +14,7 @@ int BtComm::connect() {
     Serial.println(F("bluetooth connect()"));
 #endif
     uint64_t chipId = ESP.getEfuseMac();
-    char strChipId[10];
+    char strChipId[15] = { 0 };
     sprintf(strChipId, "%u", chipId);
     String chipString = strChipId;
     String name = "FLT" + chipString;
