@@ -66,7 +66,7 @@ const unsigned int PIN_SPI_CLOCK = 17;
 const unsigned int PIN_SPI_DATA = 18;
 const unsigned int PIN_LED = 19;
 const unsigned int PIN_ANALOG_RSSI = 32;
-const unsigned int PIN_WEB_UPDATE = 21;
+const unsigned int PIN_WEB_UPDATE = 34;
 const unsigned int PIN_ANALOG_BATTERY = 33;
 
 lap::Rssi rssi(PIN_ANALOG_RSSI);
