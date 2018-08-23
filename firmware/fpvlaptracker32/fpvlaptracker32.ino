@@ -123,8 +123,8 @@ void setup() {
 	Serial.println(F("setting up ports"));
 #endif
 	rx5808.init();
-	pinMode(PIN_WEB_UPDATE, INPUT_PULLDOWN);
-	if (digitalRead(PIN_WEB_UPDATE) == HIGH) {
+	pinMode(PIN_WEB_UPDATE, INPUT_PULLUP);
+	if (digitalRead(PIN_WEB_UPDATE) == LOW) {
 #ifdef DEBUG
 		Serial.println(F("enabling webupdate mode"));
 #endif		
