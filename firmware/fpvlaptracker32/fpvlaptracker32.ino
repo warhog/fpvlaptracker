@@ -58,7 +58,7 @@
 #include "adc.h"
 
 // debug mode flags
-#define DEBUG
+//#define DEBUG
 //#define MEASURE
 
 // pin configurations
@@ -77,12 +77,13 @@ lap::LapDetector lapDetector(&storage, &rssi);
 comm::WifiComm wifiComm(&storage);
 radio::Rx5808 rx5808(PIN_SPI_CLOCK, PIN_SPI_DATA, PIN_SPI_SLAVE_SELECT, PIN_ANALOG_RSSI);
 BluetoothSerial btSerial;
-comm::BtComm btComm(&btSerial, &storage, &rssi, &rx5808, &lapDetector);
+Adc adcBattery(PIN_ANALOG_BATTERY);
+comm::BtComm btComm(&btSerial, &storage, &rssi, &rx5808, &lapDetector, &adcBattery);
 statemanagement::StateManager stateManager;
 unsigned long fastRssiTimeout = 0L;
 bool webUpdateMode = false;
 WebUpdate webUpdate;
-Adc adcBattery(PIN_ANALOG_BATTERY);
+bool lowVoltageSent = false;
 
 void setState(statemanagement::state_enum state) {
 	stateManager.setState(state);
@@ -228,9 +229,12 @@ void setup() {
 void loop() {
 
 	adcBattery.measure();
-	if (adcBattery.alarmHandler()) {
+	if (!lowVoltageSent && adcBattery.alarmHandler()) {
 		// undervoltage
-		// TODO
+		if (btComm.isConnected() && btComm.hasClient()) {
+			btComm.sendVoltageAlarm();
+			lowVoltageSent = true;
+		}
 	}
 
 	led.run();

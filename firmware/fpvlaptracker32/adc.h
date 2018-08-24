@@ -1,6 +1,6 @@
 #pragma once
 
-#define DEBUG
+//#define DEBUG
 
 class Adc {
 public:
@@ -9,7 +9,7 @@ public:
     }
 
     void measure() {
-        if ((millis() - this->_lastRun) > 1000) {
+        if ((millis() - this->_lastRun) > 5000) {
             unsigned int batteryRaw = analogRead(this->_pin);
 #ifdef DEBUG
             Serial.print("batteryRaw: ");
@@ -47,6 +47,10 @@ public:
 
     bool alarmHandler() {
         return this->_voltageReading <= this->_alarmVoltage;
+    }
+
+    double getVoltage() {
+        return this->_voltageReading;
     }
 
 private:

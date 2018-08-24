@@ -31,7 +31,8 @@
 			"unordered_set": "cpp",
 			"vector": "cpp",
 			"slist": "cpp",
-			"initializer_list": "cpp"
+			"initializer_list": "cpp",
+			"bitset": "cpp"
 		}
 	}
 }

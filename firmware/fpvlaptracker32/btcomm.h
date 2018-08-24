@@ -12,6 +12,7 @@
 #include "publisher.h"
 #include "statemanager.h"
 #include "lapdetector.h"
+#include "adc.h"
 
 namespace comm {
 
@@ -19,7 +20,7 @@ namespace comm {
 
     class BtComm : public Comm, public pubsub::Publisher<statemanagement::state_enum> {
     public:
-        BtComm(BluetoothSerial *btSerial, util::Storage *storage, lap::Rssi *rssi, radio::Rx5808 *rx5808, lap::LapDetector *lapDetector);
+        BtComm(BluetoothSerial *btSerial, util::Storage *storage, lap::Rssi *rssi, radio::Rx5808 *rx5808, lap::LapDetector *lapDetector, Adc *adc);
         void reg();
         void lap(unsigned long lapTime, unsigned int rssi);
         int connect();
@@ -28,8 +29,13 @@ namespace comm {
         void sendScanData(unsigned int frequency, unsigned int rssi);
         void sendFastRssiData(unsigned int rssi);
         void sendCalibrationDone();
-        
+        void sendVoltageAlarm();
+        void sendGenericState(const char* type, const char* state);
+        bool hasClient();
+
     private:
+        void sendJson(JsonObject& root);
+        JsonObject& prepareJson();
         void sendBtMessage(String msg);
         void sendBtMessage(String msg, boolean newLine);
         void sendBtMessageWithNewline(String msg);
@@ -40,9 +46,11 @@ namespace comm {
         lap::Rssi *_rssi;
         radio::Rx5808 *_rx5808;
         lap::LapDetector *_lapDetector;
+        Adc *_adc;
         bool _serialGotLine;
         String _serialString;
         String _state;
+        DynamicJsonBuffer _jsonBuffer;
     };
 
 }

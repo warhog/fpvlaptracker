@@ -4,8 +4,9 @@ using namespace comm;
 
 //#define DEBUG
 
-BtComm::BtComm(BluetoothSerial *btSerial, util::Storage *storage, lap::Rssi *rssi, radio::Rx5808 *rx5808, lap::LapDetector *lapDetector) : Comm(storage), _serialGotLine(false),
-    _serialString(false), _rssi(rssi), _rx5808(rx5808), _btSerial(btSerial), _lapDetector(lapDetector) {
+BtComm::BtComm(BluetoothSerial *btSerial, util::Storage *storage, lap::Rssi *rssi, radio::Rx5808 *rx5808, lap::LapDetector *lapDetector, Adc *adc) : Comm(storage), _serialGotLine(false),
+    _serialString(false), _rssi(rssi), _rx5808(rx5808), _btSerial(btSerial), _lapDetector(lapDetector),
+    _jsonBuffer(300), _adc(adc) {
 
 }
 
@@ -33,7 +34,11 @@ void BtComm::reg() {
 }
 
 void BtComm::lap(unsigned long lapTime, unsigned int rssi) {
-    this->sendBtMessageWithNewline("LAP: {\"lapTime\":" + String(lapTime) + ",\"rssi\": " + String(rssi) + "}");
+    JsonObject& root = this->prepareJson();
+    root["type"] = "lap";
+    root["lapTime"] = lapTime;
+    root["rssi"] = rssi;
+    this->sendJson(root);
 }
 
 void BtComm::sendBtMessage(String msg) {
@@ -70,31 +75,31 @@ void BtComm::processIncommingMessage() {
     // process serial line
     if (this->_serialGotLine) {
 #ifdef DEBUG
-            Serial.print(F("processIncommingMessage(): "));
-            Serial.println(this->_serialString);
+        Serial.print(F("processIncommingMessage(): "));
+        Serial.println(this->_serialString);
 #endif
         if (this->_serialString.length() >= 11 && this->_serialString.substring(0, 11) == "GET version") {
             // get the version
-            String v = F("VERSION: 2.0");
-            this->sendBtMessageWithNewline(v);
+            JsonObject& root = this->prepareJson();
+            root["type"] = "version";
+            root["version"] = "FLT32-R1.0";
+            this->sendJson(root);
         } else if (this->_serialString.length() >= 12 && this->_serialString.substring(0, 12) == "0GET version") {
             // TODO workaround for esp32, first connect after start sends a leading 0 all the time
             // get the version
-            String v = F("VERSION: 2.0");
-            this->sendBtMessageWithNewline(v);
+            JsonObject& root = this->prepareJson();
+            root["type"] = "version";
+            root["version"] = "FLT32-R1.0";
+            this->sendJson(root);
         } else if (this->_serialString.length() >= 8 && this->_serialString.substring(0, 8) == "GET rssi") {
             // get the current rssi
-            String r = F("RSSI: ");
-            r += this->_rssi->getRssi();
-            this->sendBtMessageWithNewline(r);
+            this->sendFastRssiData(this->_rssi->getRssi());
         } else if (this->_serialString.length() >= 6 && this->_serialString.substring(0, 6) == "REBOOT") {
             // reboot the device
             ESP.restart();
         } else if (this->_serialString.length() >= 9 && this->_serialString.substring(0, 9) == "GET state") {
             // get the current state
-            String s = F("STATE: ");
-            s += this->_state;
-            this->sendBtMessageWithNewline(s);
+            this->sendGenericState("state", this->_state.c_str());
         } else if (this->_serialString.length() >= 10 && this->_serialString.substring(0, 10) == "GET config") {
             // get the current config data
             this->processGetConfig();
@@ -108,20 +113,20 @@ void BtComm::processIncommingMessage() {
             // start channel scan
             this->_rx5808->startScan(this->_storage->getChannelIndex());
             this->notifySubscribers(statemanagement::state_enum::SCAN);
-            this->sendBtMessageWithNewline("SCAN: started");
+            this->sendGenericState("scan", "started");
         } else if (this->_serialString.length() >= 9 && this->_serialString.substring(0, 9) == "STOP scan") {
             // stop channel scan
             this->_rx5808->stopScan();
             this->notifySubscribers(statemanagement::state_enum::RESTORE_STATE);
-            this->sendBtMessageWithNewline("SCAN: stopped");
+            this->sendGenericState("scan", "stopped");
         } else if (this->_serialString.length() >= 10 && this->_serialString.substring(0, 10) == "START rssi") {
             // start fast rssi scan
             this->notifySubscribers(statemanagement::state_enum::RSSI);
-            this->sendBtMessageWithNewline("RSSI: started");
+            this->sendGenericState("rssi", "started");
         } else if (this->_serialString.length() >= 9 && this->_serialString.substring(0, 9) == "STOP rssi") {
             // stop fast rssi scan
             this->notifySubscribers(statemanagement::state_enum::RESTORE_STATE);
-            this->sendBtMessageWithNewline("RSSI: stopped");
+            this->sendGenericState("rssi", "stopped");
         } else {
             String cmd = F("UNKNOWN_COMMAND: ");
             cmd += this->_serialString;
@@ -133,20 +138,18 @@ void BtComm::processIncommingMessage() {
 }
 
 void BtComm::processGetRuntimeData() {
-    DynamicJsonBuffer jsonBuffer(100);
-    JsonObject& root = jsonBuffer.createObject();
+    JsonObject& root = this->prepareJson();
+    root["type"] = "runtime";
     root["triggerValue"] = this->_lapDetector->getTriggerValue();
-    String c = F("RUNTIME: ");
-    root.printTo(c);
-    this->sendBtMessageWithNewline(c);
+    this->sendJson(root);
 }
 
 /*---------------------------------------------------
  * received get config message
  *-------------------------------------------------*/
 void BtComm::processGetConfig() {
-    DynamicJsonBuffer jsonBuffer(300);
-    JsonObject& root = jsonBuffer.createObject();
+    JsonObject& root = this->prepareJson();
+    root["type"] = "config";
     root["frequency"] = freq::Frequency::getFrequencyForChannelIndex(this->_storage->getChannelIndex());
     root["minimumLapTime"] = this->_storage->getMinLapTime();
     root["ssid"] = this->_storage->getSsid();
@@ -156,9 +159,8 @@ void BtComm::processGetConfig() {
     root["calibrationOffset"] = this->_storage->getCalibrationOffset();
     root["state"] = this->_state;
     root["triggerValue"] = this->_lapDetector->getTriggerValue();
-    String c = F("CONFIG: ");
-    root.printTo(c);
-    this->sendBtMessageWithNewline(c);
+    root["voltage"] = this->_adc->getVoltage();
+    this->sendJson(root);
 }
 
 /*---------------------------------------------------
@@ -191,20 +193,50 @@ void BtComm::setState(String state) {
 }
 
 void BtComm::sendScanData(unsigned int frequency, unsigned int rssi) {
-    String scan = F("SCAN: ");
-    scan += frequency;
-    scan += "=";
-    scan += rssi;
-    this->sendBtMessageWithNewline(scan);
+    JsonObject& root = this->prepareJson();
+    root["type"] = "scan";
+    root["frequency"] = frequency;
+    root["rssi"] = rssi;
+    this->sendJson(root);
 }
 
 void BtComm::sendFastRssiData(unsigned int rssi) {
-    String rssi2 = F("RSSI: ");
-    rssi2 += rssi;
-    this->sendBtMessageWithNewline(rssi2);
+    JsonObject& root = this->prepareJson();
+    root["type"] = "rssi";
+    root["rssi"] = rssi;
+    this->sendJson(root);
+}
+
+void BtComm::sendGenericState(const char* type, const char* state) {
+    JsonObject& root = this->prepareJson();
+    root["type"] = "state";
+    root[type] = state;
+    this->sendJson(root);
 }
 
 void BtComm::sendCalibrationDone() {
-    String done = F("CALIBRATION: done");
-    this->sendBtMessageWithNewline(done);
+    this->sendGenericState("calibration", "done");
+}
+
+JsonObject& BtComm::prepareJson() {
+    this->_jsonBuffer.clear();
+    JsonObject& root = this->_jsonBuffer.createObject();
+    return root;
+}
+
+void BtComm::sendVoltageAlarm() {
+    JsonObject& root = this->prepareJson();
+    root["type"] = "alarm";
+    root["msg"] = "Low voltage alarm";
+    this->sendJson(root);
+}
+
+void BtComm::sendJson(JsonObject& root) {
+    String result("");
+    root.printTo(result);
+    this->sendBtMessageWithNewline(result);
+}
+
+bool BtComm::hasClient() {
+    return this->_btSerial->hasClient();
 }
