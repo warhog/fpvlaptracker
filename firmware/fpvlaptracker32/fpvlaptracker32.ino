@@ -55,9 +55,10 @@
 #include "rx5808.h"
 #include "statemanager.h"
 #include "webupdate.h"
+#include "adc.h"
 
 // debug mode flags
-//#define DEBUG
+#define DEBUG
 //#define MEASURE
 
 // pin configurations
@@ -81,6 +82,7 @@ statemanagement::StateManager stateManager;
 unsigned long fastRssiTimeout = 0L;
 bool webUpdateMode = false;
 WebUpdate webUpdate;
+Adc adcBattery(PIN_ANALOG_BATTERY);
 
 void setState(statemanagement::state_enum state) {
 	stateManager.setState(state);
@@ -118,7 +120,10 @@ void setup() {
 
 	btComm.addSubscriber(&stateManager);
 
-	randomSeed(analogRead(0));
+	randomSeed(analogRead(PIN_ANALOG_BATTERY));
+	adcBattery.setCorrectionFactor(1.0);
+	adcBattery.setCorrectionOffset(1.40);
+	
 #ifdef DEBUG
 	Serial.println(F("setting up ports"));
 #endif
@@ -221,6 +226,12 @@ void setup() {
  * application main loop
  *-------------------------------------------------*/
 void loop() {
+
+	adcBattery.measure();
+	if (adcBattery.alarmHandler()) {
+		// undervoltage
+		// TODO
+	}
 
 	led.run();
 	if (webUpdateMode) {
