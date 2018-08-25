@@ -79,14 +79,12 @@ void BtComm::processIncommingMessage() {
         Serial.print(F("processIncommingMessage(): "));
         Serial.println(this->_serialString);
 #endif
+        if (this->_serialString.substring(0, 1) == "0") {
+            // sometimes on first connect there i a leading zero sent
+            this->_serialString = this->_serialString.substring(1, this->_serialString.length() - 1);
+        }
+
         if (this->_serialString.length() >= 11 && this->_serialString.substring(0, 11) == "GET version") {
-            // get the version
-            JsonObject& root = this->prepareJson();
-            root["type"] = "version";
-            root["version"] = "FLT32-R1.0";
-            this->sendJson(root);
-        } else if (this->_serialString.length() >= 12 && this->_serialString.substring(0, 12) == "0GET version") {
-            // TODO workaround for esp32, first connect after start sends a leading 0 all the time
             // get the version
             JsonObject& root = this->prepareJson();
             root["type"] = "version";
