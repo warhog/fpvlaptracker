@@ -57,7 +57,7 @@ void Rx5808::freq(unsigned int channelData) {
 
 	// Finished clocking data in
 	this->serialEnableHigh();
-	delayMicroseconds(2);
+	delayMicroseconds(4);
 
 	digitalWrite(this->_pinSpiSlaveSelect, LOW);
 	digitalWrite(this->_pinSpiClock, LOW);
@@ -66,40 +66,40 @@ void Rx5808::freq(unsigned int channelData) {
 
 void Rx5808::serialSendBit1() {
 	digitalWrite(this->_pinSpiClock, LOW);
-	delayMicroseconds(2);
+	delayMicroseconds(4);
 
 	digitalWrite(this->_pinSpiData, HIGH);
-	delayMicroseconds(2);
+	delayMicroseconds(4);
 	digitalWrite(this->_pinSpiClock, HIGH);
-	delayMicroseconds(2);
+	delayMicroseconds(4);
 
 	digitalWrite(this->_pinSpiClock, LOW);
-	delayMicroseconds(2);
+	delayMicroseconds(4);
 }
 
 void Rx5808::serialSendBit0() {
 	digitalWrite(this->_pinSpiClock, LOW);
-	delayMicroseconds(2);
+	delayMicroseconds(4);
 
 	digitalWrite(this->_pinSpiData, LOW);
-	delayMicroseconds(2);
+	delayMicroseconds(4);
 	digitalWrite(this->_pinSpiClock, HIGH);
-	delayMicroseconds(2);
+	delayMicroseconds(4);
 
 	digitalWrite(this->_pinSpiClock, LOW);
-	delayMicroseconds(2);
+	delayMicroseconds(4);
 }
 
 void Rx5808::serialEnableLow() {
-	delayMicroseconds(2);
+	delayMicroseconds(4);
 	digitalWrite(this->_pinSpiSlaveSelect, LOW);
-	delayMicroseconds(2);
+	delayMicroseconds(4);
 }
 
 void Rx5808::serialEnableHigh() {
-	delayMicroseconds(2);
+	delayMicroseconds(4);
 	digitalWrite(this->_pinSpiSlaveSelect, HIGH);
-	delayMicroseconds(2);
+	delayMicroseconds(4);
 }
 
 void Rx5808::scan() {
