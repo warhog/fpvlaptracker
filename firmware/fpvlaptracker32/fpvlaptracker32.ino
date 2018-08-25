@@ -81,8 +81,8 @@ comm::WifiComm wifiComm(&storage);
 radio::Rx5808 rx5808(PIN_SPI_CLOCK, PIN_SPI_DATA, PIN_SPI_SLAVE_SELECT, PIN_ANALOG_RSSI);
 BluetoothSerial btSerial;
 battery::BatteryMgr batteryMgr(PIN_ANALOG_BATTERY);
-comm::BtComm btComm(&btSerial, &storage, &rssi, &rx5808, &lapDetector, &batteryMgr, VERSION);
 statemanagement::StateManager stateManager;
+comm::BtComm btComm(&btSerial, &storage, &rssi, &rx5808, &lapDetector, &batteryMgr, VERSION, &stateManager);
 unsigned long fastRssiTimeout = 0L;
 bool webUpdateMode = false;
 WebUpdate webUpdate;
@@ -121,8 +121,6 @@ void setup() {
 		delay(25);
 	}
 	led.off();
-
-	btComm.addSubscriber(&stateManager);
 
 	randomSeed(analogRead(PIN_ANALOG_BATTERY));
 	batteryMgr.detectCellsAndSetup();

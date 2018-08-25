@@ -5,9 +5,10 @@ using namespace comm;
 //#define DEBUG
 
 BtComm::BtComm(BluetoothSerial *btSerial, util::Storage *storage, lap::Rssi *rssi, radio::Rx5808 *rx5808,
-    lap::LapDetector *lapDetector, battery::BatteryMgr *batteryMgr, const char *version) : Comm(storage), _serialGotLine(false),
+    lap::LapDetector *lapDetector, battery::BatteryMgr *batteryMgr, const char *version,
+    statemanagement::StateManager *stateManager) : Comm(storage), _serialGotLine(false),
     _serialString(false), _rssi(rssi), _rx5808(rx5808), _btSerial(btSerial), _lapDetector(lapDetector),
-    _jsonBuffer(300), _batteryMgr(batteryMgr), _version(version) {
+    _jsonBuffer(300), _batteryMgr(batteryMgr), _version(version), _stateManager(stateManager) {
 
 }
 
@@ -111,20 +112,20 @@ void BtComm::processIncommingMessage() {
         } else if (this->_serialString.length() >= 10 && this->_serialString.substring(0, 10) == "START scan") {
             // start channel scan
             this->_rx5808->startScan(this->_storage->getChannelIndex());
-            this->notifySubscribers(statemanagement::state_enum::SCAN);
+            this->_stateManager->update(statemanagement::state_enum::SCAN);
             this->sendGenericState("scan", "started");
         } else if (this->_serialString.length() >= 9 && this->_serialString.substring(0, 9) == "STOP scan") {
             // stop channel scan
             this->_rx5808->stopScan();
-            this->notifySubscribers(statemanagement::state_enum::RESTORE_STATE);
+            this->_stateManager->update(statemanagement::state_enum::RESTORE_STATE);
             this->sendGenericState("scan", "stopped");
         } else if (this->_serialString.length() >= 10 && this->_serialString.substring(0, 10) == "START rssi") {
             // start fast rssi scan
-            this->notifySubscribers(statemanagement::state_enum::RSSI);
+            this->_stateManager->update(statemanagement::state_enum::RSSI);
             this->sendGenericState("rssi", "started");
         } else if (this->_serialString.length() >= 9 && this->_serialString.substring(0, 9) == "STOP rssi") {
             // stop fast rssi scan
-            this->notifySubscribers(statemanagement::state_enum::RESTORE_STATE);
+            this->_stateManager->update(statemanagement::state_enum::RESTORE_STATE);
             this->sendGenericState("rssi", "stopped");
         } else {
             String cmd = F("UNKNOWN_COMMAND: ");

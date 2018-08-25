@@ -9,7 +9,6 @@
 #include "rssi.h"
 #include "frequency.h"
 #include "rx5808.h"
-#include "publisher.h"
 #include "statemanager.h"
 #include "lapdetector.h"
 #include "batterymgr.h"
@@ -18,9 +17,9 @@ namespace comm {
 
     enum btErrorCode { OK = 0, NAME_COMMAND_FAILED = -1 };
 
-    class BtComm : public Comm, public pubsub::Publisher<statemanagement::state_enum> {
+    class BtComm : public Comm {
     public:
-        BtComm(BluetoothSerial *btSerial, util::Storage *storage, lap::Rssi *rssi, radio::Rx5808 *rx5808, lap::LapDetector *lapDetector, battery::BatteryMgr *batteryMgr, const char *version);
+        BtComm(BluetoothSerial *btSerial, util::Storage *storage, lap::Rssi *rssi, radio::Rx5808 *rx5808, lap::LapDetector *lapDetector, battery::BatteryMgr *batteryMgr, const char *version, statemanagement::StateManager *stateManager);
         void reg();
         void lap(unsigned long lapTime, unsigned int rssi);
         int connect();
@@ -52,6 +51,7 @@ namespace comm {
         String _state;
         DynamicJsonBuffer _jsonBuffer;
         const char *_version;
+        statemanagement::StateManager *_stateManager;
     };
 
 }

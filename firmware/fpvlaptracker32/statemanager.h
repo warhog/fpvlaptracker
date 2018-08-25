@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Arduino.h>
-#include "subscriber.h"
 
 //#define DEBUG
 
@@ -18,7 +17,7 @@ namespace statemanagement {
         ERROR
     };
 
-    class StateManager : public pubsub::Subscriber<state_enum> {
+    class StateManager {
     public:
         StateManager() : _state(state_enum::STARTUP), _storeState(state_enum::STARTUP) {
         }
