@@ -9,7 +9,7 @@ namespace battery {
 
     class BatteryMgr {
     public:
-        BatteryMgr(uint8_t pin) : _pin(pin), _lastRun(0L), _nrOfMeasures(0), _sum(0L), _alarmVoltage(-1.0), _voltageReading(255.0), _shutdownVoltage(-1.0), _measuring(false) {
+        BatteryMgr(uint8_t pin) : _pin(pin), _lastRun(0L), _nrOfMeasures(0), _sum(0L), _alarmVoltage(-1.0), _voltageReading(255.0), _shutdownVoltage(-1.0), _measuring(true) {
             pinMode(this->_pin, INPUT);
         }
 
