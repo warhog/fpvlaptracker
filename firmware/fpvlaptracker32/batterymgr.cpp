@@ -86,6 +86,7 @@ void BatteryMgr::detectCellsAndSetup() {
 #endif
     }
 
+    this->_cells = cells;
 #ifdef DEBUG
     Serial.printf("cells: %d\n", cells);
 #endif

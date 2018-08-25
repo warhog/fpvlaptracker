@@ -174,7 +174,7 @@ void setup() {
 		webUpdate.begin();
 	    MDNS.addService("http", "tcp", 80);
 
-		// blink 5 times to show end of setup() and start of rssi offset detection
+		// blink 5 times to show end of setup() and start of webupdate
 		led.mode(ledio::modes::BLINK_SEQUENCE);
 		led.blinkSequence(5, 500, 1000);
 	} else {
@@ -218,9 +218,9 @@ void setup() {
 			}
 		}
 
-		// blink 5 times to show end of setup() and start of rssi offset detection
+		// blink <cell number> times to show end of setup() and start of rssi offset detection
 		led.mode(ledio::modes::BLINK_SEQUENCE);
-		led.blinkSequence(5, 15, 250);
+		led.blinkSequence(batteryMgr.getCells(), 15, 250);
 	}
 
 #ifdef DEBUG
