@@ -103,11 +103,11 @@ void setup() {
 	Serial.println("");
 #ifdef DEBUG
 	Serial.println(F("booting"));
-	uint64_t chipid = ESP.getEfuseMac();
-	// upper 2 bytes
-	Serial.printf("ESP32 Chip ID = %04X", static_cast<uint16_t>(chipid >> 32));
-	// lower 4 bytes
-	Serial.printf("%08X\n", static_cast<uint32_t>(chipid));
+    uint64_t chipId = ESP.getEfuseMac();
+    char strChipId[15] = { 0 };
+    sprintf(strChipId, "%u", chipId);
+    String chipString = strChipId;
+    Serial.printf("Chip ID: %s\n", chipString.c_str());
 #endif
 #ifdef MEASURE
 	Serial.println(F("INFO: running measure mode"));
