@@ -15,7 +15,7 @@ public:
     }
 private:
     char *_serverIndex = "<style>body { font-family: Arial; }</style><h1>fpvlaptracker webupdate</h1>current version: %VERSION%<br /><br />select .bin file to flash.<br /><br /><form method='POST' action='/update' enctype='multipart/form-data'><input type='file' name='update'><input type='submit' value='update'></form>";
-    char *_successResponse = "<meta http-equiv=\"refresh\" content=\"15;URL=/\">update successful! rebooting...\n";
+    char *_successResponse = "update successful! rebooting...";
     char *_failedResponse = "update failed!\n";
     WebServer _server;
     String _version;

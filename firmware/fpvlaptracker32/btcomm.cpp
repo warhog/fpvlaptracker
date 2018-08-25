@@ -4,9 +4,10 @@ using namespace comm;
 
 //#define DEBUG
 
-BtComm::BtComm(BluetoothSerial *btSerial, util::Storage *storage, lap::Rssi *rssi, radio::Rx5808 *rx5808, lap::LapDetector *lapDetector, Adc *adc) : Comm(storage), _serialGotLine(false),
+BtComm::BtComm(BluetoothSerial *btSerial, util::Storage *storage, lap::Rssi *rssi, radio::Rx5808 *rx5808,
+    lap::LapDetector *lapDetector, battery::BatteryMgr *batteryMgr, const char *version) : Comm(storage), _serialGotLine(false),
     _serialString(false), _rssi(rssi), _rx5808(rx5808), _btSerial(btSerial), _lapDetector(lapDetector),
-    _jsonBuffer(300), _adc(adc) {
+    _jsonBuffer(300), _batteryMgr(batteryMgr), _version(version) {
 
 }
 
@@ -159,7 +160,7 @@ void BtComm::processGetConfig() {
     root["calibrationOffset"] = this->_storage->getCalibrationOffset();
     root["state"] = this->_state;
     root["triggerValue"] = this->_lapDetector->getTriggerValue();
-    root["voltage"] = this->_adc->getVoltage();
+    root["voltage"] = this->_batteryMgr->getVoltage();
     this->sendJson(root);
 }
 
@@ -227,7 +228,7 @@ JsonObject& BtComm::prepareJson() {
 void BtComm::sendVoltageAlarm() {
     JsonObject& root = this->prepareJson();
     root["type"] = "alarm";
-    root["msg"] = "Low voltage alarm";
+    root["msg"] = "Battery voltage low!";
     this->sendJson(root);
 }
 

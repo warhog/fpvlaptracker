@@ -37,6 +37,7 @@
  * fast blinking - connected mode
  * blinking 2 times - BT name command not OK
  * blinking 3 times - mdns not started
+ * blinking 9 times - shutdown voltage
  * blinking 10 times - internal failure
  * 
  */
@@ -55,11 +56,13 @@
 #include "rx5808.h"
 #include "statemanager.h"
 #include "webupdate.h"
-#include "adc.h"
+#include "batterymgr.h"
 
 // debug mode flags
 //#define DEBUG
 //#define MEASURE
+
+#define VERSION "FLT32-R1.0"
 
 // pin configurations
 const unsigned int PIN_SPI_SLAVE_SELECT = 16;
@@ -77,8 +80,8 @@ lap::LapDetector lapDetector(&storage, &rssi);
 comm::WifiComm wifiComm(&storage);
 radio::Rx5808 rx5808(PIN_SPI_CLOCK, PIN_SPI_DATA, PIN_SPI_SLAVE_SELECT, PIN_ANALOG_RSSI);
 BluetoothSerial btSerial;
-Adc adcBattery(PIN_ANALOG_BATTERY);
-comm::BtComm btComm(&btSerial, &storage, &rssi, &rx5808, &lapDetector, &adcBattery);
+battery::BatteryMgr batteryMgr(PIN_ANALOG_BATTERY);
+comm::BtComm btComm(&btSerial, &storage, &rssi, &rx5808, &lapDetector, &batteryMgr, VERSION);
 statemanagement::StateManager stateManager;
 unsigned long fastRssiTimeout = 0L;
 bool webUpdateMode = false;
@@ -122,9 +125,11 @@ void setup() {
 	btComm.addSubscriber(&stateManager);
 
 	randomSeed(analogRead(PIN_ANALOG_BATTERY));
-	adcBattery.setCorrectionFactor(1.0);
-	adcBattery.setCorrectionOffset(1.40);
-	
+	batteryMgr.detectCellsAndSetup();
+#ifdef DEBUG
+	Serial.printf("alarmVoltage: %f, shutdownVoltage: %f\n", batteryMgr.getAlarmVoltage(), batteryMgr.getShutdownVoltage());
+#endif
+
 #ifdef DEBUG
 	Serial.println(F("setting up ports"));
 #endif
@@ -165,7 +170,7 @@ void setup() {
 #endif
 			blinkError(3);
 		}
-		webUpdate.setVersion("1.0");
+		webUpdate.setVersion(VERSION);
 		webUpdate.begin();
 	    MDNS.addService("http", "tcp", 80);
 
@@ -228,10 +233,21 @@ void setup() {
  *-------------------------------------------------*/
 void loop() {
 
-	adcBattery.measure();
-	if (!lowVoltageSent && adcBattery.alarmHandler()) {
+	batteryMgr.measure();
+	if (batteryMgr.isShutdown()) {
+#ifdef DEBUG
+		Serial.println(F("voltage isShutdown"));
+#endif
+		blinkError(9);
+	} else if (!lowVoltageSent && batteryMgr.isAlarm()) {
+#ifdef DEBUG
+		Serial.println(F("voltage isAlarm"));
+#endif
 		// undervoltage
 		if (btComm.isConnected() && btComm.hasClient()) {
+#ifdef DEBUG
+			Serial.println(F("voltage sendAlarm"));
+#endif
 			btComm.sendVoltageAlarm();
 			lowVoltageSent = true;
 		}

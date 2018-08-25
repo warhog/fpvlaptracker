@@ -12,7 +12,7 @@
 #include "publisher.h"
 #include "statemanager.h"
 #include "lapdetector.h"
-#include "adc.h"
+#include "batterymgr.h"
 
 namespace comm {
 
@@ -20,7 +20,7 @@ namespace comm {
 
     class BtComm : public Comm, public pubsub::Publisher<statemanagement::state_enum> {
     public:
-        BtComm(BluetoothSerial *btSerial, util::Storage *storage, lap::Rssi *rssi, radio::Rx5808 *rx5808, lap::LapDetector *lapDetector, Adc *adc);
+        BtComm(BluetoothSerial *btSerial, util::Storage *storage, lap::Rssi *rssi, radio::Rx5808 *rx5808, lap::LapDetector *lapDetector, battery::BatteryMgr *batteryMgr, const char *version);
         void reg();
         void lap(unsigned long lapTime, unsigned int rssi);
         int connect();
@@ -46,11 +46,12 @@ namespace comm {
         lap::Rssi *_rssi;
         radio::Rx5808 *_rx5808;
         lap::LapDetector *_lapDetector;
-        Adc *_adc;
+        battery::BatteryMgr *_batteryMgr;
         bool _serialGotLine;
         String _serialString;
         String _state;
         DynamicJsonBuffer _jsonBuffer;
+        const char *_version;
     };
 
 }
