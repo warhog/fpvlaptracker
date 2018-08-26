@@ -11,8 +11,9 @@ const unsigned int CONFIG_START = 32;
     #define max(a,b) ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a > _b ? _a : _b; })
 #endif
 
+// do also adjust values in lapdetector constructor if you want to change defaults
 Storage::Storage() : _channelIndex(0), _minLapTime(4000), _ssid("flt-base"), _wifiPassword("flt-base"),
-    _triggerThresholdCalibration(120), _triggerThreshold(60), _calibrationOffset(15) {
+    _triggerThresholdCalibration(120), _triggerThreshold(40), _calibrationOffset(10) {
 }
 
 void Storage::load() {
