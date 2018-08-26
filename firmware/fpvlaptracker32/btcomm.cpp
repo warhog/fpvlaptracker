@@ -160,6 +160,7 @@ void BtComm::processGetConfig() {
     root["state"] = this->_state;
     root["triggerValue"] = this->_lapDetector->getTriggerValue();
     root["voltage"] = this->_batteryMgr->getVoltage();
+    root["uptime"] = millis() / 1000;
     this->sendJson(root);
 }
 
