@@ -34,7 +34,7 @@ import org.jooq.impl.SchemaImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Public extends SchemaImpl {
 
-    private static final long serialVersionUID = -675038193;
+    private static final long serialVersionUID = -879290353;
 
     /**
      * The reference instance of <code>PUBLIC</code>
@@ -52,14 +52,14 @@ public class Public extends SchemaImpl {
     public final Races RACES = de.warhog.fpvlaptracker.jooq.tables.Races.RACES;
 
     /**
-     * The table <code>PUBLIC.LAPS</code>.
-     */
-    public final Laps LAPS = de.warhog.fpvlaptracker.jooq.tables.Laps.LAPS;
-
-    /**
      * The table <code>PUBLIC.PARTICIPANTS</code>.
      */
     public final Participants PARTICIPANTS = de.warhog.fpvlaptracker.jooq.tables.Participants.PARTICIPANTS;
+
+    /**
+     * The table <code>PUBLIC.LAPS</code>.
+     */
+    public final Laps LAPS = de.warhog.fpvlaptracker.jooq.tables.Laps.LAPS;
 
     /**
      * No further instances allowed
@@ -101,7 +101,7 @@ public class Public extends SchemaImpl {
         return Arrays.<Table<?>>asList(
             Config.CONFIG,
             Races.RACES,
-            Laps.LAPS,
-            Participants.PARTICIPANTS);
+            Participants.PARTICIPANTS,
+            Laps.LAPS);
     }
 }

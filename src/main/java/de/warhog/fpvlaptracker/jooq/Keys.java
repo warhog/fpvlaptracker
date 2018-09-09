@@ -49,10 +49,10 @@ public class Keys {
     public static final UniqueKey<ConfigRecord> UQ_CONFIG = UniqueKeys0.UQ_CONFIG;
     public static final UniqueKey<RacesRecord> PK_RACES = UniqueKeys0.PK_RACES;
     public static final UniqueKey<RacesRecord> UQ_RACES = UniqueKeys0.UQ_RACES;
-    public static final UniqueKey<LapsRecord> PK_LAPS = UniqueKeys0.PK_LAPS;
-    public static final UniqueKey<LapsRecord> UQ_LAPS = UniqueKeys0.UQ_LAPS;
     public static final UniqueKey<ParticipantsRecord> PK_PARTICIPANTS = UniqueKeys0.PK_PARTICIPANTS;
     public static final UniqueKey<ParticipantsRecord> UQ_PARTICIPANTS = UniqueKeys0.UQ_PARTICIPANTS;
+    public static final UniqueKey<LapsRecord> PK_LAPS = UniqueKeys0.PK_LAPS;
+    public static final UniqueKey<LapsRecord> UQ_LAPS = UniqueKeys0.UQ_LAPS;
 
     // -------------------------------------------------------------------------
     // FOREIGN KEY definitions
@@ -73,9 +73,9 @@ public class Keys {
         public static final UniqueKey<ConfigRecord> UQ_CONFIG = createUniqueKey(Config.CONFIG, "uq_config", Config.CONFIG.CONFIG_KEY);
         public static final UniqueKey<RacesRecord> PK_RACES = createUniqueKey(Races.RACES, "pk_races", Races.RACES.ID);
         public static final UniqueKey<RacesRecord> UQ_RACES = createUniqueKey(Races.RACES, "uq_races", Races.RACES.ID);
-        public static final UniqueKey<LapsRecord> PK_LAPS = createUniqueKey(Laps.LAPS, "pk_laps", Laps.LAPS.ID);
-        public static final UniqueKey<LapsRecord> UQ_LAPS = createUniqueKey(Laps.LAPS, "uq_laps", Laps.LAPS.ID);
         public static final UniqueKey<ParticipantsRecord> PK_PARTICIPANTS = createUniqueKey(Participants.PARTICIPANTS, "pk_participants", Participants.PARTICIPANTS.CHIPID);
         public static final UniqueKey<ParticipantsRecord> UQ_PARTICIPANTS = createUniqueKey(Participants.PARTICIPANTS, "uq_participants", Participants.PARTICIPANTS.CHIPID);
+        public static final UniqueKey<LapsRecord> PK_LAPS = createUniqueKey(Laps.LAPS, "pk_laps", Laps.LAPS.ID);
+        public static final UniqueKey<LapsRecord> UQ_LAPS = createUniqueKey(Laps.LAPS, "uq_laps", Laps.LAPS.ID);
     }
 }

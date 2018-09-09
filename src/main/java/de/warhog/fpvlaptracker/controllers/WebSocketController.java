@@ -25,12 +25,12 @@ public class WebSocketController {
         return message;
     }
 
-    public void sendNewLapMessage(Integer chipId) {
+    public void sendNewLapMessage(Long chipId) {
         LOG.debug("sending lap message for chipid " + chipId);
         this.template.convertAndSend("/topic/lap", chipId);
     }
 
-    public void sendNewParticipantMessage(Integer chipId) {
+    public void sendNewParticipantMessage(Long chipId) {
         LOG.debug("sending new participant message for chipid " + chipId);
         this.template.convertAndSend("/topic/participant", chipId);
     }

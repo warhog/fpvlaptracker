@@ -36,12 +36,12 @@ public class Tables {
     public static final Races RACES = de.warhog.fpvlaptracker.jooq.tables.Races.RACES;
 
     /**
-     * The table <code>PUBLIC.LAPS</code>.
-     */
-    public static final Laps LAPS = de.warhog.fpvlaptracker.jooq.tables.Laps.LAPS;
-
-    /**
      * The table <code>PUBLIC.PARTICIPANTS</code>.
      */
     public static final Participants PARTICIPANTS = de.warhog.fpvlaptracker.jooq.tables.Participants.PARTICIPANTS;
+
+    /**
+     * The table <code>PUBLIC.LAPS</code>.
+     */
+    public static final Laps LAPS = de.warhog.fpvlaptracker.jooq.tables.Laps.LAPS;
 }

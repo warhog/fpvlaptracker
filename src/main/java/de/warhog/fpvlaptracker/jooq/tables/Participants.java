@@ -34,7 +34,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Participants extends TableImpl<ParticipantsRecord> {
 
-    private static final long serialVersionUID = -843520617;
+    private static final long serialVersionUID = 1468095274;
 
     /**
      * The reference instance of <code>PUBLIC.PARTICIPANTS</code>
@@ -52,7 +52,7 @@ public class Participants extends TableImpl<ParticipantsRecord> {
     /**
      * The column <code>PUBLIC.PARTICIPANTS.CHIPID</code>.
      */
-    public final TableField<ParticipantsRecord, Integer> CHIPID = createField("CHIPID", org.jooq.impl.SQLDataType.INTEGER.nullable(false), this, "");
+    public final TableField<ParticipantsRecord, Long> CHIPID = createField("CHIPID", org.jooq.impl.SQLDataType.BIGINT.nullable(false), this, "");
 
     /**
      * The column <code>PUBLIC.PARTICIPANTS.NAME</code>.

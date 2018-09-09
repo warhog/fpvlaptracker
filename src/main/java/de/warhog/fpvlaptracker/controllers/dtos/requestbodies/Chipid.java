@@ -6,13 +6,13 @@ import org.slf4j.LoggerFactory;
 public class Chipid {
 
     private static final Logger LOG = LoggerFactory.getLogger(Chipid.class);
-    private Integer chipid;
+    private Long chipid;
 
-    public Integer getChipid() {
+    public Long getChipid() {
         return chipid;
     }
 
-    public void setChipid(Integer chipid) {
+    public void setChipid(Long chipid) {
         this.chipid = chipid;
     }
 

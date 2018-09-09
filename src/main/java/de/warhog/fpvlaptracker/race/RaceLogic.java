@@ -140,7 +140,7 @@ public class RaceLogic {
         }
     }
 
-    public void addLap(Integer chipId, Long duration, Integer rssi) {
+    public void addLap(Long chipId, Long duration, Integer rssi) {
         LOG.debug("add lap", chipId, duration, rssi);
         boolean raceStartedInThisLap = false;
         boolean oneParticipantReachedEnd = false;

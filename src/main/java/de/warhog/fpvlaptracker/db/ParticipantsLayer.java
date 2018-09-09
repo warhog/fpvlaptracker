@@ -24,7 +24,7 @@ public class ParticipantsLayer {
     @Autowired
     private Db db;
 
-    public void createOrUpdateParticipant(Integer chipId, String name) throws DbLayerException {
+    public void createOrUpdateParticipant(Long chipId, String name) throws DbLayerException {
         DSLContext dslContext = db.connectDatabase();
         ParticipantsRecord rec = dslContext.selectFrom(Tables.PARTICIPANTS).where(Tables.PARTICIPANTS.CHIPID.equal(chipId)).limit(1).fetchOne();
         if (rec == null) {
@@ -39,7 +39,7 @@ public class ParticipantsLayer {
         db.closeDatabase();
     }
 
-    public ParticipantsRecord getParticipantForChipId(Integer chipId) throws DbLayerException {
+    public ParticipantsRecord getParticipantForChipId(Long chipId) throws DbLayerException {
         DSLContext dslContext = db.connectDatabase();
         ParticipantsRecord rec = dslContext.selectFrom(Tables.PARTICIPANTS).where(Tables.PARTICIPANTS.CHIPID.equal(chipId)).limit(1).fetchOne();
         if (rec != null) {

@@ -91,7 +91,7 @@ public class RaceLayer {
         throw new DbLayerException("cannot find data for id " + id);
     }
 
-    public Integer addLap(Integer raceId, Integer chipId, Integer lap, Integer duration) throws DbLayerException {
+    public Integer addLap(Integer raceId, Long chipId, Integer lap, Integer duration) throws DbLayerException {
         DSLContext dslContext = db.connectDatabase();
         LapsRecord lapRecord = dslContext.newRecord(Tables.LAPS);
         lapRecord.setRaceid(raceId);
@@ -103,8 +103,8 @@ public class RaceLayer {
         return lapRecord.getId();
     }
 
-    public List<Integer> getRaceParticipants(Integer raceId) throws DbLayerException {
-        List<Integer> ret = new ArrayList<>();
+    public List<Long> getRaceParticipants(Integer raceId) throws DbLayerException {
+        List<Long> ret = new ArrayList<>();
         DSLContext dslContext = db.connectDatabase();
         Result<LapsRecord> rec = dslContext.selectFrom(Tables.LAPS).where(Tables.LAPS.RACEID.equal(raceId)).fetch();
         if (rec != null && rec.size() > 0) {
@@ -118,7 +118,7 @@ public class RaceLayer {
         throw new DbLayerException("cannot find data for id " + raceId);
     }
 
-    public List<LapsRecord> getLaps(Integer raceId, Integer chipId) throws DbLayerException {
+    public List<LapsRecord> getLaps(Integer raceId, Long chipId) throws DbLayerException {
         List<LapsRecord> ret = new ArrayList<>();
         DSLContext dslContext = db.connectDatabase();
         List<LapsRecord> rec = dslContext.selectFrom(Tables.LAPS).where(Tables.LAPS.RACEID.equal(raceId)).and(Tables.LAPS.CHIPID.equal(chipId)).orderBy(Tables.LAPS.LAP).fetch();
@@ -138,10 +138,10 @@ public class RaceLayer {
         return ret;
     }
 
-    public Result<Record4<Integer, Integer, BigDecimal, String>> getToplist(Integer startTime) throws DbLayerException {
+    public Result<Record4<Long, Integer, BigDecimal, String>> getToplist(Integer startTime) throws DbLayerException {
         LOG.debug("start time: " + startTime);
         DSLContext dslContext = db.connectDatabase();
-        Result<Record4<Integer, Integer, BigDecimal, String>> records = dslContext
+        Result<Record4<Long, Integer, BigDecimal, String>> records = dslContext
                 .select(
                         Tables.LAPS.CHIPID,
                         DSL.count(Tables.LAPS.ID).as("NROFLAPS"),

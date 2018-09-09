@@ -22,11 +22,11 @@ import javax.annotation.Generated;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Laps implements Serializable {
 
-    private static final long serialVersionUID = 106090695;
+    private static final long serialVersionUID = -1534204819;
 
     private final Integer id;
     private final Integer raceid;
-    private final Integer chipid;
+    private final Long    chipid;
     private final Integer lap;
     private final Integer duration;
 
@@ -41,7 +41,7 @@ public class Laps implements Serializable {
     public Laps(
         Integer id,
         Integer raceid,
-        Integer chipid,
+        Long    chipid,
         Integer lap,
         Integer duration
     ) {
@@ -60,7 +60,7 @@ public class Laps implements Serializable {
         return this.raceid;
     }
 
-    public Integer getChipid() {
+    public Long getChipid() {
         return this.chipid;
     }
 

@@ -70,7 +70,7 @@ public class RaceDbService {
         }
     }
 
-    public Integer addLap(Integer raceId, Integer chipId, Integer lap, Integer duration) throws ServiceLayerException {
+    public Integer addLap(Integer raceId, Long chipId, Integer lap, Integer duration) throws ServiceLayerException {
         try {
             return dbLayer.addLap(raceId, chipId, lap, duration);
         } catch (DbLayerException ex) {
@@ -81,9 +81,9 @@ public class RaceDbService {
 
     public List<Participant> getRaceParticipants(Integer raceId) throws ServiceLayerException {
         try {
-            List<Integer> part = dbLayer.getRaceParticipants(raceId);
+            List<Long> part = dbLayer.getRaceParticipants(raceId);
             List<Participant> ret = new ArrayList<>();
-            for (Integer chipId : part) {
+            for (Long chipId : part) {
                 ParticipantsRecord participantsRecord = participantsDbService.getParticipantRecordForChipIdFromDb(chipId);
                 Participant participant = new Participant(participantsRecord.getName(), participantsRecord.getChipid(), null);
                 ret.add(participant);
@@ -95,7 +95,7 @@ public class RaceDbService {
         }
     }
 
-    public List<LapsRecord> getLaps(Integer raceId, Integer chipId) throws ServiceLayerException {
+    public List<LapsRecord> getLaps(Integer raceId, Long chipId) throws ServiceLayerException {
         try {
             List<LapsRecord> ret = dbLayer.getLaps(raceId, chipId);
             return ret;
@@ -114,11 +114,11 @@ public class RaceDbService {
         }
     }
 
-    public List<ToplistResult> getToplist(Result<Record4<Integer, Integer, BigDecimal, String>> data) throws ServiceLayerException {
+    public List<ToplistResult> getToplist(Result<Record4<Long, Integer, BigDecimal, String>> data) throws ServiceLayerException {
         List<ToplistResult> result = new ArrayList<>();
-        for (Record4<Integer, Integer, BigDecimal, String> rec : data) {
+        for (Record4<Long, Integer, BigDecimal, String> rec : data) {
             ToplistResult toplistResult = new ToplistResult();
-            toplistResult.setChipId((Integer) rec.get("CHIPID"));
+            toplistResult.setChipId((Long) rec.get("CHIPID"));
             toplistResult.setNumberOfTotalLaps((Integer) rec.get("NROFLAPS"));
             BigDecimal totalDurationRaw = (BigDecimal) rec.get("TOTALDURATION");
             Duration totalDuration = Duration.ZERO;

@@ -26,8 +26,8 @@ public class ChartResultLapSerializer extends StdSerializer<ChartResultLap> {
     public void serialize(ChartResultLap value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();
         gen.writeNumberField("lap", value.getLap());
-        Map<Integer, Duration> times = value.getTimes();
-        for (Map.Entry<Integer, Duration> entry : times.entrySet()) {
+        Map<Long, Duration> times = value.getTimes();
+        for (Map.Entry<Long, Duration> entry : times.entrySet()) {
             gen.writeNumberField(entry.getKey().toString(), entry.getValue().toMillis());
         }
         gen.writeEndObject();

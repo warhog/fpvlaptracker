@@ -38,7 +38,7 @@ public class ParticipantsDbService {
         participants.add(participant);
     }
 
-    public Participant getParticipant(Integer chipId) {
+    public Participant getParticipant(Long chipId) {
         for (Participant participant : participants) {
             if (Objects.equals(participant.getChipId(), chipId)) {
                 return participant;
@@ -51,7 +51,7 @@ public class ParticipantsDbService {
         return participants.contains(participant);
     }
 
-    public Boolean hasParticipant(Integer chipId) {
+    public Boolean hasParticipant(Long chipId) {
         for (Participant participant : participants) {
             if (Objects.equals(participant.getChipId(), chipId)) {
                 return true;
@@ -71,7 +71,7 @@ public class ParticipantsDbService {
         }
     }
 
-    public ParticipantsRecord getParticipantRecordForChipIdFromDb(Integer chipId) throws ServiceLayerException {
+    public ParticipantsRecord getParticipantRecordForChipIdFromDb(Long chipId) throws ServiceLayerException {
         try {
             ParticipantsRecord pr = dbLayer.getParticipantForChipId(chipId);
             return pr;
@@ -80,12 +80,12 @@ public class ParticipantsDbService {
         }
     }
 
-    public String getNameForChipIdFromDb(Integer chipId) throws ServiceLayerException {
+    public String getNameForChipIdFromDb(Long chipId) throws ServiceLayerException {
         ParticipantsRecord pr = getParticipantRecordForChipIdFromDb(chipId);
         return pr.getName();
     }
 
-    public void createOrUpdateParticipantInDb(Integer chipId, String name) throws ServiceLayerException {
+    public void createOrUpdateParticipantInDb(Long chipId, String name) throws ServiceLayerException {
         if (name.length() > 255) {
             name = name.substring(0, 255);
         }

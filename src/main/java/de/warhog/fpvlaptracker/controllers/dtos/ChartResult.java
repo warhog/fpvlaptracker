@@ -16,10 +16,10 @@ public class ChartResult {
 
     private static final Logger LOG = LoggerFactory.getLogger(ChartResult.class);
 
-    private final Map<Integer, String> participants = new HashMap<>();
+    private final Map<Long, String> participants = new HashMap<>();
     private final List<ChartResultLap> lapTimes = new ArrayList<>();
 
-    public Map<Integer, String> getParticipants() {
+    public Map<Long, String> getParticipants() {
         return participants;
     }
 
@@ -27,11 +27,11 @@ public class ChartResult {
         return lapTimes;
     }
 
-    public void addParticipant(Integer chipId, String name) {
+    public void addParticipant(Long chipId, String name) {
         participants.put(chipId, name);
     }
 
-    public void addLapTimes(Integer lap, Integer chipId, Duration duration) {
+    public void addLapTimes(Integer lap, Long chipId, Duration duration) {
         for (ChartResultLap chartResultLap : lapTimes) {
             if (Objects.equals(chartResultLap.getLap(), lap)) {
                 chartResultLap.addLapTime(chipId, duration);

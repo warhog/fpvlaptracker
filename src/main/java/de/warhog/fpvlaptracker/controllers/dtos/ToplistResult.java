@@ -8,16 +8,16 @@ public class ToplistResult {
     
     private static final Logger LOG = LoggerFactory.getLogger(ToplistResult.class);
     
-    private Integer chipId;
+    private Long chipId;
     private Integer numberOfTotalLaps;
     private Duration totalDuration;
     private String name;
 
-    public Integer getChipId() {
+    public Long getChipId() {
         return chipId;
     }
 
-    public void setChipId(Integer chipId) {
+    public void setChipId(Long chipId) {
         this.chipId = chipId;
     }
 

@@ -10,13 +10,13 @@ public class Participant {
     private static final Logger LOG = LoggerFactory.getLogger(Participant.class);
 
     private String name;
-    private Integer chipId;
+    private Long chipId;
     private InetAddress ip;
     private boolean allowFullConfiguration = false;
     private boolean allowConfigureName = false;
     private boolean callable = false;
 
-    public Participant(String name, Integer chipId, InetAddress ip) {
+    public Participant(String name, Long chipId, InetAddress ip) {
         this.name = name;
         this.chipId = chipId;
         this.ip = ip;
@@ -54,11 +54,11 @@ public class Participant {
         this.callable = callable;
     }
     
-    public Integer getChipId() {
+    public Long getChipId() {
         return chipId;
     }
 
-    public void setChipId(Integer chipId) {
+    public void setChipId(Long chipId) {
         this.chipId = chipId;
     }
 

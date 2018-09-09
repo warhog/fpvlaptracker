@@ -26,7 +26,7 @@ public class ChartResultSerializer extends StdSerializer<ChartResult> {
         gen.writeStartObject();
         
         gen.writeArrayFieldStart("participants");
-        for (Map.Entry<Integer, String> entry : value.getParticipants().entrySet()) {
+        for (Map.Entry<Long, String> entry : value.getParticipants().entrySet()) {
             gen.writeStartObject();
             gen.writeNumberField("chipid", entry.getKey());
             gen.writeStringField("name", entry.getValue());

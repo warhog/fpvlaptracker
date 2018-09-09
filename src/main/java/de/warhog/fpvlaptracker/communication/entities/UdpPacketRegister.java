@@ -9,14 +9,14 @@ public class UdpPacketRegister extends UdpPacket {
 
     private static final Logger LOG = LoggerFactory.getLogger(UdpPacketRegister.class);
 
-    private Integer chipid;
+    private Long chipid;
     private Long ip;
 
-    public Integer getChipid() {
+    public Long getChipid() {
         return chipid;
     }
 
-    public void setChipid(Integer chipid) {
+    public void setChipid(Long chipid) {
         this.chipid = chipid;
     }
 

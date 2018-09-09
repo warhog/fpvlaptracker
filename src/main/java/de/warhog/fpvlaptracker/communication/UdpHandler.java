@@ -129,6 +129,7 @@ public class UdpHandler implements Runnable {
                         break;
                     case REGISTERBT:
                     case REGISTERBT2:
+                    case REGISTER32:
                         UdpPacketRegister udpPacketRegisterBt = mapper.readValue(packet.getData(), UdpPacketRegister.class);
                         udpPacketRegisterBt.setPacketType(packetType);
                         processRegister(udpPacketRegisterBt);

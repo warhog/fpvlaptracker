@@ -81,7 +81,7 @@ public class RaceController {
 
     @RequestMapping(path = "/api/auth/race/participants/add", method = RequestMethod.GET)
     public StatusResult addParticipant(@RequestParam(name = "chipid", required = true) String chipid) {
-        Integer chipId = Integer.parseInt(chipid);
+        Long chipId = Long.parseLong(chipid);
         Participant participant = participantsDbService.getParticipant(chipId);
         raceLogic.addParticipant(participant);
         return new StatusResult(StatusResult.Status.OK);
@@ -89,7 +89,7 @@ public class RaceController {
 
     @RequestMapping(path = "/api/auth/race/participants/remove", method = RequestMethod.GET)
     public StatusResult removeParticipant(@RequestParam(name = "chipid", required = true) String chipid) {
-        Integer chipId = Integer.parseInt(chipid);
+        Long chipId = Long.parseLong(chipid);
         Participant participant = participantsDbService.getParticipant(chipId);
         raceLogic.removeParticipant(participant);
         return new StatusResult(StatusResult.Status.OK);

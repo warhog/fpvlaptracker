@@ -74,7 +74,7 @@ public class Db {
             dslContext.createTableIfNotExists(Tables.LAPS)
                     .column(Tables.LAPS.ID, SQLDataType.INTEGER.nullable(false).identity(true))
                     .column(Tables.LAPS.RACEID, SQLDataType.INTEGER.nullable(false))
-                    .column(Tables.LAPS.CHIPID, SQLDataType.INTEGER.nullable(false))
+                    .column(Tables.LAPS.CHIPID, SQLDataType.BIGINT.nullable(false))
                     .column(Tables.LAPS.LAP, SQLDataType.INTEGER.nullable(false))
                     .column(Tables.LAPS.DURATION, SQLDataType.INTEGER.nullable(false))
                     .constraints(
@@ -85,7 +85,7 @@ public class Db {
 
             LOG.info("create table participants if not existing");
             dslContext.createTableIfNotExists(Tables.PARTICIPANTS)
-                    .column(Tables.PARTICIPANTS.CHIPID, SQLDataType.INTEGER.nullable(false))
+                    .column(Tables.PARTICIPANTS.CHIPID, SQLDataType.BIGINT.nullable(false))
                     .column(Tables.PARTICIPANTS.NAME, SQLDataType.VARCHAR(255).nullable(false))
                     .constraints(
                             DSL.constraint("pk_participants").primaryKey(Tables.PARTICIPANTS.CHIPID),

@@ -14,7 +14,7 @@ public class ChartResultLap {
     private static final Logger LOG = LoggerFactory.getLogger(ChartResultLap.class);
 
     private Integer lap;
-    private final Map<Integer, Duration> times = new HashMap<>();
+    private final Map<Long, Duration> times = new HashMap<>();
 
     public Integer getLap() {
         return lap;
@@ -24,11 +24,11 @@ public class ChartResultLap {
         this.lap = lap;
     }
 
-    public Map<Integer, Duration> getTimes() {
+    public Map<Long, Duration> getTimes() {
         return new HashMap<>(times);
     }
 
-    public void addLapTime(Integer chipId, Duration duration) {
+    public void addLapTime(Long chipId, Duration duration) {
         times.put(chipId, duration);
     }
 

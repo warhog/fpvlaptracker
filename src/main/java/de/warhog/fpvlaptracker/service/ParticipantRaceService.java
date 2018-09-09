@@ -41,7 +41,7 @@ public class ParticipantRaceService {
         }
     }
 
-    public Participant getParticipantByChipId(final Integer chipId) {
+    public Participant getParticipantByChipId(final Long chipId) {
         for (Map.Entry<Participant, ParticipantRaceData> entry : participants.entrySet()) {
             Participant participant = entry.getKey();
             if (participant.getChipId().equals(chipId)) {
@@ -78,7 +78,7 @@ public class ParticipantRaceService {
         throw new IllegalArgumentException("participant not found: " + participant.toString());
     }
 
-    public boolean hasParticipant(final Integer chipId) {
+    public boolean hasParticipant(final Long chipId) {
         try {
             getParticipantByChipId(chipId);
             return true;

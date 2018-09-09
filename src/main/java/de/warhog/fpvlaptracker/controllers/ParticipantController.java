@@ -36,14 +36,14 @@ public class ParticipantController {
     private ParticipantsDbService participantsDbService;
 
     @RequestMapping(path = "/api/participant/rssi", method = RequestMethod.GET)
-    public Rssi getRssi(@RequestParam(name = "chipid", required = true) Integer chipid) {
+    public Rssi getRssi(@RequestParam(name = "chipid", required = true) Long chipid) {
         Participant participant = participantsDbService.getParticipant(chipid);
         Rssi rssi = comm.getRssi(participant);
         return rssi;
     }
 
     @RequestMapping(path = "/api/participant/setupData", method = RequestMethod.GET)
-    public Map<String, String> getSetupData(@RequestParam(name = "chipid", required = true) Integer chipid) {
+    public Map<String, String> getSetupData(@RequestParam(name = "chipid", required = true) Long chipid) {
         Participant participant = participantsDbService.getParticipant(chipid);
         Data data = comm.getData(participant);
         Map<String, String> ret = new HashMap<>();
@@ -65,7 +65,7 @@ public class ParticipantController {
     }
 
     @RequestMapping(path = "/api/participant/minlaptime", method = RequestMethod.GET)
-    public Map<String, Long> getMinLapTime(@RequestParam(name = "chipid", required = true) Integer chipid) {
+    public Map<String, Long> getMinLapTime(@RequestParam(name = "chipid", required = true) Long chipid) {
         Participant participant = participantsDbService.getParticipant(chipid);
         Long minLapTime = comm.getMinLapTime(participant);
         Map<String, Long> lapTime = new HashMap<>();
@@ -74,7 +74,7 @@ public class ParticipantController {
     }
 
     @RequestMapping(path = "/api/participant/measure", method = RequestMethod.GET)
-    public RssiMeasure getMeasure(@RequestParam(name = "chipid", required = true) Integer chipid) {
+    public RssiMeasure getMeasure(@RequestParam(name = "chipid", required = true) Long chipid) {
         Participant participant = participantsDbService.getParticipant(chipid);
         RssiMeasure rssiMeasure = comm.getRssiMeasure(participant);
         return rssiMeasure;
@@ -95,7 +95,7 @@ public class ParticipantController {
     }
 
     @RequestMapping(path = "/api/participant/threshold", method = RequestMethod.GET)
-    public Map<String, Integer> getThreshold(@RequestParam(name = "chipid", required = true) Integer chipid) {
+    public Map<String, Integer> getThreshold(@RequestParam(name = "chipid", required = true) Long chipid) {
         Participant participant = participantsDbService.getParticipant(chipid);
         Integer thresholdLowValue = comm.getThresholdLow(participant);
         Integer thresholdHighValue = comm.getThresholdHigh(participant);

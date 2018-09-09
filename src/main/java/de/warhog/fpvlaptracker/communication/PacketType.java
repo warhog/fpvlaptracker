@@ -4,5 +4,6 @@ public enum PacketType {
     REGISTER,
     REGISTERBT,
     REGISTERBT2,
+    REGISTER32,
     LAP
 }

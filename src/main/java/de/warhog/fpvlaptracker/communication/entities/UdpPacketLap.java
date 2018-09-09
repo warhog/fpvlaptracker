@@ -9,15 +9,15 @@ public class UdpPacketLap extends UdpPacket {
 
     private static final Logger LOG = LoggerFactory.getLogger(UdpPacketLap.class);
 
-    private Integer chipid;
+    private Long chipid;
     private Long duration;
     private Integer rssi;
 
-    public Integer getChipid() {
+    public Long getChipid() {
         return chipid;
     }
 
-    public void setChipid(Integer chipid) {
+    public void setChipid(Long chipid) {
         this.chipid = chipid;
     }
 
