@@ -139,6 +139,10 @@ public class UdpHandler implements Runnable {
                         udpPacketLap.setPacketType(packetType);
                         processLap(udpPacketLap, packet.getAddress());
                         break;
+                    case CALIBRATIONDONE:
+                        LOG.info("got calibration packet");
+                        // TODO process packet
+                        break;
                     default:
                         LOG.error("unknown packet type: " + packetType);
                         break;

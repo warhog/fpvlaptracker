@@ -5,5 +5,6 @@ public enum PacketType {
     REGISTERBT,
     REGISTERBT2,
     REGISTER32,
-    LAP
+    LAP,
+    CALIBRATIONDONE
 }
