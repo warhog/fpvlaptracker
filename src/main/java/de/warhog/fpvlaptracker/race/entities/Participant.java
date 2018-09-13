@@ -15,11 +15,29 @@ public class Participant {
     private boolean allowFullConfiguration = false;
     private boolean allowConfigureName = false;
     private boolean callable = false;
-
+    private boolean allowDeviceData = false;
+    private ParticipantDeviceData participantDeviceData = new ParticipantDeviceData();
+    
     public Participant(String name, Long chipId, InetAddress ip) {
         this.name = name;
         this.chipId = chipId;
         this.ip = ip;
+    }
+
+    public ParticipantDeviceData getParticipantDeviceData() {
+        return participantDeviceData;
+    }
+
+    public void setParticipantDeviceData(ParticipantDeviceData participantDeviceData) {
+        this.participantDeviceData = participantDeviceData;
+    }
+
+    public boolean isAllowDeviceData() {
+        return allowDeviceData;
+    }
+
+    public void setAllowDeviceData(boolean allowDeviceData) {
+        this.allowDeviceData = allowDeviceData;
     }
     
     public String getName() {

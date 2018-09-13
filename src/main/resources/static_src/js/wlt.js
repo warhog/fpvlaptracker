@@ -1,5 +1,5 @@
 /* global moment, Stomp */
-angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', 'navigation', 'setup', 'races', 'toplist', 'login'])
+angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', 'navigation', 'setup', 'races', 'toplist', 'login', 'devicedata'])
         .config(function ($routeProvider, $httpProvider, $locationProvider) {
 
             $locationProvider.html5Mode(true);
@@ -16,6 +16,9 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
             }).when('/setup', {
                 templateUrl: 'js/setup/setup.html',
                 controller: 'setup'
+            }).when('/devicedata', {
+                templateUrl: 'js/devicedata/devicedata.html',
+                controller: 'devicedata'
             }).when('/settings', {
                 templateUrl: 'js/settings/settings.html',
                 controller: 'settings'

@@ -2,13 +2,17 @@ package de.warhog.fpvlaptracker.communication;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import de.warhog.fpvlaptracker.communication.entities.UdpPacketDeviceData;
 import de.warhog.fpvlaptracker.communication.entities.UdpPacketLap;
 import de.warhog.fpvlaptracker.communication.entities.UdpPacketRegister;
 import de.warhog.fpvlaptracker.controllers.WebSocketController;
 import de.warhog.fpvlaptracker.race.entities.Participant;
 import de.warhog.fpvlaptracker.race.RaceLogic;
+import de.warhog.fpvlaptracker.race.entities.ParticipantDeviceData;
 import de.warhog.fpvlaptracker.service.AudioService;
 import de.warhog.fpvlaptracker.service.ParticipantsDbService;
+import de.warhog.fpvlaptracker.service.ParticipantsService;
 import de.warhog.fpvlaptracker.service.ServiceLayerException;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -33,6 +37,9 @@ public class UdpHandler implements Runnable {
 
     @Autowired
     private RaceLogic race;
+
+    @Autowired
+    private ParticipantsService participantsService;
 
     @Autowired
     private ParticipantsDbService participantsDbService;
@@ -80,7 +87,7 @@ public class UdpHandler implements Runnable {
         try {
             String name = udpPacketRegister.getChipid().toString();
             try {
-                name = participantsDbService.getNameForChipIdFromDb(udpPacketRegister.getChipid());
+                name = participantsDbService.getNameForChipId(udpPacketRegister.getChipid());
             } catch (ServiceLayerException ex) {
                 LOG.debug("no name for chipid " + udpPacketRegister.getChipid());
             }
@@ -90,12 +97,15 @@ public class UdpHandler implements Runnable {
             } else if (udpPacketRegister.getPacketType() == PacketType.REGISTER) {
                 participant.setAllowFullConfiguration(true);
                 participant.setCallable(true);
+            } else if (udpPacketRegister.getPacketType() == PacketType.REGISTER32) {
+                participant.setAllowConfigureName(true);
+                participant.setAllowDeviceData(true);
             }
-            if (participantsDbService.hasParticipant(participant)) {
+            if (participantsService.hasParticipant(participant)) {
                 LOG.error("participant already existing: " + udpPacketRegister.getChipid(), participant);
                 return;
             }
-            participantsDbService.addParticipant(participant);
+            participantsService.addParticipant(participant);
             webSocketController.sendNewParticipantMessage(udpPacketRegister.getChipid());
             audioService.playRegistered();
             LOG.info("registered participant: " + participant.toString());
@@ -143,6 +153,15 @@ public class UdpHandler implements Runnable {
                         LOG.info("got calibration packet");
                         // TODO process packet
                         break;
+                    case DEVICEDATA:
+                        try {
+                            UdpPacketDeviceData udpPacketDeviceData = mapper.readValue(packet.getData(), UdpPacketDeviceData.class);
+                            udpPacketDeviceData.setPacketType(packetType);
+                            processDeviceData(udpPacketDeviceData);
+                        } catch (UnrecognizedPropertyException ex) {
+                            LOG.error("cannot parse json: " + ex.getMessage());
+                        }
+                        break;
                     default:
                         LOG.error("unknown packet type: " + packetType);
                         break;
@@ -154,9 +173,35 @@ public class UdpHandler implements Runnable {
             }
         }
     }
-
+    
+    private void processDeviceData(UdpPacketDeviceData udpPacketDeviceData) {
+        if (!participantsService.hasParticipant(udpPacketDeviceData.getChipid())) {
+            LOG.info("got device data from non registered participant");
+        } else {
+            LOG.info("got device data: " + udpPacketDeviceData.toString());
+            ParticipantDeviceData participantDeviceData = new ParticipantDeviceData(
+                    udpPacketDeviceData.getFrequency(),
+                    udpPacketDeviceData.getMinimumLapTime(),
+                    udpPacketDeviceData.getTriggerThreshold(),
+                    udpPacketDeviceData.getTriggerThresholdCalibration(),
+                    udpPacketDeviceData.getCalibrationOffset(),
+                    udpPacketDeviceData.getState(),
+                    udpPacketDeviceData.getTriggerValue(),
+                    udpPacketDeviceData.getVoltage(),
+                    udpPacketDeviceData.getUptime(),
+                    udpPacketDeviceData.getDefaultVref(),
+                    udpPacketDeviceData.getRssi(),
+                    udpPacketDeviceData.getLoopTime(),
+                    udpPacketDeviceData.getFilterRatio(),
+                    udpPacketDeviceData.getFilterRatioCalibration(),
+                    udpPacketDeviceData.getVersion()
+            );
+            participantsService.getParticipant(udpPacketDeviceData.getChipid()).setParticipantDeviceData(participantDeviceData);
+        }
+    }
+    
     private void processLap(UdpPacketLap udpPacketLap, InetAddress address) {
-        if (!participantsDbService.hasParticipant(udpPacketLap.getChipid())) {
+        if (!participantsService.hasParticipant(udpPacketLap.getChipid())) {
             LOG.info("got lap from non registered participant, try to get registration");
             requestRegistration(address);
         } else {

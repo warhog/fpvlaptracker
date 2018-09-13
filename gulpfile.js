@@ -67,6 +67,7 @@ gulp.task('js-flt', function () {
         '/setup/setup.js',
         '/settings/settings.js',
         '/login/login.js',
+        '/devicedata/devicedata.js',
         '/wlt.js'
     ];
 

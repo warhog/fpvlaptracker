@@ -7,7 +7,7 @@ import de.warhog.fpvlaptracker.race.entities.Participant;
 import de.warhog.fpvlaptracker.race.RaceLogic;
 import de.warhog.fpvlaptracker.race.entities.ParticipantRaceData;
 import de.warhog.fpvlaptracker.service.ConfigService;
-import de.warhog.fpvlaptracker.service.ParticipantsDbService;
+import de.warhog.fpvlaptracker.service.ParticipantsService;
 import de.warhog.fpvlaptracker.service.ParticipantRaceService;
 import de.warhog.fpvlaptracker.service.ServiceLayerException;
 import java.time.Duration;
@@ -34,7 +34,7 @@ public class RaceController {
     private ConfigService configService;
 
     @Autowired
-    private ParticipantsDbService participantsDbService;
+    private ParticipantsService participantsDbService;
     
     @Autowired
     private ParticipantRaceService participantRaceService;

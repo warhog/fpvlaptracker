@@ -57,6 +57,10 @@ angular.module('participants', ['ngDialog']).controller('participants', function
         $location.url("/setup?chipid=" + chipid);
     };
 
+    $scope.openDeviceData = function (chipid) {
+        $location.url("/devicedata?chipid=" + chipid);
+    };
+
 }).factory('ParticipantsService', function ($http) {
     var factory = {};
 

@@ -4,7 +4,7 @@ import de.warhog.fpvlaptracker.configuration.ApplicationConfig;
 import de.warhog.fpvlaptracker.controllers.dtos.StatusResult;
 import de.warhog.fpvlaptracker.race.RaceLogic;
 import de.warhog.fpvlaptracker.service.ConfigService;
-import de.warhog.fpvlaptracker.service.ParticipantsDbService;
+import de.warhog.fpvlaptracker.service.ParticipantsService;
 import de.warhog.fpvlaptracker.service.ServiceLayerException;
 import de.warhog.fpvlaptracker.util.ShutdownUtil;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -27,7 +27,7 @@ public class MiscController {
     private RaceLogic race;
 
     @Autowired
-    private ParticipantsDbService participantsDbService;
+    private ParticipantsService participantsDbService;
 
     @Autowired
     private ConfigService configService;

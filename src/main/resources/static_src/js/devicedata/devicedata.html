@@ -1,0 +1,35 @@
+<h1>device data</h1>
+<div uib-alert ng-repeat="alert in alerts.getAlerts()" ng-class="'alert-' + (alert.type || 'warning')" close="alerts.closeAlert($index)">{{alert.msg}}</div>
+<script type="text/ng-template" id="dataFailure">
+    <div>
+    <h2>data failure</h2>
+    {{ngDialogData.message}}
+    </div>
+</script>
+<div>
+    unique chip id: {{chipid}}<br />
+    <br />
+    <button class="btn btn-default" ng-disabled="isLoading === true" ng-click="loadDeviceData();">load device data</button>
+    
+    <div ng-hide="!isLoading">loading data...</div>
+    
+
+    <table>
+        <tr><td>firmware version</td><td>{{data.version}}</td></tr>
+        <tr><td>frequency</td><td>{{data.frequency}} MHz</td></tr>
+        <tr><td>minimum lap time</td><td>{{data.minimumLapTime}} seconds</td></tr>
+        <tr><td>trigger threshold</td><td>{{data.triggerThreshold}}</td></tr>
+        <tr><td>trigger threshold calibration</td><td>{{data.triggerThresholdCalibration}}</td></tr>
+        <tr><td>calibration offset</td><td>{{data.calibrationOffset}}</td></tr>
+        <tr><td>state</td><td>{{data.state}}</td></tr>
+        <tr><td>trigger value</td><td>{{data.triggerValue}}</td></tr>
+        <tr><td>voltage</td><td>{{data.voltage}} volt</td></tr>
+        <tr><td>uptime</td><td>{{data.uptime}} seconds</td></tr>
+        <tr><td>defaul voltage reference</td><td>{{data.defaultVref}} millivolt</td></tr>
+        <tr><td>rssi</td><td>{{data.rssi}}</td></tr>
+        <tr><td>looptime</td><td>{{data.loopTime}} microseconds</td></tr>
+        <tr><td>filter ratio</td><td>{{data.filterRatio}}</td></tr>
+        <tr><td>filter ratio calibration</td><td>{{data.filterRatioCalibration}}</td></tr>
+    </table>
+
+</div>

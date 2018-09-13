@@ -32,6 +32,9 @@ public class RaceDbService {
     private RaceLayer dbLayer;
 
     @Autowired
+    private ParticipantsService participantsService;
+
+    @Autowired
     private ParticipantsDbService participantsDbService;
 
     public Integer createRace(Integer laps, RaceState state) throws ServiceLayerException {
@@ -84,7 +87,7 @@ public class RaceDbService {
             List<Long> part = dbLayer.getRaceParticipants(raceId);
             List<Participant> ret = new ArrayList<>();
             for (Long chipId : part) {
-                ParticipantsRecord participantsRecord = participantsDbService.getParticipantRecordForChipIdFromDb(chipId);
+                ParticipantsRecord participantsRecord = participantsDbService.getParticipantRecordForChipId(chipId);
                 Participant participant = new Participant(participantsRecord.getName(), participantsRecord.getChipid(), null);
                 ret.add(participant);
             }

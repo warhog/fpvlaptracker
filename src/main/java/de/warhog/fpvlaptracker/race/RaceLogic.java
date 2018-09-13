@@ -6,7 +6,7 @@ import de.warhog.fpvlaptracker.race.entities.ParticipantRaceData;
 import de.warhog.fpvlaptracker.race.entities.Participant;
 import de.warhog.fpvlaptracker.service.AudioService;
 import de.warhog.fpvlaptracker.service.ConfigService;
-import de.warhog.fpvlaptracker.service.ParticipantsDbService;
+import de.warhog.fpvlaptracker.service.ParticipantsService;
 import de.warhog.fpvlaptracker.service.RaceDbService;
 import de.warhog.fpvlaptracker.service.ParticipantRaceService;
 import de.warhog.fpvlaptracker.service.RestService;
@@ -40,7 +40,7 @@ public class RaceLogic {
     private RaceDbService racesDbService;
 
     @Autowired
-    private ParticipantsDbService participantsDbService;
+    private ParticipantsService participantsDbService;
 
     @Autowired
     private AudioService audioService;
