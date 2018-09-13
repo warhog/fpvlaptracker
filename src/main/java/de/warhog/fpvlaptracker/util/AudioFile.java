@@ -17,7 +17,8 @@ public enum AudioFile {
     UNREGISTER("unregister.wav"),
     FINISHED("finished.wav"),
     INVALID_LAP("invalidlap.wav"),
-    PARTICIPANT_ENDED("participantended.wav");
+    PARTICIPANT_ENDED("participantended.wav"),
+    CALIBRATION_DONE("calibrationdone.wav");
 
     private static final Logger LOG = LoggerFactory.getLogger(AudioFile.class);
     private static String audioLanguage = "en";

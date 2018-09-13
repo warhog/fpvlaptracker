@@ -40,7 +40,7 @@ public class WebSocketController {
     }
 
     public void sendAudioMessage(AudioFile file, Integer repeat) {
-        LOG.debug("seinding audio message for " + file + ", repeated " + repeat);
+        LOG.debug("sending audio message for " + file + ", repeated " + repeat);
         ObjectNode node = JsonNodeFactory.instance.objectNode();
         node.put("file", file.getFilename());
         node.put("repeat", repeat);

@@ -3,6 +3,7 @@ package de.warhog.fpvlaptracker.communication;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import de.warhog.fpvlaptracker.communication.entities.UdpPacketCalibrationDone;
 import de.warhog.fpvlaptracker.communication.entities.UdpPacketDeviceData;
 import de.warhog.fpvlaptracker.communication.entities.UdpPacketLap;
 import de.warhog.fpvlaptracker.communication.entities.UdpPacketRegister;
@@ -14,6 +15,7 @@ import de.warhog.fpvlaptracker.service.AudioService;
 import de.warhog.fpvlaptracker.service.ParticipantsDbService;
 import de.warhog.fpvlaptracker.service.ParticipantsService;
 import de.warhog.fpvlaptracker.service.ServiceLayerException;
+import de.warhog.fpvlaptracker.util.AudioFile;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -46,7 +48,7 @@ public class UdpHandler implements Runnable {
 
     @Autowired
     private WebSocketController webSocketController;
-    
+
     @Autowired
     private AudioService audioService;
 
@@ -130,7 +132,7 @@ public class UdpHandler implements Runnable {
                 JsonNode rootNode = mapper.readValue(packetString, JsonNode.class);
                 PacketType packetType = PacketType.valueOf(rootNode.path("type").asText().toUpperCase());
                 LOG.debug("packet type is " + packetType);
-                
+
                 switch (packetType) {
                     case REGISTER:
                         UdpPacketRegister udpPacketRegister = mapper.readValue(packet.getData(), UdpPacketRegister.class);
@@ -151,7 +153,9 @@ public class UdpHandler implements Runnable {
                         break;
                     case CALIBRATIONDONE:
                         LOG.info("got calibration packet");
-                        // TODO process packet
+                        UdpPacketCalibrationDone udpPacketCalibrationDone = mapper.readValue(packet.getData(), UdpPacketCalibrationDone.class);
+                        udpPacketCalibrationDone.setPacketType(packetType);
+                        processCalibrationDone(udpPacketCalibrationDone);
                         break;
                     case DEVICEDATA:
                         try {
@@ -173,7 +177,7 @@ public class UdpHandler implements Runnable {
             }
         }
     }
-    
+
     private void processDeviceData(UdpPacketDeviceData udpPacketDeviceData) {
         if (!participantsService.hasParticipant(udpPacketDeviceData.getChipid())) {
             LOG.info("got device data from non registered participant");
@@ -199,7 +203,7 @@ public class UdpHandler implements Runnable {
             participantsService.getParticipant(udpPacketDeviceData.getChipid()).setParticipantDeviceData(participantDeviceData);
         }
     }
-    
+
     private void processLap(UdpPacketLap udpPacketLap, InetAddress address) {
         if (!participantsService.hasParticipant(udpPacketLap.getChipid())) {
             LOG.info("got lap from non registered participant, try to get registration");
@@ -219,6 +223,14 @@ public class UdpHandler implements Runnable {
             socket.send(packet);
         } catch (IOException ex) {
             LOG.error("cannot send registration request");
+        }
+    }
+
+    private void processCalibrationDone(UdpPacketCalibrationDone udpPacketCalibrationDone) {
+        if (!participantsService.hasParticipant(udpPacketCalibrationDone.getChipid())) {
+            LOG.info("got calibration done from non registered participant");
+        } else {
+            webSocketController.sendAudioMessage(AudioFile.LAP);
         }
     }
 
