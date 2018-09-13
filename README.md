@@ -79,3 +79,5 @@ tbs unify pro hv
 
 ## sound files used
 _lap:_ [freesound](https://www.freesound.org/people/StaneStane/sounds/73560/)
+
+texts: [fromtexttospeech.com](http://www.fromtexttospeech.com/)
