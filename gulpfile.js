@@ -57,7 +57,7 @@ gulp.task('css-libs', function () {
 
 gulp.task('js-flt', function () {
     var files = [
-        'libs/amChartsDirective.js',
+        'libs/amChartsDirective-1.1.0.js',
         '/home/home.js',
         '/state/state.js',
         '/toplist/toplist.js',
@@ -93,23 +93,23 @@ gulp.task('js-flt', function () {
 
 gulp.task('js-libs', function () {
     var libs = [
-        'jquery-3.1.1.min.js',
-        'angular-1.6.1.min.js',
-        'angular-route-1.6.1.min.js',
-        'angular-animate-1.6.1.min.js',
-        'angular-cookies-1.6.1.min.js',
-        'angular-touch-1.6.1.min.js',
+        'jquery-3.3.1.min.js',
+        'angular-1.7.4.min.js',
+        'angular-route-1.7.4.min.js',
+        'angular-animate-1.7.4.min.js',
+        'angular-cookies-1.7.4.min.js',
+        'angular-touch-1.7.4.min.js',
         'bootstrap.min.js',
-        'moment-with-locales.js',
+        'moment-with-locales-2.22.2.min.js',
         'ui-bootstrap-tpls-2.3.1.min.js',
-        'ngDialog.min.js',
-        'ngprogress.min.js',
-        'sockjs-1.1.0.min.js',
-        'stomp.min.js',
-        'howler-2.0.2.min.js',
-        'nosleep.min.js',
-        'amcharts/amcharts.js',
-        'amcharts/serial.js'
+        'ngDialog-1.4.0.min.js',
+        'ngprogress-1.1.3.min.js',
+        'sockjs-1.3.0.min.js',
+        'stomp-4.0.8.min.js',
+        'howler-2.0.15.min.js',
+        'NoSleep-0.7.1.min.js',
+        'amcharts-3.21.13/amcharts.js',
+        'amcharts-3.21.13/serial.js'
     ];
 
     var libsPath = libs.map(function (lib) {
