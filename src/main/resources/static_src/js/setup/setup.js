@@ -6,7 +6,6 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
     LoginService.requireAuthenticated();
 
     $scope.chipid = parseInt($location.search().chipid);
-    $scope.ipAddress = "0.0.0.0";
 
     $scope.frequencies = [
         5865, 5845, 5825, 5805, 5785, 5765, 5745, 5725, // Band A
@@ -22,20 +21,34 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
         "E1 5705 MHz (Boscam)", "E2 5685 MHz (Boscam)", "E3 5665 MHz (Boscam)", "E4 5645 MHz (Boscam)", "E5 5885 MHz (Boscam)", "E6 5905 MHz (Boscam)", "E7 5925 MHz (Boscam)", "E8 5945 MHz (Boscam)",
         "F1 5740 MHz (Airwave, Fatshark, ImmersionRC)", "F2 5760 MHz (Airwave, Fatshark, ImmersionRC)", "F3 5780 MHz (Airwave, Fatshark, ImmersionRC)", "F4 5800 MHz (Airwave, Fatshark, ImmersionRC)", "F5 5820 MHz (Airwave, Fatshark, ImmersionRC)", "F6 MHz 5840 (Airwave, Fatshark, ImmersionRC)", "F7 MHz 5860 (Airwave, Fatshark, ImmersionRC)", "F8 5880 MHz (Airwave, Fatshark, ImmersionRC)",
         "R1 5658 MHz (Raceband)", "R2 5695 MHz (Raceband)", "R3 5732 MHz (Raceband)", "R4 5769 MHz (Raceband)", "R5 5806 MHz (Raceband)", "R6 5843 MHz (Raceband)", "R7 5880 MHz (Raceband)", "R8 5917 MHz (Raceband)",
-        "D1 5362 MHz (Boscam)", "D2 5399 MHz (Boscam)", "D3 5436 MHz (Boscam)", "D4 5473 MHz (Boscam)", "D5 5510 MHz (Boscam)", "D6 5547 MHz (Boscam)", "D7 5584 MHz (Boscam)", "D8 5621 MHz (Boscam)"
+        "L1 5362 MHz (Boscam)", "L2 5399 MHz (Boscam)", "L3 5436 MHz (Boscam)", "L4 5473 MHz (Boscam)", "L5 5510 MHz (Boscam)", "L6 5547 MHz (Boscam)", "L7 5584 MHz (Boscam)", "L8 5621 MHz (Boscam)"
     ];
 
-    $scope.selectedFrequency = 0;
+    $scope.deviceData = {
+        frequency: 0,
+        minimumLapTime: 0,
+        triggerThreshold: 0,
+        triggerThresholdCalibration: 0,
+        calibrationOffset: 0,
+        state: "unknown",
+        triggerValue: 0,
+        voltage: 0.0,
+        uptime: 0,
+        defaultVref: 0,
+        rssi: 0,
+        loopTime: 0,
+        filterRatio: 0.0,
+        filterRatioCalibration: 0.0,
+        version: "",
+        participantName: "-",
+        ipAddress: ""
+    };
+
     $scope.frequencyTable = [];
     $scope.promise = null;
-    $scope.rssi = "-";
-    $scope.thresholdHigh = 0;
-    $scope.thresholdLow = 0;
-    $scope.minLapTime = 0;
-    $scope.loadingRssi = false;
-    $scope.participantName = "-";
+    $scope.loadingDeviceData = false;
     $scope.alerts = Alerts;
-    $scope.isAllowConfiguration = false;
+    $scope.cells = 1;
 
     let getInitialValue = function (frequency) {
         frequency = parseInt(frequency);
@@ -65,46 +78,96 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
     $scope.progressbar = ngProgressFactory.createInstance();
     console.log("chipid", $scope.chipid);
 
-    $scope.loadRssi = function (overlay) {
+    $scope.rebootDevice = function() {
+        SetupService.rebootDevice($scope.chipid)
+            .then(function (response) {
+                if (response.status === "NOK") {
+                    ngDialog.open({template: 'dataFailure', scope: $scope, data: {message: "failed to reboot device"}});
+                } else {
+                    $location.path('/');
+                }
+            })
+            .catch(function (response) {
+                ngDialog.open({template: 'dataFailure', scope: $scope, data: {message: "failed to reboot device"}});
+            })
+            .finally(function () {
+                $scope.progressbar.complete();
+                Util.displayOverlay(false);
+            });
+    };
+
+    $scope.loadDeviceData = function (overlay) {
         if (overlay === undefined || overlay === null) {
             overlay = true;
         }
-        if (!$scope.loadingRssi) {
+        if (!$scope.loadingDeviceData) {
             $scope.progressbar.start();
             if (overlay) {
                 Util.displayOverlay(true);
             }
-            $scope.loadingRssi = true;
-            SetupService.loadRssi($scope.chipid)
+            $scope.loadingDeviceData = true;
+            SetupService.loadDeviceData($scope.chipid)
                     .then(function (response) {
-                        $scope.rssi = response.rssi;
+                        $scope.deviceData.minimumLapTime = response.minimumLapTime;
+                        $scope.deviceData.triggerThreshold = response.triggerThreshold;
+                        $scope.deviceData.triggerThresholdCalibration = response.triggerThresholdCalibration;
+                        $scope.deviceData.calibrationOffset = response.calibrationOffset;
+                        $scope.deviceData.state = response.state;
+                        $scope.deviceData.triggerValue = response.triggerValue;
+                        $scope.deviceData.voltage = response.voltage;
+                        $scope.deviceData.uptime = response.uptime;
+                        $scope.deviceData.defaultVref = response.defaultVref;
+                        $scope.deviceData.rssi = response.rssi;
+                        $scope.deviceData.loopTime = response.loopTime;
+                        $scope.deviceData.filterRatio = response.filterRatio;
+                        $scope.deviceData.filterRatioCalibration = response.filterRatioCalibration;
+                        $scope.deviceData.version = response.version;
+                        $scope.deviceData.ipAddress = response.ipAddress;
+                        $scope.deviceData.frequency = getInitialValue(response.frequency);
+                        $scope.deviceData.participantName = response.participantName;
+                        console.log($scope.deviceData);
+                        
+                        if ($scope.deviceData.voltage > 7 && $scope.deviceData.voltage <= 10) {
+                            $scope.cells = 2;
+                        } else if ($scope.deviceData.voltage > 10 && $scope.deviceData.voltage <= 13) {
+                            $scope.cells = 3;
+                        } else if ($scope.deviceData.voltage > 13 && $scope.deviceData.voltage <= 17) {
+                            $scope.cells = 4;
+                        } else if ($scope.deviceData.voltage > 17 && $scope.deviceData.voltage <= 21.5) {
+                            $scope.cells = 5;
+                        } else if ($scope.deviceData.voltage > 21.5 && $scope.deviceData.voltage <= 26) {
+                            $scope.cells = 6;
+                        }
                     })
                     .catch(function (response) {
-                        ngDialog.open({template: 'dataFailure', scope: $scope, data: {message: "failed to load rssi"}});
+                        ngDialog.open({template: 'dataFailure', scope: $scope, data: {message: "failed to load device data"}});
                         $scope.stopMeasuring();
-                        $scope.rssi = "-";
+                        $scope.deviceData.frequency = 0;
+                        $scope.deviceData.minimumLapTime = 0;
+                        $scope.deviceData.triggerThreshold = 0;
+                        $scope.deviceData.triggerThresholdCalibration = 0;
+                        $scope.deviceData.calibrationOffset = 0;
+                        $scope.deviceData.state = "unknown";
+                        $scope.deviceData.triggerValue = 0;
+                        $scope.deviceData.voltage = 0.0;
+                        $scope.deviceData.uptime = 0;
+                        $scope.deviceData.defaultVref = 0;
+                        $scope.deviceData.rssi = 0;
+                        $scope.deviceData.loopTime = 0;
+                        $scope.deviceData.filterRatio = 0.0;
+                        $scope.deviceData.filterRatioCalibration = 0.0;
+                        $scope.deviceData.version = "unknown";
+                        $scope.deviceData.ipAddress = "0.0.0.0";
+                        $scope.deviceData.participantName = "-";
                     })
                     .finally(function () {
-                        $scope.loadingRssi = false;
+                        $scope.loadingDeviceData = false;
                         $scope.progressbar.complete();
                         Util.displayOverlay(false);
                     });
         }
     };
-
-    $scope.startMeasuring = function () {
-        $scope.promise = $interval(function () {
-            $scope.loadRssi(false);
-        }, 1000);
-    };
-
-    $scope.stopMeasuring = function () {
-        if ($scope.promise !== null) {
-            $interval.cancel($scope.promise);
-            $scope.promise = null;
-        }
-    };
-
+    
     $scope.$on('$destroy', function () {
         if (angular.isDefined($scope.promise)) {
             $interval.cancel($scope.promise);
@@ -112,75 +175,10 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
         }
     });
 
-    $scope.measureRssi = function () {
-        if (!$scope.loadingRssi) {
-            $scope.progressbar.start();
-            Util.displayOverlay(true);
-            $scope.loadingRssi = true;
-            SetupService.measureRssi($scope.chipid)
-                    .then(function (response) {
-                        response.channels.forEach(function (channel) {
-                            channel.band = $scope.bands[$scope.frequencies.indexOf(channel.freq)];
-                        });
-                        ngDialog.open({template: "rssiMeasureResult", scope: $scope, data: {response: response}, className: 'ngdialog-theme-plain custom-width'});
-                    })
-                    .catch(function (response) {
-                        if (response.data === null) {
-                            response.data = {message: "unable to load"};
-                        }
-                        ngDialog.open({template: "dataFailure", scope: $scope, data: {message: "cannot measure rssi: " + response.data.message}});
-                    })
-                    .finally(function () {
-                        $scope.loadingRssi = false;
-                        $scope.progressbar.complete();
-                        Util.displayOverlay(false);
-                    });
-        }
-    };
-
-    $scope.loadSetupData = function () {
-        if (!$scope.loadingRssi) {
-            $scope.progressbar.start();
-
-            $scope.loadingRssi = true;
-            SetupService.loadSetupData($scope.chipid)
-                    .then(function (data) {
-                        if (data.isAllowConfiguration) {
-                            $scope.thresholdHigh = parseInt(data.thresholdHigh);
-                            $scope.thresholdLow = parseInt(data.thresholdLow);
-                            $scope.minLapTime = parseInt(data.minLapTime);
-                            $scope.rssi = data.rssi;
-                            $scope.selectedFrequency = getInitialValue(data.frequency);
-                        }
-                        if (data.isAllowConfiguration || data.isAllowConfigureName) {
-                            $scope.participantName = data.name;
-                        }
-                        $scope.ipAddress = data.ipAddress;
-                        console.log($scope.selectedFrequency);
-                    })
-                    .catch(function (response) {
-                        $scope.thresholdHigh = "-";
-                        $scope.thresholdLow = "-";
-                        $scope.minLapTime = "-";
-                        $scope.rssi = "-";
-                        $scope.selectedFrequency = 0;
-                        $scope.participantName = "";
-                        if (response.data === null) {
-                            response.data = {message: "unable to load"};
-                        }
-                        ngDialog.open({template: "dataFailure", scope: $scope, data: {message: "cannot load setup data: " + response.data.message}});
-                    })
-                    .finally(function () {
-                        $scope.loadingRssi = false;
-                        $scope.progressbar.complete();
-                    });
-        }
-    };
-
-    $scope.setMinLapTime = function () {
+    $scope.saveDeviceData = function () {
         $scope.progressbar.start();
         Util.displayOverlay(true);
-        SetupService.setMinLapTime($scope.chipid, $scope.minLapTime)
+        SetupService.saveDeviceData($scope.chipid, $scope.deviceData)
                 .then(function (response) {
                     Alerts.addSuccess();
                 })
@@ -193,108 +191,30 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
                 });
     };
 
-    $scope.setThreshold = function () {
-        if ($scope.thresholdLow >= $scope.thresholdHigh || $scope.thresholdHigh <= 0 || $scope.thresholdLow <= 0 || $scope.thresholdHigh >= 1024 || $scope.thresholdLow >= 1024) {
-            ngDialog.open({template: 'dataFailure', scope: $scope, data: {message: "rssi threshold error.<br />low limit has to be below high limit<br />limits have to be bigger than zero and smaller than 1024"}});
-            return;
-        }
-        $scope.progressbar.start();
-        Util.displayOverlay(true);
-        SetupService.setThreshold($scope.chipid, $scope.thresholdLow, $scope.thresholdHigh)
-                .then(function (response) {
-                    Alerts.addSuccess();
-                })
-                .catch(function (response) {
-                    ngDialog.open({template: 'failedSave', scope: $scope});
-                })
-                .finally(function () {
-                    $scope.progressbar.complete();
-                    Util.displayOverlay(false);
-                });
-    };
-
-    $scope.setName = function () {
-        $scope.progressbar.start();
-        Util.displayOverlay(true);
-        SetupService.setName($scope.chipid, $scope.participantName)
-                .then(function (response) {
-                    $scope.loadSetupData();
-                    Alerts.addSuccess();
-                })
-                .catch(function (response) {
-                    ngDialog.open({template: 'failedSave', scope: $scope});
-                })
-                .finally(function () {
-                    $scope.progressbar.complete();
-                    Util.displayOverlay(false);
-                });
-    };
-
-    $scope.setFrequency = function () {
-        $scope.progressbar.start();
-        Util.displayOverlay(true);
-        SetupService.setFrequency($scope.chipid, $scope.selectedFrequency.frequency)
-                .then(function (response) {
-                    Alerts.addSuccess();
-                })
-                .catch(function (response) {
-                    ngDialog.open({template: 'failedSave', scope: $scope});
-                })
-                .finally(function () {
-                    $scope.progressbar.complete();
-                    Util.displayOverlay(false);
-                });
-    };
-
-    if (1) {
-        $scope.onlyLocalData = true;
-    }
-    $scope.loadSetupData();
+    $scope.loadDeviceData();
 
 }).factory('SetupService', function ($http) {
     var factory = {};
 
-    factory.loadRssi = function (chipid) {
-        return $http.get("/api/participant/rssi", {params: {chipid: chipid}}).then(function (response) {
+    factory.loadDeviceData = function (chipid) {
+        return $http.get("/api/participant/deviceData", {params: {chipid: chipid}, timeout: 10000}).then(function (response) {
             return response.data;
         });
     };
 
-    factory.loadSetupData = function (chipid, onlylocal) {
-        return $http.get("/api/participant/setupData", {params: {chipid: chipid, onlylocal: onlylocal}, timeout: 5000}).then(function (response) {
+    factory.rebootDevice = function (chipid) {
+        return $http.get("/api/auth/participant/reboot", {params: {chipid: chipid}, timeout: 10000}).then(function (response) {
             return response.data;
         });
     };
 
-    factory.measureRssi = function (chipid) {
-        return $http.get("/api/participant/measure", {params: {chipid: chipid}, timeout: 10000}).then(function (response) {
+    factory.saveDeviceData = function (chipid, deviceData) {
+        var deviceData2 = deviceData;
+        deviceData2.chipid = chipid;
+        deviceData2.frequency = deviceData2.frequency.frequency;
+        return $http.post("/api/auth/participant/deviceData", deviceData2, {timeout: 10000}, null).then(function (response) {
             return response.data;
         });
     };
-
-    factory.setMinLapTime = function (chipid, minLapTime) {
-        return $http.post("/api/auth/participant/minlaptime", {chipid: chipid, minlaptime: minLapTime}, {timeout: 5000}, null).then(function (response) {
-            return response.data;
-        });
-    };
-
-    factory.setThreshold = function (chipid, thresholdLow, thresholdHigh) {
-        return $http.post("/api/auth/participant/threshold", {chipid: chipid, thresholdLow: thresholdLow, thresholdHigh: thresholdHigh}, {timeout: 5000}, null).then(function (response) {
-            return response.data;
-        });
-    };
-
-    factory.setName = function (chipid, name) {
-        return $http.post("/api/auth/participant/name", {chipid: chipid, name: name}, {timeout: 5000}, null).then(function (response) {
-            return response.data;
-        });
-    };
-
-    factory.setFrequency = function (chipid, frequency) {
-        return $http.post("/api/auth/participant/frequency", {chipid: chipid, frequency: frequency}, {timeout: 5000}).then(function (response) {
-            return response.data;
-        });
-    };
-
     return factory;
 });

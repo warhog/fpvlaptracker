@@ -1,9 +1,9 @@
 package de.warhog.fpvlaptracker.race;
 
-import de.warhog.fpvlaptracker.race.entities.RaceState;
+import de.warhog.fpvlaptracker.entities.RaceState;
 import de.warhog.fpvlaptracker.controllers.WebSocketController;
-import de.warhog.fpvlaptracker.race.entities.ParticipantRaceData;
-import de.warhog.fpvlaptracker.race.entities.Participant;
+import de.warhog.fpvlaptracker.entities.ParticipantRaceData;
+import de.warhog.fpvlaptracker.entities.Participant;
 import de.warhog.fpvlaptracker.service.AudioService;
 import de.warhog.fpvlaptracker.service.ConfigService;
 import de.warhog.fpvlaptracker.service.ParticipantsService;
@@ -49,7 +49,7 @@ public class RaceLogic {
     private WebSocketController webSocketController;
 
     @Autowired
-    private RestService comm;
+    private RestService restService;
     
     @Autowired
     private TimeUtil timeUtil;
@@ -225,21 +225,19 @@ public class RaceLogic {
         this.state = state;
     }
 
-    @Scheduled(fixedDelay = 60000L)
+    @Scheduled(fixedDelay = 300000L)
     public void checkParticipantsStillAvailable() {
         LOG.debug("checking for non-existing participants");
         if (!isRunning()) {
             for (Participant participant : participantsDbService.getAllParticipants()) {
-                if (participant.isCallable()) {
-                    try {
-                        comm.getRssi(participant);
-                        LOG.debug("participant with chipid " + participant.getChipId() + " found");
-                    } catch (Exception ex) {
-                        LOG.info("participant with chipid " + participant.getChipId() + " not found, removing");
-                        participantsDbService.removeParticipant(participant);
-                        webSocketController.sendNewParticipantMessage(participant.getChipId());
-                        audioService.playUnregistered();
-                    }
+                try {
+                    restService.getRssi(participant.getIp());
+                    LOG.debug("participant with chipid " + participant.getChipId() + " found");
+                } catch (Exception ex) {
+                    LOG.info("participant with chipid " + participant.getChipId() + " not found, removing");
+                    participantsDbService.removeParticipant(participant);
+                    webSocketController.sendNewParticipantMessage(participant.getChipId());
+                    audioService.playUnregistered();
                 }
             }
         } else {

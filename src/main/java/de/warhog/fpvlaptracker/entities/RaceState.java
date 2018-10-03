@@ -1,4 +1,4 @@
-package de.warhog.fpvlaptracker.race.entities;
+package de.warhog.fpvlaptracker.entities;
 
 public enum RaceState {
     

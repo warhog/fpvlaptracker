@@ -1,6 +1,6 @@
 package de.warhog.fpvlaptracker.service;
 
-import de.warhog.fpvlaptracker.race.entities.Participant;
+import de.warhog.fpvlaptracker.entities.Participant;
 import de.warhog.fpvlaptracker.race.RaceLogic;
 import java.util.ArrayList;
 import java.util.List;

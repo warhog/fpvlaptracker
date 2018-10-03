@@ -12,8 +12,8 @@
             {{ x.name}} 
             <button class="btn btn-default" ng-disabled="!authenticated" ng-show="!x.alreadyAdded" ng-click="clickAdd(x.chipId);">add to race</button> 
             <button class="btn btn-default" ng-disabled="!authenticated" ng-show="x.alreadyAdded" ng-click="clickRemove(x.chipId);">remove from race</button> 
-            <button class="btn btn-default" ng-show="x.allowConfiguration || x.allowConfigureName" ng-disabled="!authenticated" ng-click="openSetup(x.chipId);">setup</button>
-            <button class="btn btn-default" ng-show="x.allowDeviceData" ng-disabled="!authenticated" ng-click="openDeviceData(x.chipId);">device data</button>
+            <button class="btn btn-default" ng-disabled="!authenticated" ng-click="openSetup(x.chipId);">setup</button>
+            <button class="btn btn-default" ng-disabled="!authenticated" ng-click="openDeviceData(x.chipId);">device data</button>
         </li>
     </ul>
 

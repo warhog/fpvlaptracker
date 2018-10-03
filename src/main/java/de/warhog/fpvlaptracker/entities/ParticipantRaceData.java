@@ -1,4 +1,4 @@
-package de.warhog.fpvlaptracker.race.entities;
+package de.warhog.fpvlaptracker.entities;
 
 import de.warhog.fpvlaptracker.jooq.tables.records.LapsRecord;
 import java.time.Duration;

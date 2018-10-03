@@ -2,15 +2,12 @@ package de.warhog.fpvlaptracker.communication;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import de.warhog.fpvlaptracker.communication.entities.UdpPacketCalibrationDone;
-import de.warhog.fpvlaptracker.communication.entities.UdpPacketDeviceData;
 import de.warhog.fpvlaptracker.communication.entities.UdpPacketLap;
 import de.warhog.fpvlaptracker.communication.entities.UdpPacketRegister;
 import de.warhog.fpvlaptracker.controllers.WebSocketController;
-import de.warhog.fpvlaptracker.race.entities.Participant;
+import de.warhog.fpvlaptracker.entities.Participant;
 import de.warhog.fpvlaptracker.race.RaceLogic;
-import de.warhog.fpvlaptracker.race.entities.ParticipantDeviceData;
 import de.warhog.fpvlaptracker.service.AudioService;
 import de.warhog.fpvlaptracker.service.ParticipantsDbService;
 import de.warhog.fpvlaptracker.service.ParticipantsService;
@@ -20,6 +17,9 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
@@ -94,15 +94,6 @@ public class UdpHandler implements Runnable {
                 LOG.debug("no name for chipid " + udpPacketRegister.getChipid());
             }
             Participant participant = new Participant(name, udpPacketRegister.getChipid(), inetAddress);
-            if (udpPacketRegister.getPacketType() == PacketType.REGISTERBT || udpPacketRegister.getPacketType() == PacketType.REGISTERBT2) {
-                participant.setAllowConfigureName(true);
-            } else if (udpPacketRegister.getPacketType() == PacketType.REGISTER) {
-                participant.setAllowFullConfiguration(true);
-                participant.setCallable(true);
-            } else if (udpPacketRegister.getPacketType() == PacketType.REGISTER32) {
-                participant.setAllowConfigureName(true);
-                participant.setAllowDeviceData(true);
-            }
             if (participantsService.hasParticipant(participant)) {
                 LOG.error("participant already existing: " + udpPacketRegister.getChipid(), participant);
                 return;
@@ -116,9 +107,23 @@ public class UdpHandler implements Runnable {
         }
     }
 
+    private boolean testLocalAddress(InetAddress inetAddress) {
+        if (inetAddress.isAnyLocalAddress() || inetAddress.isLoopbackAddress()) {
+            LOG.info("is local address");
+            return true;
+        }
+        try {
+            return NetworkInterface.getByInetAddress(inetAddress) != null;
+        } catch (SocketException ex) {
+            LOG.error("cannot find address on network interface", ex);
+            return false;
+        }
+    }
+
     @Override
     public void run() {
         LOG.info("udp receiver running");
+        requestRegistrationBroadcast();
         ObjectMapper mapper = new ObjectMapper();
         while (run) {
             try {
@@ -128,23 +133,21 @@ public class UdpHandler implements Runnable {
                 socket.receive(packet);
                 LOG.debug("got packet: " + new String(packet.getData(), Charset.defaultCharset()).trim());
 
+                if (testLocalAddress(((InetSocketAddress)packet.getSocketAddress()).getAddress())) {
+                    LOG.info("packet from same ip");
+                    continue;
+                }
+
                 String packetString = new String(packet.getData(), Charset.defaultCharset()).trim();
                 JsonNode rootNode = mapper.readValue(packetString, JsonNode.class);
                 PacketType packetType = PacketType.valueOf(rootNode.path("type").asText().toUpperCase());
                 LOG.debug("packet type is " + packetType);
 
                 switch (packetType) {
-                    case REGISTER:
+                    case REGISTER32:
                         UdpPacketRegister udpPacketRegister = mapper.readValue(packet.getData(), UdpPacketRegister.class);
                         udpPacketRegister.setPacketType(packetType);
                         processRegister(udpPacketRegister);
-                        break;
-                    case REGISTERBT:
-                    case REGISTERBT2:
-                    case REGISTER32:
-                        UdpPacketRegister udpPacketRegisterBt = mapper.readValue(packet.getData(), UdpPacketRegister.class);
-                        udpPacketRegisterBt.setPacketType(packetType);
-                        processRegister(udpPacketRegisterBt);
                         break;
                     case LAP:
                         UdpPacketLap udpPacketLap = mapper.readValue(packet.getData(), UdpPacketLap.class);
@@ -157,15 +160,6 @@ public class UdpHandler implements Runnable {
                         udpPacketCalibrationDone.setPacketType(packetType);
                         processCalibrationDone(udpPacketCalibrationDone);
                         break;
-                    case DEVICEDATA:
-                        try {
-                            UdpPacketDeviceData udpPacketDeviceData = mapper.readValue(packet.getData(), UdpPacketDeviceData.class);
-                            udpPacketDeviceData.setPacketType(packetType);
-                            processDeviceData(udpPacketDeviceData);
-                        } catch (UnrecognizedPropertyException ex) {
-                            LOG.error("cannot parse json: " + ex.getMessage());
-                        }
-                        break;
                     default:
                         LOG.error("unknown packet type: " + packetType);
                         break;
@@ -175,32 +169,6 @@ public class UdpHandler implements Runnable {
                 LOG.error(ex.getMessage(), ex);
                 run = false;
             }
-        }
-    }
-
-    private void processDeviceData(UdpPacketDeviceData udpPacketDeviceData) {
-        if (!participantsService.hasParticipant(udpPacketDeviceData.getChipid())) {
-            LOG.info("got device data from non registered participant");
-        } else {
-            LOG.info("got device data: " + udpPacketDeviceData.toString());
-            ParticipantDeviceData participantDeviceData = new ParticipantDeviceData(
-                    udpPacketDeviceData.getFrequency(),
-                    udpPacketDeviceData.getMinimumLapTime(),
-                    udpPacketDeviceData.getTriggerThreshold(),
-                    udpPacketDeviceData.getTriggerThresholdCalibration(),
-                    udpPacketDeviceData.getCalibrationOffset(),
-                    udpPacketDeviceData.getState(),
-                    udpPacketDeviceData.getTriggerValue(),
-                    udpPacketDeviceData.getVoltage(),
-                    udpPacketDeviceData.getUptime(),
-                    udpPacketDeviceData.getDefaultVref(),
-                    udpPacketDeviceData.getRssi(),
-                    udpPacketDeviceData.getLoopTime(),
-                    udpPacketDeviceData.getFilterRatio(),
-                    udpPacketDeviceData.getFilterRatioCalibration(),
-                    udpPacketDeviceData.getVersion()
-            );
-            participantsService.getParticipant(udpPacketDeviceData.getChipid()).setParticipantDeviceData(participantDeviceData);
         }
     }
 
@@ -226,11 +194,24 @@ public class UdpHandler implements Runnable {
         }
     }
 
+    private void requestRegistrationBroadcast() {
+        LOG.info("sending request registration broadcast");
+        byte data[] = new byte[1024];
+        try {
+            DatagramPacket packet = new DatagramPacket(data, data.length, InetAddress.getByName("255.255.255.255"), 31337);
+            String request = "requestRegistration";
+            packet.setData(request.getBytes(Charset.defaultCharset()));
+            socket.send(packet);
+        } catch (IOException ex) {
+            LOG.error("cannot send registration request");
+        }
+    }
+
     private void processCalibrationDone(UdpPacketCalibrationDone udpPacketCalibrationDone) {
         if (!participantsService.hasParticipant(udpPacketCalibrationDone.getChipid())) {
             LOG.info("got calibration done from non registered participant");
         } else {
-            webSocketController.sendAudioMessage(AudioFile.LAP);
+            webSocketController.sendAudioMessage(AudioFile.CALIBRATION_DONE);
         }
     }
 

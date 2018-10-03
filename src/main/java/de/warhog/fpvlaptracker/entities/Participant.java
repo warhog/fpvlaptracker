@@ -1,9 +1,12 @@
-package de.warhog.fpvlaptracker.race.entities;
+package de.warhog.fpvlaptracker.entities;
 
+import de.warhog.fpvlaptracker.service.RestService;
 import java.net.InetAddress;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 public class Participant {
 
@@ -12,12 +15,8 @@ public class Participant {
     private String name;
     private Long chipId;
     private InetAddress ip;
-    private boolean allowFullConfiguration = false;
-    private boolean allowConfigureName = false;
-    private boolean callable = false;
-    private boolean allowDeviceData = false;
     private ParticipantDeviceData participantDeviceData = new ParticipantDeviceData();
-    
+
     public Participant(String name, Long chipId, InetAddress ip) {
         this.name = name;
         this.chipId = chipId;
@@ -30,16 +29,26 @@ public class Participant {
 
     public void setParticipantDeviceData(ParticipantDeviceData participantDeviceData) {
         this.participantDeviceData = participantDeviceData;
-    }
-
-    public boolean isAllowDeviceData() {
-        return allowDeviceData;
-    }
-
-    public void setAllowDeviceData(boolean allowDeviceData) {
-        this.allowDeviceData = allowDeviceData;
+        this.participantDeviceData.setIpAddress(getIp().getHostAddress());
+        this.participantDeviceData.setParticipantName(getName());
     }
     
+    public void loadParticipantDeviceDataFromUnit(RestService restService) {
+        try {
+            setParticipantDeviceData(restService.getDeviceData(getIp()));
+        } catch (final Exception ex) {
+            LOG.error("cannot load participant device data", ex);
+        }
+    }
+
+    public void sendParticipantDeviceDataToUnit(RestService restService) {
+        try {
+            restService.postDeviceData(getIp(), getParticipantDeviceData());
+        } catch (final Exception ex) {
+            LOG.error("cannot send participant device data", ex);
+        }
+    }
+
     public String getName() {
         return name;
     }
@@ -48,30 +57,6 @@ public class Participant {
         this.name = name;
     }
 
-    public boolean isAllowConfiguration() {
-        return allowFullConfiguration;
-    }
-
-    public void setAllowFullConfiguration(boolean allowConfiguration) {
-        this.allowFullConfiguration = allowConfiguration;
-    }
-
-    public boolean isAllowConfigureName() {
-        return allowConfigureName;
-    }
-
-    public void setAllowConfigureName(boolean allowConfigureName) {
-        this.allowConfigureName = allowConfigureName;
-    }
-
-    public boolean isCallable() {
-        return callable;
-    }
-
-    public void setCallable(boolean callable) {
-        this.callable = callable;
-    }
-    
     public Long getChipId() {
         return chipId;
     }

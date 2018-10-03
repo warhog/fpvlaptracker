@@ -34,71 +34,124 @@
 </script>
 
 <div>
-
+    <button class="btn btn-default" ng-disabled="promise !== null || loadingDeviceData === true" ng-click="loadDeviceData();">reload device data</button>
+    <br /><br />
     unique chip id: {{chipid}}<br />
-    ip address: {{ipAddress}}<br />
+    ip address: {{deviceData.ipAddress}}<br />
+    version: {{deviceData.version}}<br />
+    state: {{deviceData.state}}<br />
+    voltage: {{deviceData.voltage | number : 2}} V (cells: {{(deviceData.voltage / cells) | number : 2}} V)<br />
+    uptime: {{deviceData.uptime}} seconds<br />
+    looptime: {{deviceData.loopTime}} µs<br />
+    <br />
     <br />
     <label for="name">name</label><br />
     set a descriptive name for a participants chip.
     <div class="input-group col-lg-4">
-        <input type="text" name="name" class="form-control"  ng-model="participantName" required/>
+        <input type="text" name="name" class="form-control"  ng-model="deviceData.participantName" required/>
         <span class="input-group-btn">
-            <button class="btn btn-default" ng-click="setName();">save</button>
+            <button class="btn btn-default" ng-click="saveDeviceData();">save</button>
         </span>
     </div>
     <br />
-    <div ng-hide="!isAllowConfiguration">
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <h3 class="panel-title">received signal strength indication (rssi)</h3>
-            </div>
-            <div class="panel-body">
-                current rssi: {{rssi}}<br />
-                <br />
-                <button class="btn btn-default" ng-disabled="promise !== null || loadingRssi === true" ng-click="loadRssi();">reload rssi</button>
-                <button class="btn btn-default" ng-disabled="promise !== null || loadingRssi === true" ng-click="measureRssi();">measure rssi</button>
-                <button class="btn btn-default" ng-disabled="promise !== null || loadingRssi === true" ng-click="startMeasuring();">start measure mode</button>
-                <button class="btn btn-default" ng-disabled="promise === null" ng-click="stopMeasuring();">stop measure mode</button>
-                <br /><br />
-                <label for="thresholdHigh">rssi threshold high limit</label><br />
-                the rssi threshold high limit defines above which signal strenght a lap is detected.
-                <div class="input-group col-lg-4">
-                    <input type="number" min="1" max="512" step="1" name="thresholdHigh" class="form-control" ng-model="thresholdHigh" required/>
-                    <span class="input-group-btn">
-                        <button class="btn btn-default" ng-click="setThreshold();">save</button>
-                    </span>
-                </div>
-                <br />
-                <label for="thresholdLow">rssi threshold low limit</label><br />
-                the rssi threshold low limit defines below which signal strenght the next lap can be detected.<br />
-                needs to be below the rssi threshold high limit.
-                <div class="input-group col-lg-4">
-                    <input type="number" min="1" max="512" step="1" name="thresholdLow" class="form-control" ng-model="thresholdLow" required/>
-                    <span class="input-group-btn">
-                        <button class="btn btn-default" ng-click="setThreshold();">save</button>
-                    </span>
-                </div>
-            </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">received signal strength indication (rssi)</h3>
         </div>
-        <label for="freqSel">frequency</label><br />
-        the fpv frequency the participants tracker is listening to.
-        <div class="input-group col-lg-4">
-            <select name="freqSel" ng-model="selectedFrequency" class="form-control" ng-change="updateFrequency();" ng-options="key as key.name for key in frequencyTable"></select>
-            <span class="input-group-btn">
-                <button class="btn btn-default" ng-click="setFrequency();">save</button><br />
-            </span>
-        </div>
-        <br />
-        <label for="minLapTime">minimum lap time</label><br />
-        the minimum lap time of the participants tracker is used to prevent double lap detections.
-        <!--<input type="text" name="minLapTime" class="form-control" ng-model="minLapTime" required/>ms <button class="btn btn-default" ng-click="setMinLapTime();">save</button>-->
-        <div class="input-group col-lg-4">
-            <input type="number" min="1000" max="10000" step="1" class="form-control" placeholder="-" aria-describedby="basic-addon2" name="minLapTime" ng-model="minLapTime" required/>
-            <span class="input-group-addon" id="basic-addon2">ms</span>
-            <span class="input-group-btn">
-                <button class="btn btn-default" ng-click="setMinLapTime();">save</button>
-            </span>
+        <div class="panel-body">
+            current rssi: {{deviceData.rssi}}<br />
+            <br />
+            <label for="triggerThreshold:">rssi trigger threshold</label><br />
+            the trigger threshold defines the rssi window in which the lap detection is active. the lap detection ends if rssi is below trigger value minus trigger threshold.
+            <div class="input-group col-lg-4">
+                <input type="number" min="1" max="1024" step="1" name="triggerThreshold" class="form-control" ng-model="deviceData.triggerThreshold" required/>
+                <span class="input-group-btn">
+                    <button class="btn btn-default" ng-click="saveDeviceData();">save</button>
+                </span>
+            </div>
+            <br />
+            <label for="thresholdLow">rssi trigger threshold <u>calibration</u></label><br />
+            the rssi trigger threshold during calibration state. the calibration ends if rssi is below trigger value (see below) minus calibration trigger threshold.
+            <div class="input-group col-lg-4">
+                <input type="number" min="1" max="1024" step="1" name="triggerThresholdCalibration" class="form-control" ng-model="deviceData.triggerThresholdCalibration" required/>
+                <span class="input-group-btn">
+                    <button class="btn btn-default" ng-click="saveDeviceData();">save</button>
+                </span>
+            </div>
+            <br />
+            <label for="calibrationOffset">rssi calibration offset</label><br />
+            the rssi offset that is substracted from found peek during calibration. improves lap detection but can add jitter to lap times.
+            <div class="input-group col-lg-4">
+                <input type="number" min="1" max="1024" step="1" name="calibrationOffset" class="form-control" ng-model="deviceData.calibrationOffset" required/>
+                <span class="input-group-btn">
+                    <button class="btn btn-default" ng-click="saveDeviceData();">save</button>
+                </span>
+            </div>
+            <br />
+            <label for="triggerValue">trigger value</label><br />
+            the rssi value that triggers a new lap detection.
+            <div class="input-group col-lg-4">
+                <input type="number" min="1" max="1024" step="1" name="triggerValue" class="form-control" ng-model="deviceData.triggerValue" required/>
+                <span class="input-group-btn">
+                    <button class="btn btn-default" ng-click="saveDeviceData();">save</button>
+                </span>
+            </div>
         </div>
     </div>
+    <label for="freqSel">frequency</label><br />
+    the fpv frequency the participants tracker is listening to.
+    <div class="input-group col-lg-4">
+        <select name="freqSel" ng-model="deviceData.frequency" class="form-control" ng-change="updateFrequency();" ng-options="key as key.name for key in frequencyTable"></select>
+        <span class="input-group-btn">
+            <button class="btn btn-default" ng-click="saveDeviceData();">save</button><br />
+        </span>
+    </div>
+    <br />
+    <label for="minimumLapTime">minimum lap time</label><br />
+    the minimum lap time of the participants tracker is used to prevent double lap detections.
+    <div class="input-group col-lg-4">
+        <input type="number" min="1" max="600" step="1" class="form-control" placeholder="-" aria-describedby="basic-addon2" name="minimumLapTime" ng-model="deviceData.minimumLapTime" required/>
+        <span class="input-group-addon" id="basic-addon2">s</span>
+        <span class="input-group-btn">
+            <button class="btn btn-default" ng-click="saveDeviceData();">save</button>
+        </span>
+    </div>
 
+    <br />
+    <label for="minLapTime">filter ratio</label><br />
+    the filter ratio for smoothing the rssi signal. 0 = only old values, 1 = only new values.
+    <div class="input-group col-lg-4">
+        <input type="number" min="0" max="1" step="0.001" class="form-control" placeholder="-" name="filterRatio" ng-model="deviceData.filterRatio" required/>
+        <span class="input-group-btn">
+            <button class="btn btn-default" ng-click="saveDeviceData();">save</button>
+        </span>
+    </div>
+
+    <br />
+    <label for="filterRatioCalibration">filter ratio <u>calibration</u></label><br />
+    the filter ratio for smoothing the rssi signal during calibration. 0 = only old values, 1 = only new values.
+    <div class="input-group col-lg-4">
+        <input type="number" min="0" max="1" step="0.001" class="form-control" placeholder="-" name="filterRatioCalibration" ng-model="deviceData.filterRatioCalibration" required/>
+        <span class="input-group-btn">
+            <button class="btn btn-default" ng-click="saveDeviceData();">save</button>
+        </span>
+    </div>
+
+    <br />
+    <label for="defaultVref">voltage calibration</label><br />
+    calibration value for the default reference voltage in mV
+    <div class="input-group col-lg-4">
+        <input type="number" min="1" max="600" step="1" class="form-control" placeholder="-" aria-describedby="basic-addon2" name="defaultVref" ng-model="deviceData.defaultVref" required/>
+        <span class="input-group-addon" id="basic-addon2">mV</span>
+        <span class="input-group-btn">
+            <button class="btn btn-default" ng-click="saveDeviceData();">save</button>
+        </span>
+    </div>
+
+    <br />
+    <label for="reboot">reboot</label><br />
+    reboot the tracker unit
+    <div class="input-group col-lg-4">
+        <button name="reboot" class="btn btn-default" ng-click="rebootDevice();">reboot</button>
+    </div>
 </div>

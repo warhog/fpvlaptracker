@@ -1,4 +1,4 @@
-package de.warhog.fpvlaptracker.race.entities;
+package de.warhog.fpvlaptracker.entities;
 
 import de.warhog.fpvlaptracker.communication.entities.*;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @JsonIgnoreProperties
-public class ParticipantDeviceData extends UdpPacket {
+public class ParticipantDeviceData {
 
     private static final Logger LOG = LoggerFactory.getLogger(ParticipantDeviceData.class);
 
@@ -25,11 +25,14 @@ public class ParticipantDeviceData extends UdpPacket {
     private Double filterRatio = 0.0;
     private Double filterRatioCalibration = 0.0;
     private String version = "unknown";
+    private String ipAddress = "0.0.0.0";
+    private String participantName = "-";
+    private Long chipid = 0L;
 
     public ParticipantDeviceData() {
     }
 
-    public ParticipantDeviceData(Integer frequency, Integer minimumLapTime, Integer triggerThreshold, Integer triggerThresholdCalibration, Integer calibrationOffset, String state, Integer triggerValue, Double voltage, Integer uptime, Integer defaultVref, Integer rssi, Long loopTime, Double filterRatio, Double filterRatioCalibration, String version) {
+    public ParticipantDeviceData(Integer frequency, Integer minimumLapTime, Integer triggerThreshold, Integer triggerThresholdCalibration, Integer calibrationOffset, String state, Integer triggerValue, Double voltage, Integer uptime, Integer defaultVref, Integer rssi, Long loopTime, Double filterRatio, Double filterRatioCalibration, String version, String ipAddress, String name, Long chipid) {
         this.frequency = frequency;
         this.minimumLapTime = minimumLapTime;
         this.triggerThreshold = triggerThreshold;
@@ -45,6 +48,9 @@ public class ParticipantDeviceData extends UdpPacket {
         this.filterRatio = filterRatio;
         this.filterRatioCalibration = filterRatioCalibration;
         this.version = version;
+        this.ipAddress = ipAddress;
+        this.participantName = name;
+        this.chipid = chipid;
     }
     
     public Integer getFrequency() {
@@ -167,9 +173,33 @@ public class ParticipantDeviceData extends UdpPacket {
         this.version = version;
     }
 
-    @Override
-    public String toString() {
-        return "ParticipantDeviceData{" + "frequency=" + frequency + ", minimumLapTime=" + minimumLapTime + ", triggerThreshold=" + triggerThreshold + ", triggerThresholdCalibration=" + triggerThresholdCalibration + ", calibrationOffset=" + calibrationOffset + ", state=" + state + ", triggerValue=" + triggerValue + ", voltage=" + voltage + ", uptime=" + uptime + ", defaultVref=" + defaultVref + ", rssi=" + rssi + ", loopTime=" + loopTime + ", filterRatio=" + filterRatio + ", filterRatioCalibration=" + filterRatioCalibration + ", version=" + version + '}';
+    public String getIpAddress() {
+        return ipAddress;
     }
 
+    public void setIpAddress(String ipAddress) {
+        this.ipAddress = ipAddress;
+    }
+
+    public String getParticipantName() {
+        return participantName;
+    }
+
+    public void setParticipantName(String participantName) {
+        this.participantName = participantName;
+    }
+
+    public Long getChipid() {
+        return chipid;
+    }
+
+    public void setChipid(Long chipid) {
+        this.chipid = chipid;
+    }
+
+    @Override
+    public String toString() {
+        return "ParticipantDeviceData{" + "frequency=" + frequency + ", minimumLapTime=" + minimumLapTime + ", triggerThreshold=" + triggerThreshold + ", triggerThresholdCalibration=" + triggerThresholdCalibration + ", calibrationOffset=" + calibrationOffset + ", state=" + state + ", triggerValue=" + triggerValue + ", voltage=" + voltage + ", uptime=" + uptime + ", defaultVref=" + defaultVref + ", rssi=" + rssi + ", loopTime=" + loopTime + ", filterRatio=" + filterRatio + ", filterRatioCalibration=" + filterRatioCalibration + ", version=" + version + ", ipAddress=" + ipAddress + ", participantName=" + participantName + ", chipid=" + chipid + '}';
+    }
+    
 }
