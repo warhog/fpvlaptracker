@@ -70,7 +70,7 @@
                 </span>
             </div>
             <br />
-            <label for="thresholdLow">rssi trigger threshold <u>calibration</u></label><br />
+            <label for="triggerThresholdCalibration">rssi trigger threshold <u>calibration</u></label><br />
             the rssi trigger threshold during calibration state. the calibration ends if rssi is below trigger value (see below) minus calibration trigger threshold.
             <div class="input-group col-lg-4">
                 <input type="number" min="1" max="1024" step="1" name="triggerThresholdCalibration" class="form-control" ng-model="deviceData.triggerThresholdCalibration" required/>
@@ -118,7 +118,7 @@
     </div>
 
     <br />
-    <label for="minLapTime">filter ratio</label><br />
+    <label for="filterRatio">filter ratio</label><br />
     the filter ratio for smoothing the rssi signal. 0 = only old values, 1 = only new values.
     <div class="input-group col-lg-4">
         <input type="number" min="0" max="1" step="0.001" class="form-control" placeholder="-" name="filterRatio" ng-model="deviceData.filterRatio" required/>
