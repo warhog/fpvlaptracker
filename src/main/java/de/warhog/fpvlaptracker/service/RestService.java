@@ -31,11 +31,12 @@ public class RestService {
         return restTemplate.getForObject(buildUrl(ipAddress, "reboot"), String.class);
     }
     
-    public void postDeviceData(InetAddress ipAddress, ParticipantDeviceData deviceData) {
+    public String postDeviceData(InetAddress ipAddress, ParticipantDeviceData deviceData) {
         String ret = restTemplate.postForObject(buildUrl(ipAddress, "devicedata"), deviceData, String.class);
-        if (!("OK".equals(ret.trim()))) {
+        if (ret.trim().contains("NOK")) {
             throw new RuntimeException("cannot set devicedata");
         }
+        return ret;
     }
 
 }

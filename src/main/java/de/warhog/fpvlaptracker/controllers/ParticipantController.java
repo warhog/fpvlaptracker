@@ -54,7 +54,7 @@ public class ParticipantController {
         LOG.error("deviceData " + participantDeviceData.toString());
         try {
             Participant participant = participantsService.getParticipant(participantDeviceData.getChipid());
-            restService.postDeviceData(participant.getIp(), participantDeviceData);
+            String result = restService.postDeviceData(participant.getIp(), participantDeviceData);
             if (!participant.getName().equals(participantDeviceData.getParticipantName())) {
                 participant.setName(participantDeviceData.getParticipantName());
                 try {
@@ -63,26 +63,21 @@ public class ParticipantController {
                     LOG.error("cannot store name to database", ex);
                 }
             }
+            return new StatusResult(result);
         } catch (Exception ex) {
             LOG.error("cannot save devicedata", ex);
             return new StatusResult(StatusResult.Status.NOK);
         }
-        return new StatusResult(StatusResult.Status.OK);
     }
 
     @RequestMapping(path = "/api/auth/participant/reboot", method = RequestMethod.GET)
-    public StatusResult setDeviceData(@RequestParam(name = "chipid", required = true) Long chipid) {
+    public StatusResult rebootDevice(@RequestParam(name = "chipid", required = true) Long chipid) {
         StatusResult result = new StatusResult(StatusResult.Status.NOK);
         try {
             Participant participant = participantsService.getParticipant(chipid);
             
             String data = restService.rebootDevice(participant.getIp());
-            if (data.contains("NOK")) {
-                result.setStatus("NOK");
-                result.setMessage(data);
-            } else {
-                result.setStatus("OK");
-            }
+            result = new StatusResult(data);
         } catch (Exception ex) {
             LOG.error("cannot reboot device", ex);
         }

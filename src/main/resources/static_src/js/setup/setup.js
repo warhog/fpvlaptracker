@@ -84,6 +84,7 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
                 if (response.status === "NOK") {
                     ngDialog.open({template: 'dataFailure', scope: $scope, data: {message: "failed to reboot device"}});
                 } else {
+                    ngDialog.open({template: 'reboot', scope: $scope});
                     $location.path('/');
                 }
             })
@@ -181,6 +182,12 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
         SetupService.saveDeviceData($scope.chipid, $scope.deviceData)
                 .then(function (response) {
                     Alerts.addSuccess();
+                    console.log(response);
+                    if (response.status === "OK reboot") {
+                        $scope.rebootDevice();
+                    } else {
+                        $scope.loadDeviceData();
+                    }
                 })
                 .catch(function (response) {
                     ngDialog.open({template: 'failedSave', scope: $scope});
