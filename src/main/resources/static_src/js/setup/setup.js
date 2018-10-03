@@ -142,7 +142,6 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
                     })
                     .catch(function (response) {
                         ngDialog.open({template: 'dataFailure', scope: $scope, data: {message: "failed to load device data"}});
-                        $scope.stopMeasuring();
                         $scope.deviceData.frequency = 0;
                         $scope.deviceData.minimumLapTime = 0;
                         $scope.deviceData.triggerThreshold = 0;
