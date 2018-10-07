@@ -109,7 +109,7 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
             $scope.loadingDeviceData = true;
             SetupService.loadDeviceData($scope.chipid)
                     .then(function (response) {
-                        $scope.deviceData.minimumLapTime = response.minimumLapTime;
+                        $scope.deviceData.minimumLapTime = parseInt(response.minimumLapTime / 1000);
                         $scope.deviceData.triggerThreshold = response.triggerThreshold;
                         $scope.deviceData.triggerThresholdCalibration = response.triggerThresholdCalibration;
                         $scope.deviceData.calibrationOffset = response.calibrationOffset;
@@ -178,6 +178,7 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
     $scope.saveDeviceData = function () {
         $scope.progressbar.start();
         Util.displayOverlay(true);
+        console.log("before save", $scope.deviceData);
         SetupService.saveDeviceData($scope.chipid, $scope.deviceData)
                 .then(function (response) {
                     Alerts.addSuccess();
@@ -215,9 +216,12 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
     };
 
     factory.saveDeviceData = function (chipid, deviceData) {
+        console.log("in save", deviceData);
         var deviceData2 = deviceData;
         deviceData2.chipid = chipid;
+        deviceData2.minimumLapTime *= 1000;
         deviceData2.frequency = deviceData2.frequency.frequency;
+        console.log("in save2", deviceData2);
         return $http.post("/api/auth/participant/deviceData", deviceData2, {timeout: 10000}, null).then(function (response) {
             return response.data;
         });

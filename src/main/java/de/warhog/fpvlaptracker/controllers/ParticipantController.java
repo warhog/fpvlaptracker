@@ -5,6 +5,7 @@ import de.warhog.fpvlaptracker.service.RestService;
 import de.warhog.fpvlaptracker.entities.Rssi;
 import de.warhog.fpvlaptracker.entities.Participant;
 import de.warhog.fpvlaptracker.entities.ParticipantDeviceData;
+import de.warhog.fpvlaptracker.service.AudioService;
 import de.warhog.fpvlaptracker.service.ParticipantsDbService;
 import de.warhog.fpvlaptracker.service.ParticipantsService;
 import de.warhog.fpvlaptracker.service.ServiceLayerException;
@@ -31,6 +32,12 @@ public class ParticipantController {
 
     @Autowired
     private ParticipantsDbService participantsDbService;
+
+    @Autowired
+    private AudioService audioService;
+
+    @Autowired
+    private WebSocketController webSocketController;
 
     @RequestMapping(path = "/api/participant/rssi", method = RequestMethod.GET)
     public Rssi getRssi(@RequestParam(name = "chipid", required = true) Long chipid) {
@@ -75,9 +82,14 @@ public class ParticipantController {
         StatusResult result = new StatusResult(StatusResult.Status.NOK);
         try {
             Participant participant = participantsService.getParticipant(chipid);
-            
             String data = restService.rebootDevice(participant.getIp());
             result = new StatusResult(data);
+            if (!data.contains("NOK")) {
+                // remove participant
+                webSocketController.sendNewParticipantMessage(participant.getChipId());
+                audioService.playUnregistered();
+                participantsService.removeParticipant(participant);
+            }
         } catch (Exception ex) {
             LOG.error("cannot reboot device", ex);
         }

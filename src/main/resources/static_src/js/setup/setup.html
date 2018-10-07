@@ -147,7 +147,7 @@
     <label for="defaultVref">voltage calibration</label><br />
     calibration value for the default reference voltage in mV
     <div class="input-group col-lg-4">
-        <input type="number" min="1" max="600" step="1" class="form-control" placeholder="-" aria-describedby="basic-addon2" name="defaultVref" ng-model="deviceData.defaultVref" required/>
+        <input type="number" min="1000" max="1200" step="1" class="form-control" placeholder="-" aria-describedby="basic-addon2" name="defaultVref" ng-model="deviceData.defaultVref" required/>
         <span class="input-group-addon" id="basic-addon2">mV</span>
         <span class="input-group-btn">
             <button class="btn btn-default" ng-click="saveDeviceData();">save</button>
