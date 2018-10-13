@@ -41,9 +41,16 @@ public class ParticipantController {
 
     @RequestMapping(path = "/api/participant/rssi", method = RequestMethod.GET)
     public Rssi getRssi(@RequestParam(name = "chipid", required = true) Long chipid) {
-        Participant participant = participantsService.getParticipant(chipid);
-        Rssi rssi = restService.getRssi(participant.getIp());
-        return rssi;
+        try {
+            Participant participant = participantsService.getParticipant(chipid);
+            Rssi rssi = restService.getRssi(participant.getIp());
+            return rssi;
+        } catch (Exception ex) {
+            LOG.error("cannot load rssi", ex);
+            Rssi rssi = new Rssi();
+            rssi.setRssi(0);
+            return rssi;
+        }
     }
 
     @RequestMapping(path = "/api/participant/deviceData", method = RequestMethod.GET)
