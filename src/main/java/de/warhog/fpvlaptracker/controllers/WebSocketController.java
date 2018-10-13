@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 
 @Controller
@@ -45,6 +47,13 @@ public class WebSocketController {
         node.put("file", file.getFilename());
         node.put("repeat", repeat);
         this.template.convertAndSend("/topic/audio", node.toString());
+    }
+    
+    public void sendStatusMessage(String status) {
+        LOG.debug("sending status message");
+        ObjectNode node = JsonNodeFactory.instance.objectNode();
+        node.put("udp", status);
+        this.template.convertAndSend("/topic/status", node.toString());
     }
 
 }

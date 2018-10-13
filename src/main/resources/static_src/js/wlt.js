@@ -390,6 +390,16 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
                 stomp.connect({}, function () {
                     console.log("websocket service connected");
                     connected = true;
+                    
+                    console.log("subscribe to status topic");
+                    stomp.subscribe("/topic/status", function(data) {
+                        console.log("got new status message", data);
+                        var status = JSON.parse(data.body);
+                        if (status.udp !== undefined) {
+                            var statusUdpDiv = angular.element(document.querySelector("#statusUdp"));
+                            statusUdpDiv.html(status.udp);
+                        }
+                    });
                 }, function () {
                     console.log("failed to connect to websocket service");
                     connected = false;

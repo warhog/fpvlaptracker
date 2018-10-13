@@ -26,6 +26,7 @@ import java.nio.charset.Charset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -36,6 +37,7 @@ public class UdpHandler implements Runnable {
     private DatagramSocket socket;
     private Boolean run = true;
     private Thread thr;
+    private Long lastPacketReceived = 0L;
 
     @Autowired
     private RaceLogic race;
@@ -138,6 +140,8 @@ public class UdpHandler implements Runnable {
                     continue;
                 }
 
+                lastPacketReceived = System.currentTimeMillis();
+
                 String packetString = new String(packet.getData(), Charset.defaultCharset()).trim();
                 JsonNode rootNode = mapper.readValue(packetString, JsonNode.class);
                 PacketType packetType = PacketType.valueOf(rootNode.path("type").asText().toUpperCase());
@@ -165,9 +169,11 @@ public class UdpHandler implements Runnable {
                         break;
                 }
 
+//            } catch (InterruptedException ex) {
+//                LOG.error("interrupted", ex);
+//                run = false;
             } catch (IOException ex) {
-                LOG.error(ex.getMessage(), ex);
-                run = false;
+                LOG.error("error during handler run: " + ex.getMessage(), ex);
             }
         }
     }
@@ -180,6 +186,18 @@ public class UdpHandler implements Runnable {
             race.addLap(udpPacketLap.getChipid(), udpPacketLap.getDuration(), udpPacketLap.getRssi());
             webSocketController.sendNewLapMessage(udpPacketLap.getChipid());
         }
+    }
+    
+    @Scheduled(fixedDelay = 10000L)
+    public void sendUdpStatus() {
+        String status = "down";
+        if (this.run && this.thr.isAlive()) {
+            status = "up";
+            if (System.currentTimeMillis() > (this.lastPacketReceived + 10*60*1000)) {
+                status += " (no msg)";
+            }
+        }
+        webSocketController.sendStatusMessage(status);
     }
 
     private void requestRegistration(InetAddress address) {
