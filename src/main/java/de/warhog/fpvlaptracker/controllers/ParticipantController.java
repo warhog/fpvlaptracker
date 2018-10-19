@@ -94,7 +94,6 @@ public class ParticipantController {
             if (!data.contains("NOK")) {
                 // remove participant
                 webSocketController.sendNewParticipantMessage(participant.getChipId());
-//                audioService.playUnregistered();
                 audioService.speakUnregistered(participant.getName());
                 participantsService.removeParticipant(participant);
             }
