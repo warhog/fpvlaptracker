@@ -172,7 +172,7 @@ public class UdpHandler implements Runnable {
 //            } catch (InterruptedException ex) {
 //                LOG.error("interrupted", ex);
 //                run = false;
-            } catch (IOException ex) {
+            } catch (Exception ex) {
                 LOG.error("error during handler run: " + ex.getMessage(), ex);
             }
         }
