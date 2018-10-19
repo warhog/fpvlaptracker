@@ -102,7 +102,7 @@ public class UdpHandler implements Runnable {
             }
             participantsService.addParticipant(participant);
             webSocketController.sendNewParticipantMessage(udpPacketRegister.getChipid());
-            audioService.playRegistered();
+            audioService.speakRegistered(participant.getName());
             LOG.info("registered participant: " + participant.toString());
         } catch (Exception ex) {
             LOG.error(ex.getMessage(), ex);
@@ -229,7 +229,8 @@ public class UdpHandler implements Runnable {
         if (!participantsService.hasParticipant(udpPacketCalibrationDone.getChipid())) {
             LOG.info("got calibration done from non registered participant");
         } else {
-            webSocketController.sendAudioMessage(AudioFile.CALIBRATION_DONE);
+            audioService.speakCalibrationDone(participantsService.getParticipant(udpPacketCalibrationDone.getChipid()).getName());
+//            webSocketController.sendAudioMessage(AudioFile.CALIBRATION_DONE);
         }
     }
 

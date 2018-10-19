@@ -2,6 +2,7 @@ package de.warhog.fpvlaptracker.controllers;
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import de.warhog.fpvlaptracker.configuration.ApplicationConfig;
 import de.warhog.fpvlaptracker.util.AudioFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,8 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 
 @Controller
@@ -20,6 +19,9 @@ public class WebSocketController {
 
     @Autowired
     private SimpMessagingTemplate template;
+    
+    @Autowired
+    private ApplicationConfig applicationConfig;
 
     @MessageMapping("/lap")
     @SendTo("/topic/lap")
@@ -47,6 +49,14 @@ public class WebSocketController {
         node.put("file", file.getFilename());
         node.put("repeat", repeat);
         this.template.convertAndSend("/topic/audio", node.toString());
+    }
+    
+    public void sendSpeechMessage(String text) {
+        LOG.debug("sending speech message: " + text);
+        ObjectNode node = JsonNodeFactory.instance.objectNode();
+        node.put("text", text);
+        node.put("language", applicationConfig.getAudioLanguage());
+        this.template.convertAndSend("/topic/speech", node.toString());
     }
     
     public void sendStatusMessage(String status) {

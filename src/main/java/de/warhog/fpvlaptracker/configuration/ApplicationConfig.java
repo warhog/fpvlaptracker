@@ -10,9 +10,6 @@ public class ApplicationConfig {
 
     private static final Logger LOG = LoggerFactory.getLogger(ApplicationConfig.class);
     
-    @Value("${audio.playLocal}")
-    private Boolean audioPlayLocal;
-
     @Value("${shutdown.machine}")
     private Boolean shutdownMachine;
     
@@ -21,10 +18,6 @@ public class ApplicationConfig {
 
     @Value("${audio.language}")
     private String audioLanguage;
-
-    public Boolean isAudioPlayLocal() {
-        return audioPlayLocal;
-    }
 
     public String getAudioLanguage() {
         return audioLanguage;

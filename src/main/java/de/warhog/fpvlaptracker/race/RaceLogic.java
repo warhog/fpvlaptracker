@@ -40,7 +40,7 @@ public class RaceLogic {
     private RaceDbService racesDbService;
 
     @Autowired
-    private ParticipantsService participantsDbService;
+    private ParticipantsService participantsService;
 
     @Autowired
     private AudioService audioService;
@@ -144,9 +144,12 @@ public class RaceLogic {
         LOG.debug("add lap", chipId, duration, rssi);
         boolean raceStartedInThisLap = false;
         boolean oneParticipantReachedEnd = false;
+        String participantEndedName = "";
         if (!isRunning()) {
             LOG.info("cannot add lap when race is not running, chipid: " + chipId);
-            audioService.playInvalidLap();
+            if (participantsService.hasParticipant(chipId)) {
+                audioService.speakInvalidLap(participantsService.getParticipant(chipId).getName());
+            }
             return;
         }
         if (getState() == RaceState.GETREADY) {
@@ -161,7 +164,7 @@ public class RaceLogic {
         }
         if (data.hasEnded(numberOfLaps)) {
             LOG.info("participant already ended race " + participant.getName());
-            audioService.playInvalidLap();
+            audioService.speakAlreadyDone(participant.getName());
         } else {
             if (currentRaceId != null) {
                 try {
@@ -175,6 +178,7 @@ public class RaceLogic {
             if (data.hasEnded(numberOfLaps)) {
                 LOG.info("participant reached lap limit " + participant.getName());
                 oneParticipantReachedEnd = true;
+                participantEndedName = participant.getName();
             } else if (!raceStartedInThisLap) {
                 audioService.playLap();
             }
@@ -184,11 +188,11 @@ public class RaceLogic {
         // test if all of the participants has reached the lap limit
         if (participantRaceService.checkEnded(numberOfLaps)) {
             LOG.info("race ended");
-            audioService.playFinished();
+            audioService.speakFinished();
             stopRace();
         } else {
             if (oneParticipantReachedEnd) {
-                audioService.playParticipantEnded();
+                audioService.speakParticipantEnded(participantEndedName);
             }
         }
 
@@ -229,15 +233,15 @@ public class RaceLogic {
     public void checkParticipantsStillAvailable() {
         LOG.debug("checking for non-existing participants");
         if (!isRunning()) {
-            for (Participant participant : participantsDbService.getAllParticipants()) {
+            for (Participant participant : participantsService.getAllParticipants()) {
                 try {
                     restService.getRssi(participant.getIp());
                     LOG.debug("participant with chipid " + participant.getChipId() + " found");
                 } catch (Exception ex) {
                     LOG.info("participant with chipid " + participant.getChipId() + " not found, removing");
-                    participantsDbService.removeParticipant(participant);
+                    participantsService.removeParticipant(participant);
                     webSocketController.sendNewParticipantMessage(participant.getChipId());
-                    audioService.playUnregistered();
+                    audioService.speakUnregistered(participant.getName());
                 }
             }
         } else {

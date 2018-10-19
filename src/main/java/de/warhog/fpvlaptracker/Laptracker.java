@@ -2,7 +2,6 @@ package de.warhog.fpvlaptracker;
 
 import de.warhog.fpvlaptracker.communication.UdpHandler;
 import de.warhog.fpvlaptracker.db.Db;
-import de.warhog.fpvlaptracker.service.AudioService;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,14 +37,6 @@ public class Laptracker {
             udpHandler.setup();
         } catch (Exception ex) {
             LOG.error("error during udp thread setup: " + ex.getMessage(), ex);
-            System.exit(1);
-        }
-
-        AudioService audioService = ctx.getBean(AudioService.class);
-        try {
-            audioService.init();
-        } catch (Exception ex) {
-            LOG.error("error during audio initializsation: " + ex.getMessage(), ex);
             System.exit(1);
         }
 

@@ -1,10 +1,6 @@
 package de.warhog.fpvlaptracker.util;
 
 import de.warhog.fpvlaptracker.configuration.ApplicationConfig;
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,20 +44,6 @@ public enum AudioFile {
 
     public String getFilename() {
         return "audio/" + audioLanguage + "/" + filename;
-    }
-
-    public Path getPath() {
-        return Paths.get(getFilename());
-    }
-
-    public File getFile() {
-        return getPath().toFile();
-    }
-
-    public void testIfExisting() {
-        if (!Files.exists(getPath())) {
-            throw new RuntimeException("audio file " + getPath() + " not found");
-        }
     }
 
 }

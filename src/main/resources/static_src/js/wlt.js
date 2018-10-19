@@ -1,4 +1,4 @@
-/* global moment, Stomp */
+/* global moment, Stomp, speechSynthesis */
 angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', 'navigation', 'setup', 'races', 'toplist', 'login', 'devicedata'])
         .config(function ($routeProvider, $httpProvider, $locationProvider) {
 
@@ -292,11 +292,24 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
             };
             return factory;
         })
-        .factory('WebSocketService', function ($timeout, NotificationService, Constants, AudioService) {
+        .factory('SpeechService', function() {
+            let factory = {};
+            factory.speak = function(text, language) {
+                if(typeof speechSynthesis === 'undefined') {
+                    return;
+                }
+                let utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = language;
+                speechSynthesis.speak(utterance);
+            };
+            return factory;
+        })
+        .factory('WebSocketService', function ($timeout, NotificationService, Constants, AudioService, SpeechService) {
             let factory = {};
             let subscriberLap = null;
             let subscriberParticipant = null;
             let subscriberAudio = null;
+            let subscriberSpeech = null;
             let stomp = null;
             let client = null;
             let connected = false;
@@ -328,6 +341,13 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
                 console.log("unsubscribe from audio");
                 if (subscriberAudio !== null) {
                     subscriberAudio.unsubscribe();
+                }
+            };
+
+            factory.unsubscribeSpeechListener = function () {
+                console.log("unsubscribe from speech");
+                if (subscriberSpeech !== null) {
+                    subscriberSpeech.unsubscribe();
                 }
             };
 
@@ -365,6 +385,22 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
                     console.log("not connected, scheduling");
                     $timeout(function () {
                         factory.subscribeAudioListener();
+                    }, 1000);
+                }
+            };
+
+            factory.subscribeSpeechListener = function () {
+                console.log("subscribe to topic speech");
+                if (connected) {
+                    subscriberSpeech = stomp.subscribe("/topic/speech", function (data) {
+                        console.log("got speech websocket message", data);
+                        let textData = JSON.parse(data.body);
+                        SpeechService.speak(textData.text, textData.language);
+                    });
+                } else {
+                    console.log("not connected, scheduling");
+                    $timeout(function () {
+                        factory.subscribeSpeechListener();
                     }, 1000);
                 }
             };
