@@ -1,5 +1,5 @@
 # configuration of the host software
-you can configure the application using the application.properties file.
+you can configure the application using the **application.properties** file.
 
 the following options are available:
 
