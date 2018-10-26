@@ -8,16 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 public enum AudioFile {
-    REGISTER("register.wav"),
-    LAP("lap.wav"),
-    UNREGISTER("unregister.wav"),
-    FINISHED("finished.wav"),
-    INVALID_LAP("invalidlap.wav"),
-    PARTICIPANT_ENDED("participantended.wav"),
-    CALIBRATION_DONE("calibrationdone.wav");
+    LAP("lap.wav");
 
     private static final Logger LOG = LoggerFactory.getLogger(AudioFile.class);
-    private static String audioLanguage = "en";
+    private static String audioLanguage = "en-EN";
 
     public static void setAudioLanguage(String language) {
         audioLanguage = language;
@@ -43,7 +37,7 @@ public enum AudioFile {
     }
 
     public String getFilename() {
-        return "audio/" + audioLanguage + "/" + filename;
+        return "audio/" + filename;
     }
 
 }
