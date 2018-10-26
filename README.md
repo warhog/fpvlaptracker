@@ -50,8 +50,6 @@ the hardware consists of a esp32 board with a boscam rx5808 receiver module conn
 the backend of the race software for network mode was written in java using spring boot with jooq as database access 
 library. the frontend was developed using angularjs. the race software can be run on almost every platform that supports java se.
 
-[detailed hardware instructions](docs/hardware.md)
-
 
 ### why you have chosen that technology stack?
 arduino because of its easy handling. spring-boot because it allows rapid and powerful webservice development and easy to set up (nothing needs to be installed). angularjs because i always wanted to use and try it out. sadly i started development before angular 2 was released. maybe i'll port it to a newer angular version someday. the mobile app is developed using ionic framework.
