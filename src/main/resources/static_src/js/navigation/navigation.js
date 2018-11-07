@@ -7,7 +7,10 @@ angular.module('navigation', ['ngRoute']).controller('navigation', function (
     };
 
     $scope.participants = 0;
-    $scope.authenticated = LoginService.isAuthenticated();
+    
+    $scope.isAuthenticated = function() {
+        return LoginService.isAuthenticated();
+    };
 
     $scope.loadBadgeData = function () {
         BadgeService.loadBadgeData()

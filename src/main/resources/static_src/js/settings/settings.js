@@ -3,8 +3,6 @@ angular.module('settings', ['ngDialog', 'ngProgress']).controller('settings', fu
         $scope, ngDialog, ngProgressFactory, SettingsService, Alerts, Util, LoginService
         ) {
 
-    LoginService.requireAuthenticated();
-
     $scope.progressbar = ngProgressFactory.createInstance();
     $scope.maxLaps = 0;
     $scope.alerts = Alerts;
@@ -80,8 +78,10 @@ angular.module('settings', ['ngDialog', 'ngProgress']).controller('settings', fu
     };
 
     factory.loadData = function () {
-        return $http.get("/api/miscdata").then(function (response) {
-            response.data.numberOfLaps = parseInt(response.data.numberOfLaps);
+        return $http.get("/api/auth/miscdata").then(function (response) {
+            if (response.data !== undefined && response.data.numberOfLaps !== undefined) {
+                response.data.numberOfLaps = parseInt(response.data.numberOfLaps);
+            }
             return response.data;
         });
     };

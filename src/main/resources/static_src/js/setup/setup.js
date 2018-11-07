@@ -3,8 +3,6 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
         $scope, ngDialog, $interval, $location, ngProgressFactory, SetupService, Alerts, Util, LoginService
         ) {
 
-    LoginService.requireAuthenticated();
-
     $scope.chipid = parseInt($location.search().chipid);
 
     $scope.frequencies = [

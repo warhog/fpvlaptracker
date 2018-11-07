@@ -6,7 +6,7 @@ angular.module('login', ['ngProgress', 'ui.bootstrap']).controller('login', func
     if ($location.search().logout) {
         console.log("logout found");
         LoginService.logout();
-        Util.displayOverlay(true);
+        $location.url('/');
     }
 
     $scope.username = '';
@@ -22,7 +22,7 @@ angular.module('login', ['ngProgress', 'ui.bootstrap']).controller('login', func
                 function (response) {
                     console.log("login successful");
                     Alerts.clear();
-                    $location.url(LoginService.getLastPath());
+                    $location.url(decodeURIComponent($location.search().lastPath));
                 },
                 function (response) {
                     console.log("cannot login", response);

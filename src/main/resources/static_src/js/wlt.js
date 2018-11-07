@@ -38,9 +38,9 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
             $httpProvider.interceptors.push('authenticationInterceptor');
 
         })
-        .run(function (WebSocketService) {
+        .run(function (WebSocketService, LoginService) {
             // websocketservice needs to stay as argument to get initialized automatically
-
+            LoginService.initAuth();
         })
         .directive("fltConfirmClick", [
             function ( ) {
@@ -79,17 +79,10 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
             let factory = {};
             let authenticated = false;
             let path = '/';
-
+            
             factory.getLastPath = function () {
                 console.log("last path", path);
                 return path;
-            };
-
-            factory.requireAuthenticated = function () {
-                path = $location.path();
-                if (!factory.isAuthenticated()) {
-                    $location.url('/login');
-                }
             };
 
             factory.logout = function () {
@@ -105,9 +98,18 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
                         );
             };
 
-            factory.login = function (username, password, callbackSuccess, callbackError, callbackFinally) {
-                var headers = {authorization: "Basic " + btoa(username + ":" + password)};
-                $http.get('/user', {headers: headers})
+            factory.initAuth = function () {
+                console.log("init authentication");
+                factory.login(undefined, undefined, undefined, undefined, undefined, true);
+            };
+
+            factory.login = function (username, password, callbackSuccess, callbackError, callbackFinally, noRoute) {
+                let headers = {};
+                if (username !== undefined && password !== undefined) {
+                    headers = {authorization: "Basic " + btoa(username + ":" + password)};
+                }
+                let noRouteToLogin = noRoute || false;
+                $http.get('/user', {headers: headers, noRouteToLogin: noRouteToLogin})
                         .then(function (response) {
                             if (response.data.name) {
                                 authenticated = true;
@@ -137,10 +139,15 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
                         return response || $q.when(response);
                     },
                     responseError: function (rejection) {
-                        if (rejection.status === 401) {
-                            $location.url('/login');
+                        if (rejection.status === 401 && rejection.config.noRouteToLogin !== true) {
+                            console.log("401 -> login");
+                            $location.url('/login?lastPath=' + encodeURIComponent($location.path()));
+                            return false;
+                        } else if (rejection.config.noRouteToLogin !== true) {
+                            return $q.reject(rejection);
+                        } else {
+                            return false;
                         }
-                        return $q.reject(rejection);
                     }
                 };
             }])
@@ -292,10 +299,10 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
             };
             return factory;
         })
-        .factory('SpeechService', function() {
+        .factory('SpeechService', function () {
             let factory = {};
-            factory.speak = function(text, language) {
-                if(typeof speechSynthesis === 'undefined') {
+            factory.speak = function (text, language) {
+                if (typeof speechSynthesis === 'undefined') {
                     return;
                 }
                 let utterance = new SpeechSynthesisUtterance(text);
@@ -426,9 +433,9 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
                 stomp.connect({}, function () {
                     console.log("websocket service connected");
                     connected = true;
-                    
+
                     console.log("subscribe to status topic");
-                    stomp.subscribe("/topic/status", function(data) {
+                    stomp.subscribe("/topic/status", function (data) {
                         console.log("got new status message", data);
                         var status = JSON.parse(data.body);
                         if (status.udp !== undefined) {

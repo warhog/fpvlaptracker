@@ -189,7 +189,7 @@ public class UdpHandler implements Runnable {
     @Scheduled(fixedDelay = 10000L)
     public void sendUdpStatus() {
         String status = "down";
-        if (this.run && this.thr.isAlive()) {
+        if (this.run && this.thr != null && this.thr.isAlive()) {
             status = "up";
             if (System.currentTimeMillis() > (this.lastPacketReceived + 10*60*1000)) {
                 status += " (no msg)";

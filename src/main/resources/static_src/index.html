@@ -20,14 +20,15 @@
                 <li ng-class="{'active':isActive('participants')}"><a href="/participants">participants <span class="badge">{{participants}}</span></a></li>
                 <li ng-class="{'active':isActive('races')}"><a href="/races">stored races</a></li>
                 <li ng-class="{'active':isActive('toplist')}"><a href="/toplist">toplists</a></li>
-                <li ng-class="{'active':isActive('login')}"><a href="/login">login</a></li>
+                <li ng-hide="isAuthenticated()" ng-class="{'active':isActive('login')}"><a href="/login">login</a></li>
+                <li ng-hide="!isAuthenticated()"><a href="/login?logout">logout</a></li>
             </ul>
         </div>
         <div ng-view class="container"></div>
         <footer class="footer">
             <div class="container">
                 <p class="text-muted">
-                    fpvlaptracker v0.9.1, <a href="https://github.com/warhog/fpvlaptracker">github</a>, <a href="https://en.wikipedia.org/wiki/MIT_License" target="_blank">MIT licensed</a>, 
+                    fpvlaptracker v0.9.2, <a href="https://github.com/warhog/fpvlaptracker">github</a>, <a href="https://en.wikipedia.org/wiki/MIT_License" target="_blank">MIT licensed</a>, 
                     udp-status: <span id="statusUdp"></span>
                 </p>
             </div>

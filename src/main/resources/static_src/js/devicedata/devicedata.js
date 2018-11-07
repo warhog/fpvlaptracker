@@ -3,8 +3,6 @@ angular.module('devicedata', ['ngDialog', 'ngProgress', 'ui.bootstrap']).control
         $scope, ngDialog, $location, ngProgressFactory, DeviceDataService, Alerts, LoginService
         ) {
 
-    LoginService.requireAuthenticated();
-
     $scope.chipid = parseInt($location.search().chipid);
     $scope.alerts = Alerts;
 

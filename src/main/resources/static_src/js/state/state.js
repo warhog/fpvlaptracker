@@ -10,7 +10,7 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
     $scope.authenticated = LoginService.isAuthenticated();
     $scope.sleepDisabled = false;
     $scope.isMobile = UAUtil.isMobile();
-
+    
     WebSocketService.subscribeLapListener();
     NotificationService.on($scope, Constants.MESSAGES["newLap"], function (message) {
         console.log("got newParticipant message", message);

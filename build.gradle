@@ -4,7 +4,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.5.16.RELEASE")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.1.0.RELEASE")
         classpath "nu.studer:gradle-jooq-plugin:3.0.2"
     }
 }
@@ -14,6 +14,7 @@ plugins {
 
 apply plugin: 'java'
 apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
 apply plugin: 'findbugs'
 apply plugin: 'idea'
 apply plugin: 'nu.studer.jooq'
@@ -36,7 +37,7 @@ configurations {
 
 jar {
     baseName = 'fpvlaptracker'
-    version =  '0.9.1'
+    version =  '0.9.2'
 }
 
 sourceCompatibility = '1.8'
@@ -65,24 +66,24 @@ repositories {
 }
 
 dependencies {
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '1.5.16.RELEASE'
-    compile group: 'org.springframework', name: 'spring-websocket', version: '4.3.19.RELEASE'
-    compile group: 'org.springframework', name: 'spring-messaging', version: '4.3.19.RELEASE'
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: '1.5.16.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.0.RELEASE'
+    compile group: 'org.springframework', name: 'spring-websocket', version: '5.1.2.RELEASE'
+    compile group: 'org.springframework', name: 'spring-messaging', version: '5.1.2.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: '2.1.0.RELEASE'
     compile group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.2'
     compile group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.1u2'
-    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.11'
+    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
     compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind'
-    compile group: 'org.jooq', name: 'jooq', version: '3.11.4'
+    compile group: 'org.jooq', name: 'jooq', version: '3.11.7'
     compile group: 'com.h2database', name: 'h2', version: '1.4.197'
-    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.8'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.8.1'
     jooqRuntime 'com.h2database:h2:1.4.197'
 }
 
 
 jooq {
-    version = '3.9.6'
+    version = '3.11.7'
     edition = 'OSS'
     flt(sourceSets.main) {
         jdbc {
@@ -93,12 +94,12 @@ jooq {
             schema = 'public'
         }
         generator {
-            name = 'org.jooq.util.DefaultGenerator'
+            name = 'org.jooq.codegen.DefaultGenerator'
             strategy {
-                name = 'org.jooq.util.DefaultGeneratorStrategy'
+                name = 'org.jooq.codegen.DefaultGeneratorStrategy'
             }
             database {
-                name = 'org.jooq.util.h2.H2Database'
+                name = 'org.jooq.meta.h2.H2Database'
                 inputSchema = 'PUBLIC'
             }
             generate {

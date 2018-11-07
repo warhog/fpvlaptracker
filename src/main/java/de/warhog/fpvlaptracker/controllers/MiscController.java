@@ -43,7 +43,7 @@ public class MiscController {
         return ret;
     }
 
-    @RequestMapping(path = "/api/miscdata", method = RequestMethod.GET)
+    @RequestMapping(path = "/api/auth/miscdata", method = RequestMethod.GET)
     public Map<String, String> getMiscData() throws ServiceLayerException {
         Map<String, String> ret = new HashMap<>();
         ret.put("numberOfLaps", race.getNumberOfLaps().toString());
