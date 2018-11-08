@@ -27,6 +27,7 @@ angular.module('navigation', ['ngRoute']).controller('navigation', function (
     WebSocketService.subscribeParticipantListener();
     $scope.$on('$destroy', function () {
         WebSocketService.unsubscribeParticipantListener();
+        WebSocketService.unsubscribeLapListener();
         WebSocketService.unsubscribeAudioListener();
         WebSocketService.unsubscribeSpeechListener();
     });
