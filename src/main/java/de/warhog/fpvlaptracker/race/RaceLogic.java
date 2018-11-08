@@ -227,6 +227,7 @@ public class RaceLogic {
 
     private void setState(RaceState state) {
         this.state = state;
+        webSocketController.sendRaceStateChangedMessage(state);
     }
 
     @Scheduled(fixedDelay = 300000L)

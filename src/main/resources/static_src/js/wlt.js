@@ -64,7 +64,8 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
         .constant('Constants', {
             MESSAGES: {
                 newLap: 'NEW_LAP',
-                newParticipant: 'NEW_PARTICIPANT'
+                newParticipant: 'NEW_PARTICIPANT',
+                raceStateChanged: 'RACE_STATE_CHANGED'
             }
         })
         .factory('UAUtil', function ($window) {
@@ -315,6 +316,7 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
             let factory = {};
             let subscriberLap = null;
             let subscriberParticipant = null;
+            let subscriberRaceStateChanged = null;
             let subscriberAudio = null;
             let subscriberSpeech = null;
             let stomp = null;
@@ -362,6 +364,13 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
                 console.log("unsubscribe from participant");
                 if (subscriberParticipant !== null) {
                     subscriberParticipant.unsubscribe();
+                }
+            };
+
+            factory.unsubscribeRaceStateChangedListener = function () {
+                console.log("unsubscribe from race state changed");
+                if (subscriberRaceStateChanged !== null) {
+                    subscriberRaceStateChanged.unsubscribe();
                 }
             };
 
@@ -423,6 +432,21 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
                     console.log("not connected, scheduling");
                     $timeout(function () {
                         factory.subscribeParticipantListener();
+                    }, 1000);
+                }
+            };
+            
+            factory.subscribeRaceStateChangedListener = function () {
+                console.log("subscribe to race state changed");
+                if (connected) {
+                    subscriberRaceStateChanged = stomp.subscribe("/topic/race/state", function (data) {
+                        console.log("got new race state changed websocket message", data);
+                        NotificationService.send(Constants.MESSAGES["raceStateChanged"], data);
+                    });
+                } else {
+                    console.log("not connected, scheduling");
+                    $timeout(function () {
+                        factory.subscribeRaceStateChangedListener();
                     }, 1000);
                 }
             };

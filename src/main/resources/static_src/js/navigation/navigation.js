@@ -25,15 +25,22 @@ angular.module('navigation', ['ngRoute']).controller('navigation', function (
     $scope.loadBadgeData();
 
     WebSocketService.subscribeParticipantListener();
+    WebSocketService.subscribeRaceStateChangedListener();
     $scope.$on('$destroy', function () {
         WebSocketService.unsubscribeParticipantListener();
         WebSocketService.unsubscribeLapListener();
         WebSocketService.unsubscribeAudioListener();
         WebSocketService.unsubscribeSpeechListener();
+        WebSocketService.unsubscribeRaceStateChangedListener();
     });
 
     NotificationService.on($scope, Constants.MESSAGES["newParticipant"], function (message) {
         console.log("got newParticipant message", message);
+        $scope.loadBadgeData();
+    });
+
+    NotificationService.on($scope, Constants.MESSAGES["raceStateChanged"], function (message) {
+        console.log("got raceStateChanged message", message);
         $scope.loadBadgeData();
     });
 
