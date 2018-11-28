@@ -20,23 +20,45 @@ public class RestService {
     }
 
     public Rssi getRssi(InetAddress ipAddress) {
-        return restTemplate.getForObject(buildUrl(ipAddress, "rssi"), Rssi.class);
+        try {
+            return restTemplate.getForObject(buildUrl(ipAddress, "rssi"), Rssi.class);
+        } catch (Exception ex) {
+            LOG.error("cannot get rssi", ex);
+            return new Rssi();
+        }
     }
 
     public ParticipantDeviceData getDeviceData(InetAddress ipAddress) {
-        return restTemplate.getForObject(buildUrl(ipAddress, "devicedata"), ParticipantDeviceData.class);
+        try {
+            return restTemplate.getForObject(buildUrl(ipAddress, "devicedata"), ParticipantDeviceData.class);
+        } catch (Exception ex) {
+            LOG.error("cannot get device data", ex);
+            return new ParticipantDeviceData();
+        }
     }
     
     public String rebootDevice(InetAddress ipAddress) {
-        return restTemplate.getForObject(buildUrl(ipAddress, "reboot"), String.class);
+        try {
+            return restTemplate.getForObject(buildUrl(ipAddress, "reboot"), String.class);
+        } catch (Exception ex) {
+            LOG.error("cannot reboot device", ex);
+            return "NOK";
+        }
     }
     
     public String postDeviceData(InetAddress ipAddress, ParticipantDeviceData deviceData) {
-        String ret = restTemplate.postForObject(buildUrl(ipAddress, "devicedata"), deviceData, String.class);
-        if (ret.trim().contains("NOK")) {
-            throw new RuntimeException("cannot set devicedata");
+        try {
+            String ret = restTemplate.postForObject(buildUrl(ipAddress, "devicedata"), deviceData, String.class);
+            if (ret != null) {
+                if (ret.trim().contains("NOK")) {
+                    throw new RuntimeException("cannot set devicedata");
+                }
+            }
+            return ret;
+        } catch (Exception ex) {
+            LOG.error("cannot post device data", ex);
+            return "NOK";
         }
-        return ret;
     }
 
 }
