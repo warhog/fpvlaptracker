@@ -11,6 +11,10 @@ input, select {
     display: flex;
 }
 
+label {
+    font-size: 1.3em;
+}
+
 html {
     position: relative;
     min-height: 100%;
