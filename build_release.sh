@@ -7,7 +7,7 @@ if [ $# -eq 0 ]; then
 fi
 
 VERSION=$1
-CURRENT_BRANCH=`git branch | grep \* | cut -d ' ' -f2`
+START_BRANCH=`git branch | grep \* | cut -d ' ' -f2`
 START_PATH=`pwd`
 
 git checkout release/${VERSION} >/dev/null 2>&1
@@ -29,3 +29,5 @@ cp -r ../../release_files/* ./
 zip -9 -r fpvlaptracker-${VERSION}.zip *
 cp fpvlaptracker-${VERSION}.zip ${START_PATH}/fpvlaptracker-${VERSION}.zip
 cd ${START_PATH}
+
+git checkout ${START_BRANCH}
