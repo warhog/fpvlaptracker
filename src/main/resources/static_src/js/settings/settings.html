@@ -1,5 +1,5 @@
 <h1>settings</h1>
-<div uib-alert ng-repeat="alert in alerts.getAlerts()" ng-class="'alert-' + (alert.type || 'warning')" close="alerts.closeAlert($index)">{{alert.msg}}</div>
+<div uib-alert ng-repeat="alert in alerts.getAlerts()" class="alert alert-dismissable" ng-class="'alert-' + (alert.type || 'warning')" close="alerts.closeAlert($index)">{{alert.msg}}</div>
 <script type="text/ng-template" id="failedSave">
     <div>
     <h2>failed</h2>
