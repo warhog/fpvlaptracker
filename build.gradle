@@ -88,8 +88,8 @@ dependencies {
 import groovy.json.*
 task injectVersion() {
     println 'creating package_version.json and injecting version ' + project.version
-    def inputFile = new File("package.json")
-    def outputFile = new File("build/package_version.json")
+    def inputFile = new File("${project.projectDir}/package.json")
+    def outputFile = new File("${project.projectDir}/build/package_version.json")
     def json = new JsonSlurper().parseText(inputFile.text)
     json.version = project.version
     def builder = new JsonBuilder(json)
