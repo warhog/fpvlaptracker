@@ -39,7 +39,11 @@ gulp.task('html-min', function () {
 });
 
 gulp.task('css-flt', function () {
-    return gulp.src([srcPath + '/css/*.css', '!' + srcPath + '/css/*.min.css'])
+    return gulp.src([
+//                srcPath + '/css/bootstrap.min.css',
+                srcPath + '/css/main.css',
+                srcPath + '/css/bootstrap-theme.min.css'
+            ])
             .pipe(changed(destPath + '/css/'))
             .pipe(concat('concat.css'))
             .pipe(minifyCSS())
@@ -48,7 +52,16 @@ gulp.task('css-flt', function () {
 });
 
 gulp.task('css-libs', function () {
-    return gulp.src([srcPath + '/css/*.min.css', , srcPath + '/css/ngProgress.css'])
+//        './node_modules/bootstrap/dist/css/bootstrap.min.css',
+    var files = [
+        './node_modules/bootswatch/dist/cosmo/bootstrap.min.css',
+        './node_modules/ngprogress/ngProgress.css',
+        srcPath + '/css/ngDialog.min.css',
+        srcPath + '/css/ngDialog-theme-default.min.css',
+        srcPath + '/css/ngDialog-theme-plain.min.css'
+    ];
+    
+    return gulp.src(files)
             .pipe(changed(destPath + '/css/'))
             .pipe(concat('concat.css'))
             .pipe(rename('libs.min.css'))
@@ -57,7 +70,6 @@ gulp.task('css-libs', function () {
 
 gulp.task('js-flt', function () {
     var files = [
-        'libs/amChartsDirective-1.1.0.js',
         '/home/home.js',
         '/state/state.js',
         '/toplist/toplist.js',
@@ -77,7 +89,7 @@ gulp.task('js-flt', function () {
 
     return gulp.src(filesPath)
             .pipe(changed(destPath + '/js/'))
-            .pipe(babel({presets: ['es2015']}))
+            .pipe(babel({presets: ['@babel/preset-env']}))
             .pipe(sourcemaps.init())
             .pipe(concat('concat.js'))
             .pipe(ngAnnotate())
@@ -93,28 +105,32 @@ gulp.task('js-flt', function () {
 
 gulp.task('js-libs', function () {
     var libs = [
-        'jquery-3.3.1.min.js',
-        'angular-1.7.4.min.js',
-        'angular-route-1.7.4.min.js',
-        'angular-animate-1.7.4.min.js',
-        'angular-cookies-1.7.4.min.js',
-        'angular-touch-1.7.4.min.js',
-        'bootstrap.min.js',
-        'moment-with-locales-2.22.2.min.js',
         'ui-bootstrap-tpls-2.3.1.min.js',
         'ngDialog-1.4.0.min.js',
-        'ngprogress-1.1.3.min.js',
-        'sockjs-1.3.0.min.js',
         'stomp-4.0.8.min.js',
-        'howler-2.0.15.min.js',
-        'NoSleep-0.7.1.min.js',
-        'amcharts-3.21.13/amcharts.js',
-        'amcharts-3.21.13/serial.js'
+        'amChartsDirective-1.1.0.js'
+    ];
+    var nodelibs = [
+        './node_modules/jquery/dist/jquery.min.js',
+        './node_modules/angular/angular.min.js',
+        './node_modules/angular-route/angular-route.min.js',
+        './node_modules/angular-animate/angular-animate.min.js',
+        './node_modules/angular-cookies/angular-cookies.min.js',
+        './node_modules/angular-touch/angular-touch.min.js',
+        './node_modules/bootstrap/dist/js/bootstrap.min.js',
+        './node_modules/moment/min/moment-with-locales.min.js',
+        './node_modules/ngprogress/build/ngprogress.min.js',
+        './node_modules/howler/dist/howler.min.js',
+        './node_modules/nosleep.js/dist/NoSleep.min.js',
+        './node_modules/amcharts3/amcharts/amcharts.js',
+        './node_modules/amcharts3/amcharts/serial.js',
+        './node_modules/sockjs-client/dist/sockjs.min.js'
     ];
 
     var libsPath = libs.map(function (lib) {
         return srcPath + '/js/libs/' + lib;
     });
+    libsPath = nodelibs.concat(libsPath);
     return gulp.src(libsPath)
             .pipe(concat('libs.min.js'))
             .pipe(gulp.dest(destPath + '/js/'));
@@ -127,10 +143,12 @@ gulp.task('clean-all', function () {
 });
 
 
-gulp.task('default', ['build'], function () {
+gulp.task('build', gulp.series('clean-all', gulp.parallel('images', 'audio', 'html-min', 'css-libs', 'js-libs'), gulp.parallel('css-flt', 'js-flt'), function (cb) {
+    cb();
+}));
 
-});
+gulp.task('default', gulp.series('build', function (cb) {
+    cb();
+}));
 
-gulp.task('build', ['clean-all'], function (cb) {
-    runSequence(['images', 'audio', 'html-min', 'css-libs', 'css-flt', 'js-libs', 'js-flt'], cb);
-});
+
