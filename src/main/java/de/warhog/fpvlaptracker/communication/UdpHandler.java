@@ -2,8 +2,10 @@ package de.warhog.fpvlaptracker.communication;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.warhog.fpvlaptracker.communication.entities.UdpPacketBatteryLow;
 import de.warhog.fpvlaptracker.communication.entities.UdpPacketCalibrationDone;
 import de.warhog.fpvlaptracker.communication.entities.UdpPacketLap;
+import de.warhog.fpvlaptracker.communication.entities.UdpPacketMessage;
 import de.warhog.fpvlaptracker.communication.entities.UdpPacketRegister;
 import de.warhog.fpvlaptracker.controllers.WebSocketController;
 import de.warhog.fpvlaptracker.entities.Participant;
@@ -133,7 +135,7 @@ public class UdpHandler implements Runnable {
                 socket.receive(packet);
                 LOG.debug("got packet: " + new String(packet.getData(), Charset.defaultCharset()).trim());
 
-                if (testLocalAddress(((InetSocketAddress)packet.getSocketAddress()).getAddress())) {
+                if (testLocalAddress(((InetSocketAddress) packet.getSocketAddress()).getAddress())) {
                     LOG.info("packet from same ip");
                     continue;
                 }
@@ -162,6 +164,18 @@ public class UdpHandler implements Runnable {
                         udpPacketCalibrationDone.setPacketType(packetType);
                         processCalibrationDone(udpPacketCalibrationDone);
                         break;
+                    case MESSAGE:
+                        LOG.info("got message packet");
+                        UdpPacketMessage udpPacketMessage = mapper.readValue(packet.getData(), UdpPacketMessage.class);
+                        udpPacketMessage.setPacketType(packetType);
+                        processMessage(udpPacketMessage);
+                        break;
+                    case BATTERY_LOW:
+                        LOG.info("got battery low packet");
+                        UdpPacketBatteryLow udpPacketBatteryLow = mapper.readValue(packet.getData(), UdpPacketBatteryLow.class);
+                        udpPacketBatteryLow.setPacketType(packetType);
+                        processBatteryLow(udpPacketBatteryLow);
+                        break;
                     default:
                         LOG.error("unknown packet type: " + packetType);
                         break;
@@ -185,13 +199,13 @@ public class UdpHandler implements Runnable {
             webSocketController.sendNewLapMessage(udpPacketLap.getChipid());
         }
     }
-    
+
     @Scheduled(fixedDelay = 10000L)
     public void sendUdpStatus() {
         String status = "down";
         if (this.run && this.thr != null && this.thr.isAlive()) {
             status = "up";
-            if (System.currentTimeMillis() > (this.lastPacketReceived + 10*60*1000)) {
+            if (System.currentTimeMillis() > (this.lastPacketReceived + 10 * 60 * 1000)) {
                 status += " (no msg)";
             }
         }
@@ -229,6 +243,22 @@ public class UdpHandler implements Runnable {
         } else {
             audioService.speakCalibrationDone(participantsService.getParticipant(udpPacketCalibrationDone.getChipid()).getName());
 //            webSocketController.sendAudioMessage(AudioFile.CALIBRATION_DONE);
+        }
+    }
+
+    private void processMessage(UdpPacketMessage udpPacketMessage) {
+        if (!participantsService.hasParticipant(udpPacketMessage.getChipid())) {
+            LOG.info("got message from non registered participant");
+        } else {
+            audioService.speak(udpPacketMessage.getMessage());
+        }
+    }
+
+    private void processBatteryLow(UdpPacketBatteryLow udpPacketBatteryLow) {
+        if (!participantsService.hasParticipant(udpPacketBatteryLow.getChipid())) {
+            LOG.info("got battery low from non registered participant");
+        } else {
+            audioService.speakBatteryLow(participantsService.getParticipant(udpPacketBatteryLow.getChipid()).getName());
         }
     }
 

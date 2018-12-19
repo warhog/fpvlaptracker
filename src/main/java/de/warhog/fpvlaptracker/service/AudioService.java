@@ -93,6 +93,14 @@ public class AudioService {
         speak(text);
     }
 
+    public void speakBatteryLow(String name) {
+        String text = "Low battery warning for " + name + ".";
+        if (applicationConfig.getAudioLanguage().equals("de-DE")) {
+            text = "Niedriger Akkustand " + name + ".";
+        }
+        speak(text);
+    }
+
     public void speakAlreadyDone(String name) {
         String text = name + " already finished.";
         if (applicationConfig.getAudioLanguage().equals("de-DE")) {
