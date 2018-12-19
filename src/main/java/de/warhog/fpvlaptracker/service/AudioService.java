@@ -47,7 +47,7 @@ public class AudioService {
 
     public void speakRegistered(String name) {
         String text = "Registered " + name + ".";
-        if (applicationConfig.getAudioLanguage().equals("de")) {
+        if (applicationConfig.getAudioLanguage().equals("de-DE")) {
             text = name + " registriert.";
         }
         speak(text);
@@ -55,7 +55,7 @@ public class AudioService {
     
     public void speakUnregistered(String name) {
         String text = "Removed " + name + ".";
-        if (applicationConfig.getAudioLanguage().equals("de")) {
+        if (applicationConfig.getAudioLanguage().equals("de-DE")) {
             text = name + " entfernt.";
         }
         speak(text);
@@ -63,7 +63,7 @@ public class AudioService {
 
     public void speakFinished() {
         String text = "Race finished.";
-        if (applicationConfig.getAudioLanguage().equals("de")) {
+        if (applicationConfig.getAudioLanguage().equals("de-DE")) {
             text = "Rennen beendet.";
         }
         speak(text);
@@ -71,7 +71,7 @@ public class AudioService {
 
     public void speakInvalidLap(String name) {
         String text = "Invalid lap: " + name;
-        if (applicationConfig.getAudioLanguage().equals("de")) {
+        if (applicationConfig.getAudioLanguage().equals("de-DE")) {
             text = "Ungültige Runde: " + name;
         }
         speak(text);
@@ -79,7 +79,7 @@ public class AudioService {
     
     public void speakParticipantEnded(String name) {
         String text = name + " reached the goal";
-        if (applicationConfig.getAudioLanguage().equals("de")) {
+        if (applicationConfig.getAudioLanguage().equals("de-DE")) {
             text = name + " hat das Ziel erreicht.";
         }
         speak(text);
@@ -87,7 +87,7 @@ public class AudioService {
     
     public void speakCalibrationDone(String name) {
         String text = name + " calibrated.";
-        if (applicationConfig.getAudioLanguage().equals("de")) {
+        if (applicationConfig.getAudioLanguage().equals("de-DE")) {
             text = name + " kalibriert.";
         }
         speak(text);
@@ -95,7 +95,7 @@ public class AudioService {
 
     public void speakAlreadyDone(String name) {
         String text = name + " already finished.";
-        if (applicationConfig.getAudioLanguage().equals("de")) {
+        if (applicationConfig.getAudioLanguage().equals("de-DE")) {
             text = name + " bereits beendet.";
         }
         speak(text);
