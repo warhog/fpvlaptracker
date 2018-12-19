@@ -1,6 +1,6 @@
 /* global moment */
 angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('setup', function (
-        $scope, ngDialog, $interval, $location, ngProgressFactory, SetupService, Alerts, Util, LoginService
+        $scope, ngDialog, $interval, $location, ngProgressFactory, SetupService, Alerts, Util
         ) {
 
     $scope.chipid = parseInt($location.search().chipid);
@@ -193,6 +193,7 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
                 .finally(function () {
                     $scope.progressbar.complete();
                     Util.displayOverlay(false);
+                    window.scrollTo(0, 0);
                 });
     };
 
