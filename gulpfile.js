@@ -13,7 +13,7 @@ var changed = require('gulp-changed'),
         ngAnnotate = require('gulp-ng-annotate'),
         sourcemaps = require('gulp-sourcemaps'),
         del = require('del'),
-        runSequence = require('run-sequence');
+        injectVersion = require('gulp-inject-version');
 
 var srcPath = './src/main/resources/static_src';
 var destPath = './src/main/resources/static';
@@ -40,10 +40,9 @@ gulp.task('html-min', function () {
 
 gulp.task('css-flt', function () {
     return gulp.src([
-//                srcPath + '/css/bootstrap.min.css',
-                srcPath + '/css/main.css',
-                srcPath + '/css/bootstrap-theme.min.css'
-            ])
+        srcPath + '/css/main.css',
+        srcPath + '/css/bootstrap-theme.min.css'
+    ])
             .pipe(changed(destPath + '/css/'))
             .pipe(concat('concat.css'))
             .pipe(minifyCSS())
@@ -52,7 +51,6 @@ gulp.task('css-flt', function () {
 });
 
 gulp.task('css-libs', function () {
-//        './node_modules/bootstrap/dist/css/bootstrap.min.css',
     var files = [
         './node_modules/bootswatch/dist/cosmo/bootstrap.min.css',
         './node_modules/ngprogress/ngProgress.css',
@@ -60,7 +58,7 @@ gulp.task('css-libs', function () {
         srcPath + '/css/ngDialog-theme-default.min.css',
         srcPath + '/css/ngDialog-theme-plain.min.css'
     ];
-    
+
     return gulp.src(files)
             .pipe(changed(destPath + '/css/'))
             .pipe(concat('concat.css'))
@@ -144,6 +142,11 @@ gulp.task('clean-all', function () {
 
 
 gulp.task('build', gulp.series('clean-all', gulp.parallel('images', 'audio', 'html-min', 'css-libs', 'js-libs'), gulp.parallel('css-flt', 'js-flt'), function (cb) {
+    return gulp.src(srcPath + '/index.html')
+            .pipe(injectVersion({
+                package_file: 'build/package_version.json'
+            }))
+            .pipe(gulp.dest(destPath));
     cb();
 }));
 

@@ -85,6 +85,23 @@ dependencies {
     jooqRuntime 'com.h2database:h2:1.4.197'
 }
 
+import groovy.json.*
+task injectVersion() {
+    println 'creating package_version.json and injecting version ' + project.version
+    def inputFile = new File("package.json")
+    def outputFile = new File("build/package_version.json")
+    def json = new JsonSlurper().parseText(inputFile.text)
+    json.version = project.version
+    def builder = new JsonBuilder(json)
+    //println builder.toPrettyString()
+    outputFile.withWriter {
+        builder.writeTo(it)
+    }
+    println 'package_version.json created'
+}
+
+gulp_build.dependsOn injectVersion
+
 
 jooq {
     version = '3.11.7'
