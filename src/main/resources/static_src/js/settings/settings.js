@@ -1,6 +1,6 @@
 /* global ngDialog */
 angular.module('settings', ['ngDialog', 'ngProgress']).controller('settings', function (
-        $scope, ngDialog, ngProgressFactory, SettingsService, Alerts, Util, LoginService
+        $scope, ngDialog, ngProgressFactory, SettingsService, Alerts, Util
         ) {
 
     $scope.progressbar = ngProgressFactory.createInstance();
@@ -17,11 +17,14 @@ angular.module('settings', ['ngDialog', 'ngProgress']).controller('settings', fu
     Util.displayOverlay(true);
     SettingsService.loadData()
             .then(function (data) {
-                $scope.maxLaps = data.numberOfLaps;
-                $scope.timezone = data.timezone;
+                if (data) {
+                    $scope.maxLaps = data.numberOfLaps;
+                    $scope.timezone = data.timezone;
+                }
             })
             .catch(function (response) {
-                if (response.data === null) {
+                console.log(response);
+                if (!response.data || !response.data.message) {
                     response.data = {message: "unable to load"};
                 }
                 ngDialog.open({template: 'dataFailure', scope: $scope, data: {message: response.data.message}});
