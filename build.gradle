@@ -19,6 +19,10 @@ apply plugin: 'findbugs'
 apply plugin: 'idea'
 apply plugin: 'nu.studer.jooq'
 
+// the default value for version is stored in gradle.properties file
+project.version = project.findProperty('version')
+println 'project.version=' + project.version
+
 gulp {
     workDir = file("${project.projectDir}")
     colors = true
@@ -37,7 +41,7 @@ configurations {
 
 jar {
     baseName = 'fpvlaptracker'
-    version =  '0.9.3'
+    version =  '${project.version}'
 }
 
 sourceCompatibility = '1.8'
