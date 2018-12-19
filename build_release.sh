@@ -25,10 +25,7 @@ cd build/release
 rm -fr *
 
 cp ../libs/fpvlaptracker-${VERSION}.jar ./
-APPPROPS=application.properties
-touch ${APPPROPS}
-echo "server.port: 80" > ${APPPROPS}
-
+cp -r ../../release_files/* ./
 zip -9 -r fpvlaptracker-${VERSION}.zip *
 cp fpvlaptracker-${VERSION}.zip ${START_PATH}/fpvlaptracker-${VERSION}.zip
 cd ${START_PATH}
