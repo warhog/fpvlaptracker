@@ -40,8 +40,7 @@ gulp.task('html-min', function () {
 
 gulp.task('css-flt', function () {
     return gulp.src([
-        srcPath + '/css/main.css',
-        srcPath + '/css/bootstrap-theme.min.css'
+        srcPath + '/css/main.css'
     ])
             .pipe(changed(destPath + '/css/'))
             .pipe(concat('concat.css'))
