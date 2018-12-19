@@ -107,9 +107,11 @@ public class RaceLayer {
         List<Long> ret = new ArrayList<>();
         DSLContext dslContext = db.connectDatabase();
         Result<LapsRecord> rec = dslContext.selectFrom(Tables.LAPS).where(Tables.LAPS.RACEID.equal(raceId)).fetch();
-        if (rec != null && rec.size() > 0) {
-            for (LapsRecord record : rec) {
-                ret.add(record.getChipid());
+        if (rec != null) {
+            if (rec.size() > 0) {
+                for (LapsRecord record : rec) {
+                    ret.add(record.getChipid());
+                }
             }
             db.closeDatabase();
             return ret;
