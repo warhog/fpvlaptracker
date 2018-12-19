@@ -1,5 +1,5 @@
 angular.module('navigation', ['ngRoute']).controller('navigation', function (
-        $scope, $route, StateTranslation, BadgeService, WebSocketService, NotificationService, Constants, $interval, LoginService
+        $scope, $route, StateTranslation, BadgeService, WebSocketService, NotificationService, Constants, $interval, LoginService, Alerts
         ) {
 
     $scope.isActive = function (route) {
@@ -7,6 +7,16 @@ angular.module('navigation', ['ngRoute']).controller('navigation', function (
     };
 
     $scope.participants = 0;
+    $scope.alerts = [];
+    
+    $scope.$on("alerts-were-updated", function() {
+        console.log("received: alerts were updated",);
+        $scope.alerts = Alerts.getAlerts();
+    });
+    
+    $scope.closeAlert = function(index) {
+        Alerts.closeAlert(index);
+    };
     
     $scope.isAuthenticated = function() {
         return LoginService.isAuthenticated();

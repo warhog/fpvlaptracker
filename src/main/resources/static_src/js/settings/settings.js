@@ -5,7 +5,6 @@ angular.module('settings', ['ngDialog', 'ngProgress']).controller('settings', fu
 
     $scope.progressbar = ngProgressFactory.createInstance();
     $scope.maxLaps = 0;
-    $scope.alerts = Alerts;
     $scope.timezone = "-";
 
     $scope.shutdown = function () {

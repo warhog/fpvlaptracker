@@ -11,7 +11,6 @@ angular.module('login', ['ngProgress', 'ui.bootstrap']).controller('login', func
 
     $scope.username = '';
     $scope.password = '';
-    $scope.alerts = Alerts;
 
     // should be replaced using directive
     angular.element('#name').focus();

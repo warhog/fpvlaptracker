@@ -45,7 +45,6 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
     $scope.frequencyTable = [];
     $scope.promise = null;
     $scope.loadingDeviceData = false;
-    $scope.alerts = Alerts;
     $scope.cells = 1;
 
     let getInitialValue = function (frequency) {

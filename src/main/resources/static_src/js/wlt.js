@@ -112,12 +112,12 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
                 let noRouteToLogin = noRoute || false;
                 $http.get('/user', {headers: headers, noRouteToLogin: noRouteToLogin})
                         .then(function (response) {
-                            if (response.data.name) {
-                                authenticated = true;
-                                callbackSuccess && callbackSuccess(response);
-                            } else {
+                            if (!response.data || !response.data.name) {
                                 authenticated = false;
                                 callbackError && callbackError(response);
+                            } else {
+                                authenticated = true;
+                                callbackSuccess && callbackSuccess(response);
                             }
                         })
                         .catch(function (response) {
@@ -211,7 +211,7 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
             };
             return factory;
         })
-        .factory('Alerts', function ($timeout) {
+        .factory('Alerts', function ($timeout, $rootScope) {
             let alerts = [];
             let factory = {};
             factory.addGeneric = function (type, text, permanent) {
@@ -227,6 +227,7 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
                     msg: text,
                     timeout: timeout
                 });
+                $rootScope.$broadcast("alerts-were-updated");
                 if (angular.isUndefined(permanent) || permanent === false) {
                     console.log("timed alert");
                     $timeout(function () {
@@ -241,6 +242,8 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
                             }
                         }
                     }, 2250);
+                } else {
+                    console.log("permanent alert");
                 }
             };
             factory.clear = function () {
@@ -266,6 +269,7 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
                 return alerts;
             };
             factory.closeAlert = function (index) {
+                console.log("close alert", index);
                 alerts.splice(index, 1);
             };
             return factory;

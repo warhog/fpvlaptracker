@@ -1,10 +1,9 @@
 /* global moment */
 angular.module('devicedata', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('devicedata', function (
-        $scope, ngDialog, $location, ngProgressFactory, DeviceDataService, Alerts
+        $scope, ngDialog, $location, ngProgressFactory, DeviceDataService
         ) {
 
     $scope.chipid = parseInt($location.search().chipid);
-    $scope.alerts = Alerts;
 
     $scope.isLoading = false;
     $scope.cells = 1;
