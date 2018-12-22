@@ -10,11 +10,6 @@ angular.module('participants', ['ngDialog']).controller('participants', function
         $scope.loadParticipantData();
     });
     
-    WebSocketService.subscribeParticipantListener();
-    $scope.$on('$destroy', function () {
-        WebSocketService.unsubscribeParticipantListener();
-    });
-
     $scope.loadParticipantData = function () {
         ParticipantsService.loadParticipantData().then(function (data) {
             $scope.participants = data;

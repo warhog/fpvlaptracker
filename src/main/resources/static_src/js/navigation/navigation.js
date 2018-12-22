@@ -34,8 +34,6 @@ angular.module('navigation', ['ngRoute']).controller('navigation', function (
     };
     $scope.loadBadgeData();
 
-    WebSocketService.subscribeParticipantListener();
-    WebSocketService.subscribeRaceStateChangedListener();
     $scope.$on('$destroy', function () {
         WebSocketService.unsubscribeParticipantListener();
         WebSocketService.unsubscribeLapListener();
@@ -58,9 +56,6 @@ angular.module('navigation', ['ngRoute']).controller('navigation', function (
         console.log("got newLap message", message);
         $scope.loadBadgeData();
     });
-
-    WebSocketService.subscribeAudioListener();
-    WebSocketService.subscribeSpeechListener();
 
     $interval(function () {
         $scope.loadBadgeData();

@@ -11,7 +11,6 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
     $scope.sleepDisabled = false;
     $scope.isMobile = UAUtil.isMobile();
     
-    WebSocketService.subscribeLapListener();
     NotificationService.on($scope, Constants.MESSAGES["newLap"], function (message) {
         console.log("got newParticipant message", message);
         $scope.loadStateData();
@@ -110,7 +109,6 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
             $interval.cancel(promise);
             promise = undefined;
         }
-        WebSocketService.unsubscribeLapListener();
         SleepService.enableSleep();
         $scope.sleepDisabled = false;
     });

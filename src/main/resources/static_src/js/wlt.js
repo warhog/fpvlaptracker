@@ -80,7 +80,7 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
             let factory = {};
             let authenticated = false;
             let path = '/';
-            
+
             factory.getLastPath = function () {
                 console.log("last path", path);
                 return path;
@@ -378,7 +378,7 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
                 }
             };
 
-            factory.subscribeLapListener = function () {
+            let subscribeLapListener = function () {
                 console.log("subscribe to topic lap");
                 if (connected) {
                     subscriberLap = stomp.subscribe("/topic/lap", function (data) {
@@ -388,12 +388,12 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
                 } else {
                     console.log("not connected, scheduling");
                     $timeout(function () {
-                        factory.subscribeLapListener();
+                        subscribeLapListener();
                     }, 1000);
                 }
             };
 
-            factory.subscribeAudioListener = function () {
+            let subscribeAudioListener = function () {
                 console.log("subscribe to topic audio");
                 if (connected) {
                     subscriberAudio = stomp.subscribe("/topic/audio", function (data) {
@@ -404,12 +404,12 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
                 } else {
                     console.log("not connected, scheduling");
                     $timeout(function () {
-                        factory.subscribeAudioListener();
+                        subscribeAudioListener();
                     }, 1000);
                 }
             };
 
-            factory.subscribeSpeechListener = function () {
+            let subscribeSpeechListener = function () {
                 console.log("subscribe to topic speech");
                 if (connected) {
                     subscriberSpeech = stomp.subscribe("/topic/speech", function (data) {
@@ -420,12 +420,12 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
                 } else {
                     console.log("not connected, scheduling");
                     $timeout(function () {
-                        factory.subscribeSpeechListener();
+                        subscribeSpeechListener();
                     }, 1000);
                 }
             };
 
-            factory.subscribeParticipantListener = function () {
+            let subscribeParticipantListener = function () {
                 console.log("subscribe to participant");
                 if (connected) {
                     subscriberParticipant = stomp.subscribe("/topic/participant", function (data) {
@@ -435,12 +435,12 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
                 } else {
                     console.log("not connected, scheduling");
                     $timeout(function () {
-                        factory.subscribeParticipantListener();
+                        subscribeParticipantListener();
                     }, 1000);
                 }
             };
-            
-            factory.subscribeRaceStateChangedListener = function () {
+
+            let subscribeRaceStateChangedListener = function () {
                 console.log("subscribe to race state changed");
                 if (connected) {
                     subscriberRaceStateChanged = stomp.subscribe("/topic/race/state", function (data) {
@@ -450,7 +450,7 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
                 } else {
                     console.log("not connected, scheduling");
                     $timeout(function () {
-                        factory.subscribeRaceStateChangedListener();
+                        subscribeRaceStateChangedListener();
                     }, 1000);
                 }
             };
@@ -479,5 +479,10 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
             };
 
             initialize();
+            subscribeRaceStateChangedListener();
+            subscribeParticipantListener();
+            subscribeSpeechListener();
+            subscribeAudioListener();
+            subscribeLapListener();
             return factory;
         });
