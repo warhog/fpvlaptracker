@@ -35,11 +35,7 @@ angular.module('navigation', ['ngRoute']).controller('navigation', function (
     $scope.loadBadgeData();
 
     $scope.$on('$destroy', function () {
-        WebSocketService.unsubscribeParticipantListener();
-        WebSocketService.unsubscribeLapListener();
-        WebSocketService.unsubscribeAudioListener();
-        WebSocketService.unsubscribeSpeechListener();
-        WebSocketService.unsubscribeRaceStateChangedListener();
+        WebSocketService.unsubscribeListeners();
     });
 
     NotificationService.on($scope, Constants.MESSAGES["newParticipant"], function (message) {

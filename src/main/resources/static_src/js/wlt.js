@@ -326,123 +326,82 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
             let stomp = null;
             let client = null;
             let connected = false;
-
-            factory.sendLapData = function (message) {
-                factory.sendMessage("/lap", message);
-            };
-
-            factory.sendMessage = function (topic, message) {
-                stomp.send("/app" + topic, {priority: 9}, JSON.stringify(message));
-            };
+//
+//            factory.sendLapData = function (message) {
+//                factory.sendMessage("/lap", message);
+//            };
+//
+//            factory.sendMessage = function (topic, message) {
+//                stomp.send("/app" + topic, {priority: 9}, JSON.stringify(message));
+//            };
 
             let reconnect = function () {
                 connected = false;
+                console.log("try to reconnect in 10 seconds");
+                factory.unsubscribeListeners();
                 $timeout(function () {
-                    console.log("try to reconnect in 10 seconds");
                     initialize();
                 }, 10000);
             };
 
-            factory.unsubscribeLapListener = function () {
+            factory.unsubscribeListeners = function () {
                 console.log("unsubscribe from lap");
                 if (subscriberLap !== null) {
                     subscriberLap.unsubscribe();
                 }
-            };
-
-            factory.unsubscribeAudioListener = function () {
                 console.log("unsubscribe from audio");
                 if (subscriberAudio !== null) {
                     subscriberAudio.unsubscribe();
                 }
-            };
-
-            factory.unsubscribeSpeechListener = function () {
                 console.log("unsubscribe from speech");
                 if (subscriberSpeech !== null) {
                     subscriberSpeech.unsubscribe();
                 }
-            };
-
-            factory.unsubscribeParticipantListener = function () {
                 console.log("unsubscribe from participant");
                 if (subscriberParticipant !== null) {
                     subscriberParticipant.unsubscribe();
                 }
-            };
-
-            factory.unsubscribeRaceStateChangedListener = function () {
                 console.log("unsubscribe from race state changed");
                 if (subscriberRaceStateChanged !== null) {
                     subscriberRaceStateChanged.unsubscribe();
                 }
             };
 
-            let subscribeLapListener = function () {
-                console.log("subscribe to topic lap");
+            let subscribeListeners = function () {
                 if (connected) {
+                    console.log("subscribe to topic lap");
                     subscriberLap = stomp.subscribe("/topic/lap", function (data) {
                         console.log("got new lap websocket message", data);
                         NotificationService.send(Constants.MESSAGES["newLap"], data);
                     });
-                } else {
-                    console.log("not connected, scheduling");
-                    $timeout(function () {
-                        subscribeLapListener();
-                    }, 1000);
-                }
-            };
 
-            let subscribeAudioListener = function () {
-                console.log("subscribe to topic audio");
-                if (connected) {
+                    console.log("subscribe to topic audio");
                     subscriberAudio = stomp.subscribe("/topic/audio", function (data) {
                         console.log("got audio websocket message", data);
                         let soundData = JSON.parse(data.body);
                         AudioService.play(soundData.file, soundData.repeat);
                     });
-                } else {
-                    console.log("not connected, scheduling");
-                    $timeout(function () {
-                        subscribeAudioListener();
-                    }, 1000);
-                }
-            };
 
-            let subscribeSpeechListener = function () {
-                console.log("subscribe to topic speech");
-                if (connected) {
+                    console.log("subscribe to topic speech");
                     subscriberSpeech = stomp.subscribe("/topic/speech", function (data) {
                         console.log("got speech websocket message", data);
                         let textData = JSON.parse(data.body);
                         SpeechService.speak(textData.text, textData.language);
                     });
-                } else {
-                    console.log("not connected, scheduling");
-                    $timeout(function () {
-                        subscribeSpeechListener();
-                    }, 1000);
-                }
-            };
 
-            let subscribeParticipantListener = function () {
-                console.log("subscribe to participant");
-                if (connected) {
+                    console.log("subscribe to participant");
                     subscriberParticipant = stomp.subscribe("/topic/participant", function (data) {
                         console.log("got new participant websocket message", data);
                         NotificationService.send(Constants.MESSAGES["newParticipant"], data);
                     });
-                } else {
-                    console.log("not connected, scheduling");
-                    $timeout(function () {
-                        subscribeParticipantListener();
-                    }, 1000);
-                }
-            };
 
-            let subscribeRaceStateChangedListener = function () {
-                console.log("subscribe to race state changed");
-                if (connected) {
+                    console.log("subscribe to race state changed");
+                    subscriberRaceStateChanged = stomp.subscribe("/topic/race/state", function (data) {
+                        console.log("got new race state changed websocket message", data);
+                        NotificationService.send(Constants.MESSAGES["raceStateChanged"], data);
+                    });
+
+                    console.log("subscribe to alert");
                     subscriberRaceStateChanged = stomp.subscribe("/topic/race/state", function (data) {
                         console.log("got new race state changed websocket message", data);
                         NotificationService.send(Constants.MESSAGES["raceStateChanged"], data);
@@ -450,8 +409,8 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
                 } else {
                     console.log("not connected, scheduling");
                     $timeout(function () {
-                        subscribeRaceStateChangedListener();
-                    }, 1000);
+                        subscribeLapListener();
+                    }, 100);
                 }
             };
 
@@ -461,6 +420,7 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
                 stomp.connect({}, function () {
                     console.log("websocket service connected");
                     connected = true;
+                    subscribeListeners();
 
                     console.log("subscribe to status topic");
                     stomp.subscribe("/topic/status", function (data) {
@@ -479,10 +439,5 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
             };
 
             initialize();
-            subscribeRaceStateChangedListener();
-            subscribeParticipantListener();
-            subscribeSpeechListener();
-            subscribeAudioListener();
-            subscribeLapListener();
             return factory;
         });
