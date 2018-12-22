@@ -1,0 +1,9 @@
+REGISTERED=Registered %s.
+UNREGISTERED=Removed %s.
+FINISHED=Race finished.
+INVALID_LAP=Invalid lap %s.
+PARTICIPANT_ENDED=%s reached the goal.
+CALIBRATION_DONE=%s calibrated.
+BATTERY_LOW=Low battery warning for %s.
+BATTERY_SHUTDOWN=Shutdown voltage for %s.
+ALREADY_DONE=%s already finished.

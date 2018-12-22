@@ -1,0 +1,10 @@
+REGISTERED=%s registriert.
+UNREGISTERED=%s entfernt.
+FINISHED=Rennen beendet.
+INVALID_LAP=Ungültige Runde: %s
+PARTICIPANT_ENDED=%s hat das Ziel erreicht.
+CALIBRATION_DONE=Kalibration für %s abgeschlossen.
+BATTERY_LOW=Niedriger Akkustand %s.
+BATTERY_SHUTDOWN=Abschaltspannung unterschritten %s.
+ALREADY_DONE=%s hat das Rennen bereits beendet.
+
