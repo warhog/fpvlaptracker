@@ -1,8 +1,8 @@
 package de.warhog.fpvlaptracker.service;
 
-import de.warhog.fpvlaptracker.configuration.ApplicationConfig;
 import de.warhog.fpvlaptracker.controllers.WebSocketController;
 import de.warhog.fpvlaptracker.util.AudioFile;
+import de.warhog.fpvlaptracker.util.SpeechTexts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +14,10 @@ public class AudioService {
     private static final Logger LOG = LoggerFactory.getLogger(AudioService.class);
 
     @Autowired
-    private ApplicationConfig applicationConfig;
+    private WebSocketController webSocketController;
 
     @Autowired
-    private WebSocketController webSocketController;
+    private SpeechTexts speechTexts;
 
     public void play(AudioFile file) {
         play(file, 1);
@@ -31,7 +31,7 @@ public class AudioService {
         LOG.debug("sending websocket speech message: " + text);
         webSocketController.sendSpeechMessage(text);
     }
-    
+
     public void play(AudioFile file, Integer repeat) {
         LOG.debug("sending websocket audio message " + file.getFilename() + ", repeat " + repeat);
         webSocketController.sendAudioMessage(file, repeat);
@@ -46,67 +46,67 @@ public class AudioService {
     }
 
     public void speakRegistered(String name) {
-        String text = "Registered " + name + ".";
-        if (applicationConfig.getAudioLanguage().equals("de-DE")) {
-            text = name + " registriert.";
+        try {
+            speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.REGISTERED), name));
+        } catch (NoSuchFieldException ex) {
+            LOG.error("cannot speak register for " + name, ex);
         }
-        speak(text);
     }
-    
+
     public void speakUnregistered(String name) {
-        String text = "Removed " + name + ".";
-        if (applicationConfig.getAudioLanguage().equals("de-DE")) {
-            text = name + " entfernt.";
+        try {
+            speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.UNREGISTERED), name));
+        } catch (NoSuchFieldException ex) {
+            LOG.error("cannot speak unregister for " + name, ex);
         }
-        speak(text);
     }
 
     public void speakFinished() {
-        String text = "Race finished.";
-        if (applicationConfig.getAudioLanguage().equals("de-DE")) {
-            text = "Rennen beendet.";
+        try {
+            speak(speechTexts.getText(SpeechTexts.TextsEnum.FINISHED));
+        } catch (NoSuchFieldException ex) {
+            LOG.error("cannot speak finished", ex);
         }
-        speak(text);
     }
 
     public void speakInvalidLap(String name) {
-        String text = "Invalid lap: " + name;
-        if (applicationConfig.getAudioLanguage().equals("de-DE")) {
-            text = "Ungültige Runde: " + name;
+        try {
+            speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.INVALID_LAP), name));
+        } catch (NoSuchFieldException ex) {
+            LOG.error("cannot speak invalid lap for " + name, ex);
         }
-        speak(text);
     }
-    
+
     public void speakParticipantEnded(String name) {
-        String text = name + " reached the goal";
-        if (applicationConfig.getAudioLanguage().equals("de-DE")) {
-            text = name + " hat das Ziel erreicht.";
+        try {
+            speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.PARTICIPANT_ENDED), name));
+        } catch (NoSuchFieldException ex) {
+            LOG.error("cannot speak participant ended for " + name, ex);
         }
-        speak(text);
     }
-    
+
     public void speakCalibrationDone(String name) {
-        String text = name + " calibrated.";
-        if (applicationConfig.getAudioLanguage().equals("de-DE")) {
-            text = name + " kalibriert.";
+        try {
+            speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.CALIBRATION_DONE), name));
+        } catch (NoSuchFieldException ex) {
+            LOG.error("cannot speak calibration done for " + name, ex);
         }
-        speak(text);
     }
 
     public void speakBatteryLow(String name) {
-        String text = "Low battery warning for " + name + ".";
-        if (applicationConfig.getAudioLanguage().equals("de-DE")) {
-            text = "Niedriger Akkustand " + name + ".";
+        try {
+            speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.BATTERY_LOW), name));
+        } catch (NoSuchFieldException ex) {
+            LOG.error("cannot speak battery low for " + name, ex);
         }
-        speak(text);
     }
 
     public void speakAlreadyDone(String name) {
-        String text = name + " already finished.";
-        if (applicationConfig.getAudioLanguage().equals("de-DE")) {
-            text = name + " bereits beendet.";
+        try {
+            speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.ALREADY_DONE), name));
+        } catch (NoSuchFieldException ex) {
+            LOG.error("cannot speak already done for " + name, ex);
         }
-        speak(text);
     }
-
+    
 }

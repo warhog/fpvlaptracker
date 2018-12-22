@@ -2,9 +2,11 @@ package de.warhog.fpvlaptracker;
 
 import de.warhog.fpvlaptracker.communication.UdpHandler;
 import de.warhog.fpvlaptracker.db.Db;
+import de.warhog.fpvlaptracker.util.SpeechTexts;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
@@ -37,6 +39,13 @@ public class Laptracker {
             udpHandler.setup();
         } catch (Exception ex) {
             LOG.error("error during udp thread setup: " + ex.getMessage(), ex);
+            System.exit(1);
+        }
+
+        try {
+            SpeechTexts speechTexts = ctx.getBean(SpeechTexts.class);
+        } catch (BeansException ex) {
+            LOG.error("error during speech texts setup: " + ex.getMessage(), ex);
             System.exit(1);
         }
 
