@@ -3,6 +3,7 @@ package de.warhog.fpvlaptracker.communication;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.warhog.fpvlaptracker.communication.entities.UdpPacketBatteryLow;
+import de.warhog.fpvlaptracker.communication.entities.UdpPacketBatteryShutdown;
 import de.warhog.fpvlaptracker.communication.entities.UdpPacketCalibrationDone;
 import de.warhog.fpvlaptracker.communication.entities.UdpPacketLap;
 import de.warhog.fpvlaptracker.communication.entities.UdpPacketMessage;
@@ -176,6 +177,12 @@ public class UdpHandler implements Runnable {
                         udpPacketBatteryLow.setPacketType(packetType);
                         processBatteryLow(udpPacketBatteryLow);
                         break;
+                    case BATTERY_SHUTDOWN:
+                        LOG.info("got battery shutdown packet");
+                        UdpPacketBatteryShutdown udpPacketBatteryShutdown = mapper.readValue(packet.getData(), UdpPacketBatteryShutdown.class);
+                        udpPacketBatteryShutdown.setPacketType(packetType);
+                        processBatteryShutdown(udpPacketBatteryShutdown);
+                        break;
                     default:
                         LOG.error("unknown packet type: " + packetType);
                         break;
@@ -259,6 +266,14 @@ public class UdpHandler implements Runnable {
             LOG.info("got battery low from non registered participant");
         } else {
             audioService.speakBatteryLow(participantsService.getParticipant(udpPacketBatteryLow.getChipid()).getName());
+        }
+    }
+
+    private void processBatteryShutdown(UdpPacketBatteryShutdown udpPacketBatteryShutdown) {
+        if (!participantsService.hasParticipant(udpPacketBatteryShutdown.getChipid())) {
+            LOG.info("got battery shutdown from non registered participant");
+        } else {
+            audioService.speakBatteryShutdown(participantsService.getParticipant(udpPacketBatteryShutdown.getChipid()).getName());
         }
     }
 

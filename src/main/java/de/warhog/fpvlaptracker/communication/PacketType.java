@@ -5,5 +5,6 @@ public enum PacketType {
     LAP,
     CALIBRATIONDONE,
     MESSAGE,
-    BATTERY_LOW
+    BATTERY_LOW,
+    BATTERY_SHUTDOWN
 }

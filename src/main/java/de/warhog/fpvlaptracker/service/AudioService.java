@@ -101,6 +101,14 @@ public class AudioService {
         }
     }
 
+    public void speakBatteryShutdown(String name) {
+        try {
+            speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.BATTERY_SHUTDOWN), name));
+        } catch (NoSuchFieldException ex) {
+            LOG.error("cannot speak battery shutdown for " + name, ex);
+        }
+    }
+
     public void speakAlreadyDone(String name) {
         try {
             speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.ALREADY_DONE), name));
