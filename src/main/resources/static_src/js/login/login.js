@@ -25,7 +25,7 @@ angular.module('login', ['ngProgress', 'ui.bootstrap']).controller('login', func
                 },
                 function (response) {
                     console.log("cannot login", response);
-                    Alerts.addError("login unsuccessful");
+                    Alerts.addError("login", "login unsuccessful");
                 },
                 function () {
                     Util.displayOverlay(false);

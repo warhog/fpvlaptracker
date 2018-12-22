@@ -178,7 +178,7 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
         console.log("before save", $scope.deviceData);
         SetupService.saveDeviceData($scope.chipid, $scope.deviceData)
                 .then(function (response) {
-                    Alerts.addSuccess("all values successfully saved");
+                    Alerts.addSuccess("success", "all values successfully saved");
                     console.log(response);
                     if (response.status === "OK reboot") {
                         $scope.rebootDevice();

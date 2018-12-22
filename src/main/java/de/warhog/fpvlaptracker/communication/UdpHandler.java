@@ -265,7 +265,9 @@ public class UdpHandler implements Runnable {
         if (!participantsService.hasParticipant(udpPacketBatteryLow.getChipid())) {
             LOG.info("got battery low from non registered participant");
         } else {
-            audioService.speakBatteryLow(participantsService.getParticipant(udpPacketBatteryLow.getChipid()).getName());
+            String participantName = participantsService.getParticipant(udpPacketBatteryLow.getChipid()).getName();
+            audioService.speakBatteryLow(participantName);
+            webSocketController.sendAlertMessage(WebSocketController.warningMessageTypes.WARNING, "battery low", "battery of participant " + participantName + " is almost empty");
         }
     }
 
@@ -273,7 +275,9 @@ public class UdpHandler implements Runnable {
         if (!participantsService.hasParticipant(udpPacketBatteryShutdown.getChipid())) {
             LOG.info("got battery shutdown from non registered participant");
         } else {
-            audioService.speakBatteryShutdown(participantsService.getParticipant(udpPacketBatteryShutdown.getChipid()).getName());
+            String participantName = participantsService.getParticipant(udpPacketBatteryShutdown.getChipid()).getName();
+            audioService.speakBatteryShutdown(participantName);
+            webSocketController.sendAlertMessage(WebSocketController.warningMessageTypes.DANGER, "battery shutdown voltage reached", "battery of participant " + participantName + " is empty, shutting down tracker node", true);
         }
     }
 

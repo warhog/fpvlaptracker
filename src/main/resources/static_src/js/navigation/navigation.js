@@ -10,7 +10,7 @@ angular.module('navigation', ['ngRoute']).controller('navigation', function (
     $scope.alerts = [];
     
     $scope.$on("alerts-were-updated", function() {
-        console.log("received: alerts were updated",);
+        console.log("received event: alerts were updated",);
         $scope.alerts = Alerts.getAlerts();
     });
     

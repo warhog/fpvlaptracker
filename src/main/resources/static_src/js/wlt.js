@@ -65,7 +65,8 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
             MESSAGES: {
                 newLap: 'NEW_LAP',
                 newParticipant: 'NEW_PARTICIPANT',
-                raceStateChanged: 'RACE_STATE_CHANGED'
+                raceStateChanged: 'RACE_STATE_CHANGED',
+                alert: 'ALERT'
             }
         })
         .factory('UAUtil', function ($window) {
@@ -214,21 +215,23 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
         .factory('Alerts', function ($timeout, $rootScope) {
             let alerts = [];
             let factory = {};
-            factory.addGeneric = function (type, text, permanent) {
+            factory.addGeneric = function (type, headline, text, permanent) {
                 console.log("add generic alert", type, text, permanent);
                 let allowed = ['success', 'info', 'warning', 'danger'];
                 if (!allowed.includes(type)) {
                     console.log("invalid alert type: " + type);
                     return;
                 }
-                let timeout = (permanent) ? null : moment().unix() + 2;
+                let timeoutSeconds = 5;
+                let timeout = (permanent) ? null : moment().unix() + timeoutSeconds;
                 alerts.push({
                     type: type,
                     msg: text,
+                    headline: headline,
                     timeout: timeout
                 });
                 $rootScope.$broadcast("alerts-were-updated");
-                if (angular.isUndefined(permanent) || permanent === false) {
+                if (!permanent) {
                     console.log("timed alert");
                     $timeout(function () {
                         console.log("close alert handler, alerts: ", alerts.length);
@@ -241,7 +244,7 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
                                 console.log("alerts", alerts.length);
                             }
                         }
-                    }, 2250);
+                    }, (timeoutSeconds * 1000) + 250);
                 } else {
                     console.log("permanent alert");
                 }
@@ -249,21 +252,21 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
             factory.clear = function () {
                 alerts = [];
             };
-            factory.addSuccess = function (text) {
+            factory.addSuccess = function (headline, text) {
                 if (angular.isUndefined(text)) {
                     text = "value successfully saved";
                 }
-                factory.addGeneric("success", text);
+                factory.addGeneric("success", headline, text);
             };
-            factory.addInfo = function (text, permanent) {
+            factory.addInfo = function (headline, text, permanent) {
                 if (angular.isUndefined(permanent)) {
                     permanent = false;
                 }
-                factory.addGeneric("info", text, permanent);
+                factory.addGeneric("info", headline, text, permanent);
             };
-            factory.addError = function (text) {
+            factory.addError = function (headline, text) {
                 console.log("add error alert", text);
-                factory.addGeneric("danger", text, true);
+                factory.addGeneric("danger", headline, text, true);
             };
             factory.getAlerts = function () {
                 return alerts;
@@ -271,6 +274,7 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
             factory.closeAlert = function (index) {
                 console.log("close alert", index);
                 alerts.splice(index, 1);
+                $rootScope.$broadcast("alerts-were-updated");
             };
             return factory;
         })
@@ -316,13 +320,14 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
             };
             return factory;
         })
-        .factory('WebSocketService', function ($timeout, NotificationService, Constants, AudioService, SpeechService) {
+        .factory('WebSocketService', function ($timeout, NotificationService, Constants, AudioService, SpeechService, Alerts, $rootScope) {
             let factory = {};
             let subscriberLap = null;
             let subscriberParticipant = null;
             let subscriberRaceStateChanged = null;
             let subscriberAudio = null;
             let subscriberSpeech = null;
+            let subscriberAlert = null;
             let stomp = null;
             let client = null;
             let connected = false;
@@ -365,6 +370,10 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
                 if (subscriberRaceStateChanged !== null) {
                     subscriberRaceStateChanged.unsubscribe();
                 }
+                console.log("unsubscribe from alert");
+                if (subscriberAlert !== null) {
+                    subscriberAlert.unsubscribe();
+                }
             };
 
             let subscribeListeners = function () {
@@ -402,9 +411,17 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
                     });
 
                     console.log("subscribe to alert");
-                    subscriberRaceStateChanged = stomp.subscribe("/topic/race/state", function (data) {
-                        console.log("got new race state changed websocket message", data);
-                        NotificationService.send(Constants.MESSAGES["raceStateChanged"], data);
+                    subscriberAlert = stomp.subscribe("/topic/alert", function (data) {
+                        console.log("got new alert websocket message", data);
+                        let alertData = JSON.parse(data.body);
+                        console.log("alertData", alertData);
+                        let permanent = false;
+                        if (alertData.permanent) {
+                            permanent = alertData.permanent;
+                        }
+                        $rootScope.$apply(function () {
+                            Alerts.addGeneric(alertData.type, alertData.headline, alertData.text, permanent);
+                        });
                     });
                 } else {
                     console.log("not connected, scheduling");

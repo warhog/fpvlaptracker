@@ -26,10 +26,11 @@
         </div>
         <div ng-controller="navigation" class="container">
             <div ng-repeat="alert in alerts" class="alert alert-dismissable fade show" ng-class="'alert-' + (alert.type || 'warning')" role="alert">
-                {{alert.msg}}
                 <button type="button" class="close" data-dismiss="alert" aria-label="close" ng-click="closeAlert($index);">
                     <span aria-hidden="true">&times;</span>
                 </button>
+                <h4 ng-show="alert.headline !== undefined" class="{{alert.type || 'warning'}}-heading">{{alert.headline}}</h4>
+                {{alert.msg}}
             </div>
         </div>
         <div ng-view class="container"></div>
