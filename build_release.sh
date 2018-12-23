@@ -25,6 +25,7 @@ cd build/release
 rm -fr *
 
 cp ../libs/fpvlaptracker-${VERSION}.jar ./
+cp -R ../../lang/ ./
 cp -r ../../release_files/* ./
 zip -9 -r fpvlaptracker-${VERSION}.zip *
 cp fpvlaptracker-${VERSION}.zip ${START_PATH}/fpvlaptracker-${VERSION}.zip
