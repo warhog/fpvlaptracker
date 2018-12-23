@@ -54,6 +54,17 @@ body {
 }
 
 
+.alert-message {
+    position: fixed;
+    top: 0px;
+    width: 1000px;
+    z-index: 998;
+    margin: auto;
+}
+.alert-inner-message {
+    margin: 0 auto;
+    margin-bottom: 5px;
+}
 
 
 /* Absolute Center Spinner */
