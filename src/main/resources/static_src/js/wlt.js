@@ -264,9 +264,12 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
                 }
                 factory.addGeneric("info", headline, text, permanent);
             };
-            factory.addError = function (headline, text) {
-                console.log("add error alert", text);
-                factory.addGeneric("danger", headline, text, true);
+            factory.addError = function (headline, text, permanent) {
+                if (angular.isUndefined(permanent)) {
+                    permanent = false;
+                }
+                console.log("add error alert", text, permanent);
+                factory.addGeneric("danger", headline, text, permanent);
             };
             factory.getAlerts = function () {
                 return alerts;
