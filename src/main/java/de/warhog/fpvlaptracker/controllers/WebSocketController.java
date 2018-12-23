@@ -73,7 +73,7 @@ public class WebSocketController {
         this.template.convertAndSend("/topic/status", node.toString());
     }
 
-    public enum warningMessageTypes {
+    public enum WarningMessageTypes {
         DANGER("danger"),
         WARNING("warning"),
         SUCCESS("success"),
@@ -83,7 +83,7 @@ public class WebSocketController {
 
         private String value = "";
         
-        warningMessageTypes(String value) {
+        WarningMessageTypes(String value) {
             this.value = value;
         }
         
@@ -92,7 +92,7 @@ public class WebSocketController {
         }
     }
     
-    public void sendAlertMessage(warningMessageTypes type, String headline, String text, boolean permanent) {
+    public void sendAlertMessage(WarningMessageTypes type, String headline, String text, boolean permanent) {
         LOG.debug("sending alert message");
         ObjectNode node = JsonNodeFactory.instance.objectNode();
         node.put("type", type.getValue());
@@ -102,7 +102,7 @@ public class WebSocketController {
         this.template.convertAndSend("/topic/alert", node.toString());
     }
 
-    public void sendAlertMessage(warningMessageTypes type, String headline, String text) {
+    public void sendAlertMessage(WarningMessageTypes type, String headline, String text) {
         LOG.debug("sending alert message");
         sendAlertMessage(type, headline, text, false);
     }

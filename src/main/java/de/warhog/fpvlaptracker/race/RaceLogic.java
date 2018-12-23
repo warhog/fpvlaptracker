@@ -50,7 +50,7 @@ public class RaceLogic {
 
     @Autowired
     private RestService restService;
-    
+
     @Autowired
     private TimeUtil timeUtil;
 
@@ -230,19 +230,22 @@ public class RaceLogic {
         webSocketController.sendRaceStateChangedMessage(state);
     }
 
-    @Scheduled(fixedDelay = 300000L)
+    @Scheduled(fixedDelay = 60000L)
     public void checkParticipantsStillAvailable() {
         LOG.debug("checking for non-existing participants");
         if (!isRunning()) {
             for (Participant participant : participantsService.getAllParticipants()) {
                 try {
-                    restService.getRssi(participant.getIp());
-                    LOG.debug("participant with chipid " + participant.getChipId() + " found");
+                    if (restService.checkAvailability(participant.getIp())) {
+                        LOG.debug("participant with chipid " + participant.getChipId() + " found");
+                    } else {
+                        LOG.info("participant with chipid " + participant.getChipId() + " not found, removing");
+                        participantsService.removeParticipant(participant);
+                        webSocketController.sendNewParticipantMessage(participant.getChipId());
+                        audioService.speakUnregistered(participant.getName());
+                    }
                 } catch (Exception ex) {
-                    LOG.info("participant with chipid " + participant.getChipId() + " not found, removing");
-                    participantsService.removeParticipant(participant);
-                    webSocketController.sendNewParticipantMessage(participant.getChipId());
-                    audioService.speakUnregistered(participant.getName());
+                    LOG.error("cannot check availability for " + participant.toString());
                 }
             }
         } else {

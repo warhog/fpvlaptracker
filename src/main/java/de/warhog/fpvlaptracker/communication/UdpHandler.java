@@ -15,6 +15,7 @@ import de.warhog.fpvlaptracker.service.AudioService;
 import de.warhog.fpvlaptracker.service.ParticipantsDbService;
 import de.warhog.fpvlaptracker.service.ParticipantsService;
 import de.warhog.fpvlaptracker.service.ServiceLayerException;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -123,6 +124,7 @@ public class UdpHandler implements Runnable {
         }
     }
 
+    @SuppressFBWarnings(value = "REC_CATCH_EXCEPTION", justification = "catch exception to make sure all types of exceptions are catched and the loop is not ended in this cases")
     @Override
     public void run() {
         LOG.info("udp receiver running");
@@ -188,9 +190,6 @@ public class UdpHandler implements Runnable {
                         break;
                 }
 
-//            } catch (InterruptedException ex) {
-//                LOG.error("interrupted", ex);
-//                run = false;
             } catch (Exception ex) {
                 LOG.error("error during handler run: " + ex.getMessage(), ex);
             }
@@ -267,7 +266,7 @@ public class UdpHandler implements Runnable {
         } else {
             String participantName = participantsService.getParticipant(udpPacketBatteryLow.getChipid()).getName();
             audioService.speakBatteryLow(participantName);
-            webSocketController.sendAlertMessage(WebSocketController.warningMessageTypes.WARNING, "battery low", "battery of participant " + participantName + " is almost empty");
+            webSocketController.sendAlertMessage(WebSocketController.WarningMessageTypes.WARNING, "battery low", "battery of participant " + participantName + " is almost empty");
         }
     }
 
@@ -277,7 +276,7 @@ public class UdpHandler implements Runnable {
         } else {
             String participantName = participantsService.getParticipant(udpPacketBatteryShutdown.getChipid()).getName();
             audioService.speakBatteryShutdown(participantName);
-            webSocketController.sendAlertMessage(WebSocketController.warningMessageTypes.DANGER, "battery shutdown voltage reached", "battery of participant " + participantName + " is empty, shutting down tracker node", true);
+            webSocketController.sendAlertMessage(WebSocketController.WarningMessageTypes.DANGER, "battery shutdown voltage reached", "battery of participant " + participantName + " is empty, shutting down tracker node", true);
         }
     }
 

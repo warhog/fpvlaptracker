@@ -43,7 +43,7 @@ public class Laptracker {
         }
 
         try {
-            SpeechTexts speechTexts = ctx.getBean(SpeechTexts.class);
+            ctx.getBean(SpeechTexts.class);
         } catch (BeansException ex) {
             LOG.error("error during speech texts setup: " + ex.getMessage(), ex);
             System.exit(1);

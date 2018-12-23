@@ -5,6 +5,10 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,10 +40,10 @@ public class SpeechTexts {
     };
     
     @PostConstruct
-    public void SpeechTextsConstructor() {
+    public void speechTextsConstructor() {
         String languageFile = "lang/" + applicationConfig.getAudioLanguage();
         LOG.info("parse language file " + languageFile);
-        try (BufferedReader br = new BufferedReader(new FileReader(languageFile))) {
+        try (BufferedReader br = Files.newBufferedReader(Paths.get(languageFile), StandardCharsets.UTF_8)) {
             String line;
             while ((line = br.readLine()) != null) {
                 LOG.debug("read text line from language file: " + line);
