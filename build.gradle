@@ -4,7 +4,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.1.0.RELEASE")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.1.1.RELEASE")
         classpath "nu.studer:gradle-jooq-plugin:3.0.2"
     }
 }
@@ -70,16 +70,16 @@ repositories {
 }
 
 dependencies {
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.0.RELEASE'
-    compile group: 'org.springframework', name: 'spring-websocket', version: '5.1.2.RELEASE'
-    compile group: 'org.springframework', name: 'spring-messaging', version: '5.1.2.RELEASE'
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: '2.1.0.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.1.RELEASE'
+    compile group: 'org.springframework', name: 'spring-websocket', version: '5.1.3.RELEASE'
+    compile group: 'org.springframework', name: 'spring-messaging', version: '5.1.3.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: '2.1.1.RELEASE'
     compile group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.2'
     compile group: 'com.google.code.findbugs', name: 'annotations', version: '3.0.1u2'
     compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
     compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind'
-    compile group: 'org.jooq', name: 'jooq', version: '3.11.7'
+    compile group: 'org.jooq', name: 'jooq', version: '3.11.8'
     compile group: 'com.h2database', name: 'h2', version: '1.4.197'
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.8.1'
     jooqRuntime 'com.h2database:h2:1.4.197'
@@ -105,7 +105,7 @@ gulp_build.dependsOn injectVersion
 
 
 jooq {
-    version = '3.11.7'
+    version = '3.11.8'
     edition = 'OSS'
     flt(sourceSets.main) {
         jdbc {
