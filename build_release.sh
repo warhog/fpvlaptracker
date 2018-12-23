@@ -18,6 +18,7 @@ if [[ $? -gt 0 ]]; then
 fi
 echo "build release version ${VERSION}"
 
+gradle clean
 gradle -Pversion=$1 build
 
 mkdir -p build/release
