@@ -316,7 +316,10 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
                 }
                 let utterance = new SpeechSynthesisUtterance(text);
                 utterance.lang = language;
-                speechSynthesis.speak(utterance);
+                // speak is blocking :(
+                setTimeout(function() {
+                    speechSynthesis.speak(utterance);
+                });
             };
             return factory;
         })
