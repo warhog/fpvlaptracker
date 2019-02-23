@@ -21,7 +21,6 @@
     "angular-cookies": "^1.7.5",
     "angular-route": "^1.7.5",
     "angular-touch": "^1.7.5",
-    "bootstrap": "^4.1.3",
     "bootswatch": "^4.1.3",
     "del": "^3.0.0",
     "gulp": "^4.0.0",
@@ -49,6 +48,6 @@
   },
   "dependencies": {
     "amcharts3": "^3.21.14",
-    "bootstrap": "^4.1.3"
+    "bootstrap": "^4.3.1"
   }
 }
