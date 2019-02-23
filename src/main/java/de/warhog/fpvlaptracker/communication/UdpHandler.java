@@ -10,7 +10,7 @@ import de.warhog.fpvlaptracker.communication.entities.UdpPacketMessage;
 import de.warhog.fpvlaptracker.communication.entities.UdpPacketRegister;
 import de.warhog.fpvlaptracker.controllers.WebSocketController;
 import de.warhog.fpvlaptracker.entities.Participant;
-import de.warhog.fpvlaptracker.race.RaceLogic;
+import de.warhog.fpvlaptracker.race.RaceLogicHandler;
 import de.warhog.fpvlaptracker.service.AudioService;
 import de.warhog.fpvlaptracker.service.ParticipantsDbService;
 import de.warhog.fpvlaptracker.service.ParticipantsService;
@@ -42,7 +42,7 @@ public class UdpHandler implements Runnable {
     private Long lastPacketReceived = 0L;
 
     @Autowired
-    private RaceLogic race;
+    private RaceLogicHandler race;
 
     @Autowired
     private ParticipantsService participantsService;

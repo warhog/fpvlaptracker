@@ -3,9 +3,7 @@ package de.warhog.fpvlaptracker.util;
 import de.warhog.fpvlaptracker.configuration.ApplicationConfig;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -36,7 +34,12 @@ public class SpeechTexts {
         CALIBRATION_DONE,
         BATTERY_LOW,
         BATTERY_SHUTDOWN,
-        ALREADY_DONE
+        ALREADY_DONE,
+        PARTICIPANT_START,
+        FALSE_START_PARTICIPANT,
+        LAST_LAP_PARTICIPANT,
+        TIME_OVER_PARTICIPANT,
+        PREPARE_FOR_RACE
     };
     
     @PostConstruct

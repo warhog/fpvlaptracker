@@ -4,11 +4,12 @@ import de.warhog.fpvlaptracker.controllers.dtos.ChartResult;
 import de.warhog.fpvlaptracker.controllers.dtos.RaceStateResult;
 import de.warhog.fpvlaptracker.controllers.dtos.StatusResult;
 import de.warhog.fpvlaptracker.entities.Participant;
-import de.warhog.fpvlaptracker.race.RaceLogic;
 import de.warhog.fpvlaptracker.entities.ParticipantRaceData;
+import de.warhog.fpvlaptracker.race.RaceLogicFixedTime;
+import de.warhog.fpvlaptracker.race.RaceLogicHandler;
 import de.warhog.fpvlaptracker.service.ConfigService;
 import de.warhog.fpvlaptracker.service.ParticipantsService;
-import de.warhog.fpvlaptracker.service.ParticipantRaceService;
+import de.warhog.fpvlaptracker.race.ParticipantsList;
 import de.warhog.fpvlaptracker.service.ServiceLayerException;
 import java.time.Duration;
 import java.util.HashMap;
@@ -28,7 +29,7 @@ public class RaceController {
     private static final Logger LOG = LoggerFactory.getLogger(RaceController.class);
 
     @Autowired
-    private RaceLogic raceLogic;
+    private RaceLogicHandler raceLogic;
 
     @Autowired
     private ConfigService configService;
@@ -37,11 +38,11 @@ public class RaceController {
     private ParticipantsService participantsDbService;
     
     @Autowired
-    private ParticipantRaceService participantRaceService;
+    private ParticipantsList participantRaceService;
 
     @RequestMapping(path = "/api/auth/race/maxlaps", method = RequestMethod.POST)
     public StatusResult setMaxLaps(@RequestParam(name = "laps", defaultValue = "10") Integer laps) {
-        raceLogic.setNumberOfLaps(laps);
+//        raceLogic.setNumberOfLaps(laps);
         try {
             configService.setNumberOfLaps(laps);
         } catch (ServiceLayerException ex) {
@@ -52,8 +53,10 @@ public class RaceController {
 
     @RequestMapping(path = "/api/auth/race/start", method = RequestMethod.GET)
     public StatusResult start(@RequestParam(name = "laps", defaultValue = "10") Integer laps) {
-        raceLogic.setNumberOfLaps(laps);
-        raceLogic.initializeNewRace();
+//        raceLogic.setNumberOfLaps(laps);
+        
+//        raceLogic.init(new RaceLogicFixedTime());
+        raceLogic.startRace();
         return new StatusResult(StatusResult.Status.OK);
     }
 
@@ -64,10 +67,10 @@ public class RaceController {
         for (Participant participant : participants) {
             chartResult.addParticipant(participant.getChipId(), participant.getName());
             if (participantRaceService.hasParticipant(participant.getChipId())) {
-                Map<Integer, Duration> laps = participantRaceService.getParticipantLapTimes(participant);
-                for (Map.Entry<Integer, Duration> entry : laps.entrySet()) {
-                    chartResult.addLapTimes(entry.getKey(), participant.getChipId(), entry.getValue());
-                }
+//                Map<Integer, Duration> laps = participantRaceService.getParticipantLapTimes(participant);
+//                for (Map.Entry<Integer, Duration> entry : laps.entrySet()) {
+//                    chartResult.addLapTimes(entry.getKey(), participant.getChipId(), entry.getValue());
+//                }
             }
         }
         return chartResult;
@@ -105,13 +108,15 @@ public class RaceController {
         
         HashMap<Participant, ParticipantRaceData> data = new HashMap<>();
         for (Participant participant : participantRaceService.getParticipants()) {
-            data.put(participant, participantRaceService.getParticipantRaceData(participant));
+//            data.put(participant, participantRaceService.getParticipantRaceData(participant));
+            data.put(participant, new ParticipantRaceData());
         }
         RaceStateResult rsr = new RaceStateResult();
         rsr.setState(raceLogic.getState());
         rsr.setRaceData(data);
         rsr.setStartTime(raceLogic.getStartTime());
-        rsr.setMaxLaps(raceLogic.getNumberOfLaps());
+//        rsr.setMaxLaps(raceLogic.getNumberOfLaps());
+        rsr.setMaxLaps(10);
 
         return rsr;
     }

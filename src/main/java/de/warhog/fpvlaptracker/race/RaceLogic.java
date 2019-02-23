@@ -8,7 +8,6 @@ import de.warhog.fpvlaptracker.service.AudioService;
 import de.warhog.fpvlaptracker.service.ConfigService;
 import de.warhog.fpvlaptracker.service.ParticipantsService;
 import de.warhog.fpvlaptracker.service.RaceDbService;
-import de.warhog.fpvlaptracker.service.ParticipantRaceService;
 import de.warhog.fpvlaptracker.service.RestService;
 import de.warhog.fpvlaptracker.service.ServiceLayerException;
 import de.warhog.fpvlaptracker.util.TimeUtil;
@@ -31,7 +30,7 @@ public class RaceLogic {
     private Integer currentRaceId = null;
 
     @Autowired
-    private ParticipantRaceService participantRaceService;
+    private ParticipantsList participantRaceService;
 
     @Autowired
     private ConfigService configService;
@@ -91,8 +90,7 @@ public class RaceLogic {
             LOG.error("failed to store new race: " + ex.getMessage(), ex);
             throw new RuntimeException("failed to store new race");
         }
-        participantRaceService.resetParticipantsData();
-
+//        participantRaceService.resetParticipantsData();
     }
 
     public void addParticipant(Participant participant) {
@@ -158,43 +156,43 @@ public class RaceLogic {
             raceStartedInThisLap = true;
         }
         Participant participant = participantRaceService.getParticipantByChipId(chipId);
-        ParticipantRaceData data = participantRaceService.getParticipantRaceData(participant);
-        if (data == null) {
-            throw new RuntimeException("no data for participant found: " + participant.toString());
-        }
-        if (data.hasEnded(numberOfLaps)) {
-            LOG.info("participant already ended race " + participant.getName());
-            audioService.speakAlreadyDone(participant.getName());
-        } else {
-            if (currentRaceId != null) {
-                try {
-                    racesDbService.addLap(currentRaceId, chipId, data.getCurrentLap(), duration.intValue());
-                } catch (ServiceLayerException ex) {
-                    LOG.error(ex.getMessage(), ex);
-                    throw new RuntimeException("cannot add lap");
-                }
-            }
-            data.addLap(duration, rssi);
-            if (data.hasEnded(numberOfLaps)) {
-                LOG.info("participant reached lap limit " + participant.getName());
-                oneParticipantReachedEnd = true;
-                participantEndedName = participant.getName();
-            } else if (!raceStartedInThisLap) {
-                audioService.playLap();
-            }
-
-        }
+//        ParticipantRaceData data = participantRaceService.getParticipantRaceData(participant);
+//        if (data == null) {
+//            throw new RuntimeException("no data for participant found: " + participant.toString());
+//        }
+//        if (data.hasEnded(numberOfLaps)) {
+//            LOG.info("participant already ended race " + participant.getName());
+//            audioService.speakAlreadyDone(participant.getName());
+//        } else {
+//            if (currentRaceId != null) {
+//                try {
+//                    racesDbService.addLap(currentRaceId, chipId, data.getCurrentLap(), duration.intValue());
+//                } catch (ServiceLayerException ex) {
+//                    LOG.error(ex.getMessage(), ex);
+//                    throw new RuntimeException("cannot add lap");
+//                }
+//            }
+//            data.addLap(duration, rssi);
+//            if (data.hasEnded(numberOfLaps)) {
+//                LOG.info("participant reached lap limit " + participant.getName());
+//                oneParticipantReachedEnd = true;
+//                participantEndedName = participant.getName();
+//            } else if (!raceStartedInThisLap) {
+//                audioService.playLap();
+//            }
+//
+//        }
 
         // test if all of the participants has reached the lap limit
-        if (participantRaceService.checkEnded(numberOfLaps)) {
-            LOG.info("race ended");
-            audioService.speakFinished();
-            stopRace();
-        } else {
-            if (oneParticipantReachedEnd) {
-                audioService.speakParticipantEnded(participantEndedName);
-            }
-        }
+//        if (participantRaceService.checkEnded(numberOfLaps)) {
+//            LOG.info("race ended");
+//            audioService.speakFinished();
+//            stopRace();
+//        } else {
+//            if (oneParticipantReachedEnd) {
+//                audioService.speakParticipantEnded(participantEndedName);
+//            }
+//        }
 
     }
 

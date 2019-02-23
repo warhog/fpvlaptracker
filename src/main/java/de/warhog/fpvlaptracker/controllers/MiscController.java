@@ -2,7 +2,7 @@ package de.warhog.fpvlaptracker.controllers;
 
 import de.warhog.fpvlaptracker.configuration.ApplicationConfig;
 import de.warhog.fpvlaptracker.controllers.dtos.StatusResult;
-import de.warhog.fpvlaptracker.race.RaceLogic;
+import de.warhog.fpvlaptracker.race.RaceLogicHandler;
 import de.warhog.fpvlaptracker.service.ConfigService;
 import de.warhog.fpvlaptracker.service.ParticipantsService;
 import de.warhog.fpvlaptracker.service.ServiceLayerException;
@@ -24,7 +24,7 @@ public class MiscController {
     private static final Logger LOG = LoggerFactory.getLogger(MiscController.class);
 
     @Autowired
-    private RaceLogic race;
+    private RaceLogicHandler race;
 
     @Autowired
     private ParticipantsService participantsDbService;
@@ -46,7 +46,8 @@ public class MiscController {
     @RequestMapping(path = "/api/auth/miscdata", method = RequestMethod.GET)
     public Map<String, String> getMiscData() throws ServiceLayerException {
         Map<String, String> ret = new HashMap<>();
-        ret.put("numberOfLaps", race.getNumberOfLaps().toString());
+//        ret.put("numberOfLaps", race.getNumberOfLaps().toString());
+        ret.put("numberOfLaps", "10");
         ret.put("timezone", configService.getTimezone());
         return ret;
     }

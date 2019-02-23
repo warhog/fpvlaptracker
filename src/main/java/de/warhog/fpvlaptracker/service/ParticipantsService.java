@@ -1,7 +1,7 @@
 package de.warhog.fpvlaptracker.service;
 
 import de.warhog.fpvlaptracker.entities.Participant;
-import de.warhog.fpvlaptracker.race.RaceLogic;
+import de.warhog.fpvlaptracker.race.RaceLogicHandler;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -16,7 +16,7 @@ public class ParticipantsService {
     private static final Logger LOG = LoggerFactory.getLogger(ParticipantsService.class);
 
     @Autowired
-    private RaceLogic race;
+    private RaceLogicHandler race;
 
     private final List<Participant> participants = new ArrayList<>();
 
