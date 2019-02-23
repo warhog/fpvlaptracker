@@ -18,8 +18,6 @@
                 <li class="nav-item"><a ng-class="{'active':isActive('state')}" class="nav-link" href="/state">race <span class="badge badge-pill badge-success">{{state}}</span></a></li>
                 <li class="nav-item"><a ng-class="{'active':isActive('settings')}" class="nav-link" href="/settings">settings</a></li>
                 <li class="nav-item"><a ng-class="{'active':isActive('participants')}" class="nav-link" href="/participants">participants <span class="badge badge-pill badge-info">{{participants}}</span></a></li>
-                <li class="nav-item"><a ng-class="{'active':isActive('races')}" class="nav-link" href="/races">stored races</a></li>
-                <li class="nav-item"><a ng-class="{'active':isActive('toplist')}" class="nav-link" href="/toplist">toplists</a></li>
                 <li class="nav-item" ng-hide="isAuthenticated()"><a ng-class="{'active':isActive('login')}" class="nav-link" href="/login">login</a></li>
                 <li class="nav-item" ng-hide="!isAuthenticated()"><a class="nav-link" href="/login?logout">logout</a></li>
             </ul>

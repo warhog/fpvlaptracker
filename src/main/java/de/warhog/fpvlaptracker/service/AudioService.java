@@ -116,7 +116,7 @@ public class AudioService {
             LOG.error("cannot speak already done for " + name, ex);
         }
     }
-    
+
     public void speakParticipantStart(String name) {
         try {
             speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.PARTICIPANT_START), name));
@@ -124,7 +124,7 @@ public class AudioService {
             LOG.error("cannot speak participant start for " + name, ex);
         }
     }
-    
+
     public void speakFalseStartParticipant(String name) {
         try {
             speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.FALSE_START_PARTICIPANT), name));
@@ -132,7 +132,7 @@ public class AudioService {
             LOG.error("cannot speak false start for " + name, ex);
         }
     }
-    
+
     public void speakLastLapParticipant(String name) {
         try {
             speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.LAST_LAP_PARTICIPANT), name));
@@ -140,7 +140,7 @@ public class AudioService {
             LOG.error("cannot speak last lap for " + name, ex);
         }
     }
-    
+
     public void speakTimeOverParticipant(String name) {
         try {
             speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.TIME_OVER_PARTICIPANT), name));
@@ -148,7 +148,7 @@ public class AudioService {
             LOG.error("cannot speak time over for " + name, ex);
         }
     }
-    
+
     public void speakPleasePrepareForRace() {
         try {
             speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.PREPARE_FOR_RACE)));
@@ -156,5 +156,25 @@ public class AudioService {
             LOG.error("cannot speak prepare for race", ex);
         }
     }
-    
+
+    public void speakNumberThree() {
+        speak("3");
+    }
+
+    public void speakNumberTwo() {
+        speak("2");
+    }
+
+    public void speakNumberOne() {
+        speak("1");
+    }
+
+    public void speakGo() {
+        try {
+            speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.GO)));
+        } catch (NoSuchFieldException ex) {
+            LOG.error("cannot speak go", ex);
+        }
+    }
+
 }

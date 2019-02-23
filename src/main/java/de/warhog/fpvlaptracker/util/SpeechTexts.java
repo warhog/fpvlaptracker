@@ -39,7 +39,8 @@ public class SpeechTexts {
         FALSE_START_PARTICIPANT,
         LAST_LAP_PARTICIPANT,
         TIME_OVER_PARTICIPANT,
-        PREPARE_FOR_RACE
+        PREPARE_FOR_RACE,
+        GO
     };
     
     @PostConstruct

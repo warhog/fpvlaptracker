@@ -1,0 +1,20 @@
+<FindBugsFilter>
+    <Match>
+        <Class name="de.warhog.fpvlaptracker.jooq.DefaultCatalog" />
+    </Match>
+    <Match>
+        <Class name="de.warhog.fpvlaptracker.jooq.Public" />
+    </Match>
+    <Match>
+        <Class name="de.warhog.fpvlaptracker.jooq.tables.Config" />
+    </Match>
+    <Match>
+        <Class name="de.warhog.fpvlaptracker.jooq.tables.Laps" />
+    </Match>
+    <Match>
+        <Class name="de.warhog.fpvlaptracker.jooq.tables.Participants" />
+    </Match>
+    <Match>
+        <Class name="de.warhog.fpvlaptracker.jooq.tables.Races" />
+    </Match>
+</FindBugsFilter>

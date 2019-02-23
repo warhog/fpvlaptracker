@@ -14,6 +14,12 @@
 
 <div>
     <div>
+        <div class="floatDifLeft raceStateTopLine">
+            type: {{state.raceTypeText}}
+            <button class="btn btn-default" ng-disabled="!authenticated || checkRunning()" ng-click="setRaceType('ROUND_BASED');">round based</button> 
+            <button class="btn btn-default" ng-disabled="!authenticated || checkRunning()" ng-click="setRaceType('FIXED_TIME');">fixed time</button> 
+        </div>
+        
         <div class="floatDivLeft raceStateTopLine" style="width: 120px;">
             <button class="btn btn-default" ng-disabled="!authenticated || toplist.length === 0 || checkRunning()" ng-click="startRace();">start</button> 
             <button class="btn btn-default" ng-disabled="!authenticated || !checkRunning()" ng-click="stopRace();">stop</button>

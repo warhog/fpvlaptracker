@@ -1,8 +1,9 @@
 package de.warhog.fpvlaptracker.controllers.dtos;
 
 import de.warhog.fpvlaptracker.entities.Participant;
-import de.warhog.fpvlaptracker.entities.ParticipantRaceData;
 import de.warhog.fpvlaptracker.entities.RaceState;
+import de.warhog.fpvlaptracker.entities.racedata.LapTimeList;
+import de.warhog.fpvlaptracker.race.RaceType;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,9 +15,10 @@ public class RaceStateResult {
     private static final Logger LOG = LoggerFactory.getLogger(RaceStateResult.class);
 
     private RaceState state;
-    private Map<Participant, ParticipantRaceData> raceData = new HashMap<>();
+    private Map<Participant, LapTimeList> raceData = new HashMap<>();
     private LocalDateTime startTime;
     private Integer maxLaps;
+    private RaceType raceType;
 
     public RaceState getState() {
         return state;
@@ -26,11 +28,11 @@ public class RaceStateResult {
         this.state = state;
     }
 
-    public Map<Participant, ParticipantRaceData> getRaceData() {
+    public Map<Participant, LapTimeList> getRaceData() {
         return raceData;
     }
 
-    public void setRaceData(Map<Participant, ParticipantRaceData> raceData) {
+    public void setRaceData(Map<Participant, LapTimeList> raceData) {
         this.raceData = raceData;
     }
 
@@ -50,4 +52,12 @@ public class RaceStateResult {
         this.maxLaps = maxLaps;
     }
 
+    public RaceType getRaceType() {
+        return raceType;
+    }
+
+    public void setRaceType(RaceType raceType) {
+        this.raceType = raceType;
+    }
+    
 }

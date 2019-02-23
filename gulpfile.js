@@ -69,8 +69,6 @@ gulp.task('js-flt', function () {
     var files = [
         '/home/home.js',
         '/state/state.js',
-        '/toplist/toplist.js',
-        '/races/races.js',
         '/participants/participants.js',
         '/navigation/navigation.js',
         '/setup/setup.js',

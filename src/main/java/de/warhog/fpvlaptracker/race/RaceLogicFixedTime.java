@@ -4,9 +4,11 @@ import de.warhog.fpvlaptracker.controllers.WebSocketController;
 import de.warhog.fpvlaptracker.entities.Participant;
 import de.warhog.fpvlaptracker.entities.RaceState;
 import de.warhog.fpvlaptracker.entities.racedata.FixedTimeRaceParticipantData;
+import de.warhog.fpvlaptracker.entities.racedata.LapTimeList;
 import de.warhog.fpvlaptracker.service.AudioService;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,17 +30,44 @@ public class RaceLogicFixedTime implements IRaceLogic {
 
     @Autowired
     WebSocketController webSocketController;
-    
+
     Map<Long, FixedTimeRaceParticipantData> participantData = new HashMap<>();
     Map<Long, Instant> raceTimes = new HashMap<>();
     RaceState state = RaceState.WAITING;
     Integer maxRunDuration = 120;
     Integer maxOverDuration = 60;
-    Integer startTime = 10;
+    Integer startPrepareTime = 10;
     Integer startInterval = 2;
     Instant nextStart = Instant.MIN;
     RaceRunnable raceRunnable = null;
     Thread thread = null;
+    private LocalDateTime startTime = null;
+
+    @Override
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    @Override
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    @Override
+    public Boolean isRunning() {
+        return getState() == RaceState.GETREADY || getState() == RaceState.RUNNING;
+    }
+
+    @Override
+    public RaceState getState() {
+        return state;
+    }
+
+    @Override
+    public void setState(RaceState state) {
+        this.state = state;
+        webSocketController.sendRaceStateChangedMessage(state);
+    }
 
     public class RaceRunnable implements Runnable {
 
@@ -63,7 +92,7 @@ public class RaceLogicFixedTime implements IRaceLogic {
             }
             if (allFinished) {
                 LOG.info("all participants finished, ending race");
-                state = RaceState.FINISHED;
+                setState(RaceState.FINISHED);
                 audioService.speakFinished();
                 stopRace();
             }
@@ -130,6 +159,10 @@ public class RaceLogicFixedTime implements IRaceLogic {
                     if (!allStarted()) {
                         if (Instant.now().isAfter(nextStart)) {
                             LOG.info("start next participant");
+                            // if race not running yet set it to running now
+                            if (getState() != RaceState.RUNNING) {
+                                setState(RaceState.RUNNING);
+                            }
                             // not all participants have started yet -> start next non started participant
                             startNextParticipant();
                             nextStart = Instant.now().plus(startInterval, ChronoUnit.SECONDS);
@@ -158,23 +191,33 @@ public class RaceLogicFixedTime implements IRaceLogic {
         LOG.debug("setParameters with runtime " + maxRunDuration + " and overtime " + maxOverDuration);
         this.maxRunDuration = maxRunDuration;
         this.maxOverDuration = maxOverDuration;
+        // TODO add startPrepareTime and others
     }
 
     @Override
     public void startRace() {
         LOG.info("start race");
+        if (!participantsList.hasParticipants()) {
+            throw new IllegalStateException("no participants");
+        }
         participantData.clear();
         raceTimes.clear();
         for (Participant participant : participantsList.getParticipants()) {
             participantData.put(participant.getChipId(), new FixedTimeRaceParticipantData());
             raceTimes.put(participant.getChipId(), Instant.now());
         }
-        state = RaceState.RUNNING;
+        setState(RaceState.PREPARE);
         if (raceRunnable != null) {
             raceRunnable.stop();
             try {
                 LOG.debug("waiting for thread join");
-                thread.join();
+                thread.join(200);
+                if (thread.isAlive()) {
+                    LOG.debug("thread still alive, interrupting");
+                    thread.interrupt();
+                    LOG.debug("thread interrupted, trying to join again");
+                    thread.join();
+                }
                 LOG.debug("thread joined");
             } catch (InterruptedException ex) {
                 LOG.debug("interrupted during join");
@@ -185,7 +228,7 @@ public class RaceLogicFixedTime implements IRaceLogic {
         raceRunnable = new RaceRunnable();
         thread = new Thread(raceRunnable);
         thread.start();
-        nextStart = Instant.now().plus(startTime, ChronoUnit.SECONDS);
+        nextStart = Instant.now().plus(startPrepareTime, ChronoUnit.SECONDS);
         audioService.speakPleasePrepareForRace();
 
     }
@@ -206,6 +249,15 @@ public class RaceLogicFixedTime implements IRaceLogic {
         LOG.info("stopping race");
         if (raceRunnable != null) {
             raceRunnable.stop();
+            try {
+                LOG.debug("waiting for thread join");
+                thread.join();
+                LOG.debug("thread joined");
+            } catch (InterruptedException ex) {
+                LOG.debug("interrupted during join");
+            }
+            raceRunnable = null;
+            thread = null;
         }
     }
 
@@ -227,7 +279,7 @@ public class RaceLogicFixedTime implements IRaceLogic {
                         break;
                     case WAITING_FOR_FIRST_PASS:
                         // is first pass, dont count the lap
-                        audioService.playLap();
+                        audioService.playStart();
                         webSocketController.sendNewLapMessage(chipId);
                         raceTimes.put(chipId, Instant.now());
                         data.setState(FixedTimeRaceParticipantData.ParticipantState.STARTED);
@@ -262,4 +314,11 @@ public class RaceLogicFixedTime implements IRaceLogic {
         }
     }
 
+    @Override
+    public LapTimeList getLapData(Long chipId) {
+        if (participantData.containsKey(chipId)) {
+            return participantData.get(chipId).getLapTimeList();
+        }
+        return new LapTimeList();
+    }
 }

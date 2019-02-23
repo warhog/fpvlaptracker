@@ -1,6 +1,6 @@
 /* global moment */
 angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).controller('state', function (
-        $scope, $interval, $rootScope, ngDialog, ngProgressFactory, UAUtil, StateService, WebSocketService, NotificationService, Constants, LoginService, SleepService
+        $scope, $interval, $rootScope, ngDialog, ngProgressFactory, UAUtil, StateService, NotificationService, Constants, LoginService, SleepService
         ) {
 
     $scope.progressbar = ngProgressFactory.createInstance();
@@ -10,7 +10,12 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
     $scope.authenticated = LoginService.isAuthenticated();
     $scope.sleepDisabled = false;
     $scope.isMobile = UAUtil.isMobile();
-    
+
+    NotificationService.on($scope, Constants.MESSAGES["raceStateChanged"], function (message) {
+        console.log("got raceStateChanged message", message);
+        $scope.loadStateData();
+    });
+
     NotificationService.on($scope, Constants.MESSAGES["newLap"], function (message) {
         console.log("got newParticipant message", message);
         $scope.loadStateData();
@@ -68,8 +73,22 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
         });
     };
 
+    $scope.setRaceType = function (raceType) {
+        StateService.setRaceType(raceType)
+                .then(function () {
+                    $scope.loadStateData();
+                })
+                .catch(function (response) {
+                    if (response.data === null) {
+                        response.data = {message: "unable to set race type"};
+                    }
+                    ngDialog.open({template: "raceFailure", scope: $scope, data: {message: response.data.message}});
+                    $scope.progressbar.complete();
+                });
+    };
+
     $scope.startRace = function () {
-        StateService.startRace($scope.state.maxLaps)
+        StateService.startRace()
                 .then(function () {
                     $scope.loadStateData();
                 })
@@ -114,7 +133,7 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
     });
 
     $scope.checkRunning = function () {
-        if ($scope.state.state === "RUNNING" || $scope.state.state === "GETREADY") {
+        if ($scope.state.state === "RUNNING" || $scope.state.state === "GETREADY" || $scope.state.state === "PREPARE") {
             return true;
         }
         return false;
@@ -167,21 +186,27 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
     };
 
 }
-).factory('StateService', function ($http, StateTranslation) {
+).factory('StateService', function ($http, StateTranslation, RaceTypeTranslation) {
     var factory = {};
 
     factory.startRace = function (laps) {
+        // TODO laps ersetzen mit type
         return $http.get("/api/auth/race/start", {params: {laps: laps}}).then(function (response) {
             return response.data;
         });
     };
 
-    factory.stopRace = function (laps) {
+    factory.stopRace = function () {
         return $http.get("/api/auth/race/stop").then(function (response) {
             return response.data;
         });
     };
 
+    factory.setRaceType = function (raceType) {
+        return $http.get("/api/auth/race/type", {params: {type: raceType}}).then(function (response) {
+            return response.data;
+        });
+    };
 
     factory.loadData = function () {
         return $http.get("/api/race/state").then(function (response) {
@@ -199,6 +224,7 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
 
             let state = response.data;
             state.stateText = StateTranslation.getText(response.data.state);
+            state.raceTypeText = RaceTypeTranslation.getText(response.data.raceType);
 
             return {
                 topList: toplist,
@@ -210,12 +236,6 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
     factory.loadChartData = function () {
         return $http.get("/api/race/chartdata").then(function (response) {
             console.log(response.data);
-            return response.data;
-        });
-    };
-
-    factory.setMaxLaps = function (maxLaps) {
-        return $http.post("/api/auth/race/maxlaps?laps=" + maxLaps).then(function (response) {
             return response.data;
         });
     };

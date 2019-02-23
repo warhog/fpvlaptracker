@@ -17,7 +17,7 @@ public class LapTimeList {
     private Integer lastRssi;
 
     public LapTimeList() {
-        currentLap = 0;
+        currentLap = 1;
         lastRssi = 0;
         laps = new HashMap<>();
     }

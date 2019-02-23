@@ -1,5 +1,5 @@
 /* global moment, Stomp, speechSynthesis */
-angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', 'navigation', 'setup', 'races', 'toplist', 'login', 'devicedata'])
+angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', 'navigation', 'setup', 'login', 'devicedata'])
         .config(function ($routeProvider, $httpProvider, $locationProvider) {
 
             $locationProvider.html5Mode(true);
@@ -22,12 +22,6 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
             }).when('/settings', {
                 templateUrl: 'js/settings/settings.html',
                 controller: 'settings'
-            }).when('/races', {
-                templateUrl: 'js/races/races.html',
-                controller: 'races'
-            }).when('/toplist', {
-                templateUrl: 'js/toplist/toplist.html',
-                controller: 'toplist'
             }).when('/login', {
                 templateUrl: 'js/login/login.html',
                 controller: 'login'
@@ -173,6 +167,7 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
             stateMap.set("FINISHED", "finished");
             stateMap.set("FAULT", "fault");
             stateMap.set("WAITING", "waiting");
+            stateMap.set("PREPARE", "prepare");
             return {
                 getFinished: function () {
                     return "FINISHED";
@@ -180,6 +175,19 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
                 getText: function (state) {
                     if (stateMap.get(state)) {
                         return stateMap.get(state);
+                    }
+                    return "unknown";
+                }
+            };
+        })
+        .factory('RaceTypeTranslation', function () {
+            let typeMap = new Map();
+            typeMap.set("ROUND_BASED", "round based");
+            typeMap.set("FIXED_TIME", "fixed time");
+            return {
+                getText: function (raceType) {
+                    if (typeMap.get(raceType)) {
+                        return typeMap.get(raceType);
                     }
                     return "unknown";
                 }
@@ -212,7 +220,7 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
             };
             return factory;
         })
-        .factory('Alerts', function ($timeout, $rootScope) {
+        .factory('Alerts', function ($timeout, NotificationService) {
             let alerts = [];
             let factory = {};
             factory.addGeneric = function (type, headline, text, permanent) {
@@ -230,7 +238,7 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
                     headline: headline,
                     timeout: timeout
                 });
-                $rootScope.$broadcast("alerts-were-updated");
+                NotificationService.send("alerts-were-updated");
                 if (!permanent) {
                     console.log("timed alert");
                     $timeout(function () {
@@ -277,7 +285,7 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
             factory.closeAlert = function (index) {
                 console.log("close alert", index);
                 alerts.splice(index, 1);
-                $rootScope.$broadcast("alerts-were-updated");
+                NotificationService.send("alerts-were-updated");
             };
             return factory;
         })

@@ -54,9 +54,7 @@ tasks.withType(FindBugs) {
         xml.enabled = false
         html.enabled = true
     }
-    classes = classes.filter {
-        !it.path.contains("de/warhog/fpvlaptracker/jooq")
-    }    
+    excludeFilter file('./findbugs-exclude.xml')
 }
 
 if (!hasProperty('mainClass')) {
