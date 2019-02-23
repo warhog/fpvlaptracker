@@ -73,9 +73,7 @@ public class RaceLogicHandler {
 
     public void addLap(Long chipId, Long duration, Integer rssi) {
         LOG.debug("add lap", chipId, duration, rssi);
-//        raceLogic.addLap(chipId, duration, rssi);
-//        audioService.playLap();
-        webSocketController.sendNewLapMessage(chipId);
+        raceLogic.addLap(chipId, duration, rssi);
     }
 
     public LocalDateTime getStartTime() {

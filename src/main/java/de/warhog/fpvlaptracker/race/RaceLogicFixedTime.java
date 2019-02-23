@@ -1,5 +1,6 @@
 package de.warhog.fpvlaptracker.race;
 
+import de.warhog.fpvlaptracker.controllers.WebSocketController;
 import de.warhog.fpvlaptracker.entities.Participant;
 import de.warhog.fpvlaptracker.entities.RaceState;
 import de.warhog.fpvlaptracker.entities.racedata.FixedTimeRaceParticipantData;
@@ -25,6 +26,9 @@ public class RaceLogicFixedTime implements IRaceLogic {
     @Autowired
     ParticipantsList participantsList;
 
+    @Autowired
+    WebSocketController webSocketController;
+    
     Map<Long, FixedTimeRaceParticipantData> participantData = new HashMap<>();
     Map<Long, Instant> raceTimes = new HashMap<>();
     RaceState state = RaceState.WAITING;
@@ -49,6 +53,22 @@ public class RaceLogicFixedTime implements IRaceLogic {
             run = false;
         }
 
+        private void testAllFinished() {
+            boolean allFinished = true;
+            for (Map.Entry<Long, FixedTimeRaceParticipantData> entry : participantData.entrySet()) {
+                if (!entry.getValue().isStateFinished() && !entry.getValue().isStateInvalid()) {
+//                    LOG.debug("participant " + participantsList.getParticipantByChipId(entry.getKey()).getName() + " not finished yet: " + entry.getValue().getState());
+                    allFinished = false;
+                }
+            }
+            if (allFinished) {
+                LOG.info("all participants finished, ending race");
+                state = RaceState.FINISHED;
+                audioService.speakFinished();
+                stopRace();
+            }
+        }
+
         private void startNextParticipant() {
             for (Map.Entry<Long, FixedTimeRaceParticipantData> entry : participantData.entrySet()) {
                 if (entry.getValue().isStateWaitingForStart()) {
@@ -57,6 +77,47 @@ public class RaceLogicFixedTime implements IRaceLogic {
                     LOG.info("starting participant " + name);
                     entry.getValue().setState(FixedTimeRaceParticipantData.ParticipantState.WAITING_FOR_FIRST_PASS);
                     audioService.speakParticipantStart(name);
+                }
+            }
+        }
+
+        private void testTimeExceeded() {
+            for (Map.Entry<Long, FixedTimeRaceParticipantData> entry : participantData.entrySet()) {
+                // get race duration for participant
+                String name = participantsList.getParticipantByChipId(entry.getKey()).getName();
+                Duration runDuration = Duration.between(raceTimes.get(entry.getKey()), Instant.now());
+//                LOG.debug("run duration " + runDuration.toString());
+                if (entry.getValue().isStateFinished() || entry.getValue().isStateInvalid()) {
+                    // participant already ended run
+                    LOG.debug("participant " + name + " already ended this run: " + entry.getValue().getState());
+                } else {
+                    // start testing if regular run time for this participant is exceeded
+                    if (runDuration.compareTo(Duration.ofSeconds(maxRunDuration)) >= 0) {
+                        // test if run duration is exceeding run time + over time
+                        if (runDuration.compareTo(Duration.ofSeconds(maxRunDuration + maxOverDuration)) >= 0) {
+                            // maximum time (run duration + overtime duration) reached
+                            // -> invalid run
+                            LOG.info("participant exceeded run + overtime duration: " + name + ": " + runDuration.toString());
+                            entry.getValue().setState(FixedTimeRaceParticipantData.ParticipantState.INVALID);
+                            audioService.speakTimeOverParticipant(name);
+                        } else {
+                            // run time + over time not yet exceeded
+                            // but run time is exceeded -> every participant should have been started
+                            // or is marked as invalid
+                            if (entry.getValue().isStateStarted()) {
+                                // player started and exceeded run time -> last lap for participant
+                                LOG.info("participant exceeded run duration, last possible lap now: " + name + ": " + runDuration.toString());
+                                LOG.debug("participant state: " + entry.getValue().getState());
+                                LOG.debug("participant is in started, setting state last_lap");
+                                entry.getValue().setState(FixedTimeRaceParticipantData.ParticipantState.LAST_LAP);
+                                audioService.speakLastLapParticipant(name);
+                            } else if (entry.getValue().isStateWaitingForFirstPass() || entry.getValue().isStateWaitingForStart()) {
+                                // participant not started yet
+                                LOG.info("participant not started during run time: " + name);
+                                audioService.speakTimeOverParticipant(name);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -75,35 +136,16 @@ public class RaceLogicFixedTime implements IRaceLogic {
                         }
                     }
 
-                    for (Map.Entry<Long, FixedTimeRaceParticipantData> entry : participantData.entrySet()) {
-                        // get race duration for participant
-                        String name = participantsList.getParticipantByChipId(entry.getKey()).getName();
-                        Duration runDuration = Duration.between(raceTimes.get(entry.getKey()), Instant.now());
-                        LOG.debug("run duration " + runDuration.toString());
-                        if (!entry.getValue().isStateFinished() && !entry.getValue().isStateInvalid()) {
-                            if (runDuration.compareTo(Duration.ofSeconds(maxRunDuration + maxOverDuration)) >= 0) {
-                                // maximum time (run duration + overtime duration) reached
-                                LOG.info("participant exceeded run + overtime duration: " + name + ": " + runDuration.toString());
-                                entry.getValue().setState(FixedTimeRaceParticipantData.ParticipantState.INVALID);
-                                audioService.speakTimeOverParticipant(name);
-                            }
-                        } else if (entry.getValue().isStateStarted()) {
-                            if (runDuration.compareTo(Duration.ofSeconds(maxRunDuration)) >= 0) {
-                                // player exceeded run duration -> last lap for participant
-                                LOG.info("participant exceeded run duration: " + name + ": " + runDuration.toString());
-                                LOG.debug("participant state: " + entry.getValue().getState());
-                                LOG.debug("participant is in started, setting state last_lap");
-                                entry.getValue().setState(FixedTimeRaceParticipantData.ParticipantState.LAST_LAP);
-                                audioService.speakLastLapParticipant(name);
-                            }
-                        }
-                    }
+                    testTimeExceeded();
+                    testAllFinished();
+
                     Thread.sleep(100);
                 } catch (InterruptedException ex) {
                     run = false;
                     break;
                 }
             }
+            LOG.debug("exiting run()");
         }
     }
 
@@ -131,7 +173,9 @@ public class RaceLogicFixedTime implements IRaceLogic {
         if (raceRunnable != null) {
             raceRunnable.stop();
             try {
+                LOG.debug("waiting for thread join");
                 thread.join();
+                LOG.debug("thread joined");
             } catch (InterruptedException ex) {
                 LOG.debug("interrupted during join");
             }
@@ -184,12 +228,14 @@ public class RaceLogicFixedTime implements IRaceLogic {
                     case WAITING_FOR_FIRST_PASS:
                         // is first pass, dont count the lap
                         audioService.playLap();
+                        webSocketController.sendNewLapMessage(chipId);
                         raceTimes.put(chipId, Instant.now());
                         data.setState(FixedTimeRaceParticipantData.ParticipantState.STARTED);
                         break;
                     case STARTED:
                         // participant started -> real lap -> add to laptimelist
                         audioService.playLap();
+                        webSocketController.sendNewLapMessage(chipId);
                         participantData.get(chipId).getLapTimeList().addLap(duration, rssi);
                         break;
                     case LAST_LAP:
@@ -197,6 +243,7 @@ public class RaceLogicFixedTime implements IRaceLogic {
                         data.setState(FixedTimeRaceParticipantData.ParticipantState.FINISHED);
                         participantData.get(chipId).getLapTimeList().addLap(duration, rssi);
                         audioService.speakParticipantEnded(name);
+                        break;
                     case FINISHED:
                         // participant already finished the race
                         audioService.speakAlreadyDone(name);

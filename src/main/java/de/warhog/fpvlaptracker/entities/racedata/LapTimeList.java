@@ -24,16 +24,10 @@ public class LapTimeList {
 
     public void addLap(Long duration, Integer rssi) {
         lastRssi = rssi;
-        if (currentLap == 0) {
-            // first lap
-            LOG.info("first lap, ignore");
-            currentLap = 1;
-        } else {
-            LOG.info("add lap with " + duration + " ms");
-            Duration lap = Duration.of(duration, ChronoUnit.MILLIS);
-            laps.put(currentLap, lap);
-            currentLap++;
-        }
+        LOG.info("add lap with " + duration + " ms (rssi: " + rssi + ")");
+        Duration lap = Duration.of(duration, ChronoUnit.MILLIS);
+        laps.put(currentLap, lap);
+        currentLap++;
     }
 
     public Duration getAverageLapDuration() {
