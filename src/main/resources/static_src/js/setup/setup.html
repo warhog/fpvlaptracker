@@ -44,10 +44,12 @@
     unique chip id: {{chipid}}<br />
     ip address: {{deviceData.ipAddress}}<br />
     version: {{deviceData.version}}<br />
-    state: {{deviceData.state}} <input type="button" value="skip calibration" ng-click="skipCalibration();" ng-disabled="deviceData.state !== 'Calibration'" class="btn btn-primary btn-sm" /><br />
+    state: {{deviceData.state}}<br />
     voltage: {{deviceData.voltage | number : 2}} V (cells: {{(deviceData.voltage / cells) | number : 2}} V)<br />
     uptime: {{deviceData.uptime}} seconds<br />
     looptime: {{deviceData.loopTime}} µs<br />
+    <br />
+    <input type="button" value="skip calibration" ng-click="skipCalibration();" ng-hide="deviceData.state !== 'Calibration'" class="btn btn-primary btn-sm" />
     <br />
     <br />
     <label for="name">name</label><br />
@@ -62,6 +64,14 @@
         </div>
         <div class="panel-body">
             current rssi: <b>{{deviceData.rssi}}</b><br />
+            <br />
+            with the current settings the <b>lap detection is started</b> as soon as the <b>rssi is equal or above {{upperRssi}}</b>. lap detection is <b>ended</b> when the rssi is <b>below {{lowerRssi}}</b>.<br />
+            <br />
+            <label for="triggerValue">trigger value</label><br />
+            the rssi value that triggers a new lap detection.
+            <div class="input-group col-lg-2">
+                <input type="number" min="1" max="1024" step="1" name="triggerValue" class="form-control" ng-model="deviceData.triggerValue" required/>
+            </div>
             <br />
             <label for="triggerThreshold:">rssi trigger threshold</label><br />
             the trigger threshold defines the rssi window in which the lap detection is active. the lap detection ends if rssi is below trigger value minus trigger threshold.
@@ -80,23 +90,29 @@
             <div class="input-group col-lg-2">
                 <input type="number" min="1" max="1024" step="1" name="calibrationOffset" class="form-control" ng-model="deviceData.calibrationOffset" required/>
             </div>
-            <br />
-            <label for="triggerValue">trigger value</label><br />
-            the rssi value that triggers a new lap detection.
-            <div class="input-group col-lg-2">
-                <input type="number" min="1" max="1024" step="1" name="triggerValue" class="form-control" ng-model="deviceData.triggerValue" required/>
-            </div>
         </div>
     </div>
-    
     <br />
+    <span class="input-group-btn">
+        <button class="btn btn-default" ng-click="saveDeviceData();">save device settings</button>
+    </span>
+    <br /><br /><br />
+    <div class="panel-heading">
+        <h3 class="panel-title">frequency</h3>
+    </div>
     <label for="freqSel">frequency</label><br />
     the fpv frequency the participants tracker is listening to.
     <div class="input-group col-lg-4">
         <select name="freqSel" ng-model="deviceData.frequency" class="form-control" ng-change="updateFrequency();" ng-options="key as key.name for key in frequencyTable"></select>
     </div>
-    
     <br />
+    <span class="input-group-btn">
+        <button class="btn btn-default" ng-click="saveDeviceData();">save device settings</button>
+    </span>
+    <br /><br /><br />
+    <div class="panel-heading">
+        <h3 class="panel-title">misc</h3>
+    </div>
     <label for="minimumLapTime">minimum lap time</label><br />
     the minimum lap time of the participants tracker is used to prevent double lap detections.
     <div class="input-group col-lg-2">

@@ -73,6 +73,7 @@ public class RestService {
 
     public String postDeviceData(InetAddress ipAddress, ParticipantDeviceData deviceData) {
         try {
+            LOG.debug("posting device data " + deviceData.toString());
             String ret = getRestTemplate().postForObject(buildUrl(ipAddress, "devicedata"), deviceData, String.class);
             if (ret != null) {
                 if (ret.trim().contains("NOK")) {

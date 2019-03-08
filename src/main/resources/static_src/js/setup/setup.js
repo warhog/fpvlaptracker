@@ -1,8 +1,10 @@
 /* global moment */
 angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('setup', function (
-        $scope, ngDialog, $interval, $location, ngProgressFactory, SetupService, Alerts, Util
+        $scope, ngDialog, $interval, $timeout, $location, ngProgressFactory, SetupService, Alerts, Util
         ) {
 
+    $scope.upperRssi = 0;
+    $scope.lowerRssi = 0;
     $scope.chipid = parseInt($location.search().chipid);
 
     $scope.frequencies = [
@@ -62,6 +64,12 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
         return $scope.frequencyTable[0];
     };
 
+    let calculateRssiLimits = function () {
+        $scope.upperRssi = ($scope.deviceData.triggerValue < 0) ? 0 : $scope.deviceData.triggerValue;
+        let lowerRssi = $scope.deviceData.triggerValue - $scope.deviceData.triggerThreshold;
+        $scope.lowerRssi = (lowerRssi < 0) ? 0 : lowerRssi;
+    };
+
     // build table of frequencies with names
     $scope.frequencies.forEach(function (value) {
         let index = $scope.frequencies.indexOf(value);
@@ -96,12 +104,15 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
 
     $scope.skipCalibration = function () {
         $scope.progressbar.start();
+        Util.displayOverlay(true);
         SetupService.skipCalibration($scope.chipid)
                 .then(function (response) {
                     if (response.status !== "OK") {
                         ngDialog.open({template: 'dataFailure', scope: $scope, data: {message: "failed to skip calibration (device error)"}});
                     } else {
-                        $scope.loadDeviceData(true);
+                        $timeout(function () {
+                            $scope.loadDeviceData(true);
+                        }, 500);
                     }
                 })
                 .catch(function (response) {
@@ -177,6 +188,7 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
                         $scope.deviceData.participantName = "-";
                     })
                     .finally(function () {
+                        calculateRssiLimits();
                         $scope.loadingDeviceData = false;
                         $scope.progressbar.complete();
                         Util.displayOverlay(false);
@@ -212,6 +224,7 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
                     $scope.progressbar.complete();
                     Util.displayOverlay(false);
                     window.scrollTo(0, 0);
+                    calculateRssiLimits();
                 });
     };
 

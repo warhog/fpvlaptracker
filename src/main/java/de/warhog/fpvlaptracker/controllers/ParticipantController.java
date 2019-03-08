@@ -66,7 +66,7 @@ public class ParticipantController {
     
     @RequestMapping(path = "/api/auth/participant/deviceData", method = RequestMethod.POST)
     public StatusResult setDeviceData(@RequestBody ParticipantDeviceData participantDeviceData) {
-        LOG.error("deviceData " + participantDeviceData.toString());
+        LOG.error("posting deviceData " + participantDeviceData.toString());
         try {
             Participant participant = participantsService.getParticipant(participantDeviceData.getChipid());
             String result = restService.postDeviceData(participant.getIp(), participantDeviceData);
