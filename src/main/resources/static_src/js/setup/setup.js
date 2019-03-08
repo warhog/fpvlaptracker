@@ -75,23 +75,42 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
     $scope.progressbar = ngProgressFactory.createInstance();
     console.log("chipid", $scope.chipid);
 
-    $scope.rebootDevice = function() {
+    $scope.rebootDevice = function () {
         SetupService.rebootDevice($scope.chipid)
-            .then(function (response) {
-                if (response.status === "NOK") {
+                .then(function (response) {
+                    if (response.status === "NOK") {
+                        ngDialog.open({template: 'dataFailure', scope: $scope, data: {message: "failed to reboot device"}});
+                    } else {
+                        ngDialog.open({template: 'reboot', scope: $scope});
+                        $location.path('/');
+                    }
+                })
+                .catch(function (response) {
                     ngDialog.open({template: 'dataFailure', scope: $scope, data: {message: "failed to reboot device"}});
-                } else {
-                    ngDialog.open({template: 'reboot', scope: $scope});
-                    $location.path('/');
-                }
-            })
-            .catch(function (response) {
-                ngDialog.open({template: 'dataFailure', scope: $scope, data: {message: "failed to reboot device"}});
-            })
-            .finally(function () {
-                $scope.progressbar.complete();
-                Util.displayOverlay(false);
-            });
+                })
+                .finally(function () {
+                    $scope.progressbar.complete();
+                    Util.displayOverlay(false);
+                });
+    };
+
+    $scope.skipCalibration = function () {
+        $scope.progressbar.start();
+        SetupService.skipCalibration($scope.chipid)
+                .then(function (response) {
+                    if (response.status !== "OK") {
+                        ngDialog.open({template: 'dataFailure', scope: $scope, data: {message: "failed to skip calibration (device error)"}});
+                    } else {
+                        $scope.loadDeviceData(true);
+                    }
+                })
+                .catch(function (response) {
+                    ngDialog.open({template: 'dataFailure', scope: $scope, data: {message: "failed to skip calibration: " + response}});
+                })
+                .finally(function () {
+                    $scope.progressbar.complete();
+                    Util.displayOverlay(false);
+                });
     };
 
     $scope.loadDeviceData = function (overlay) {
@@ -124,7 +143,7 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
                         $scope.deviceData.frequency = getInitialValue(response.frequency);
                         $scope.deviceData.participantName = response.participantName;
                         console.log($scope.deviceData);
-                        
+
                         if ($scope.deviceData.voltage > 7 && $scope.deviceData.voltage <= 10) {
                             $scope.cells = 2;
                         } else if ($scope.deviceData.voltage > 10 && $scope.deviceData.voltage <= 13) {
@@ -164,7 +183,7 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
                     });
         }
     };
-    
+
     $scope.$on('$destroy', function () {
         if (angular.isDefined($scope.promise)) {
             $interval.cancel($scope.promise);
@@ -209,6 +228,12 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
 
     factory.rebootDevice = function (chipid) {
         return $http.get("/api/auth/participant/reboot", {params: {chipid: chipid}, timeout: 10000}).then(function (response) {
+            return response.data;
+        });
+    };
+
+    factory.skipCalibration = function (chipid) {
+        return $http.get("/api/auth/participant/skipcalibration", {params: {chipid: chipid}, timeout: 2000}).then(function (response) {
             return response.data;
         });
     };

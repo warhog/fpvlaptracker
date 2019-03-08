@@ -2,6 +2,7 @@ package de.warhog.fpvlaptracker.service;
 
 import de.warhog.fpvlaptracker.entities.Rssi;
 import de.warhog.fpvlaptracker.entities.ParticipantDeviceData;
+import de.warhog.fpvlaptracker.entities.Result;
 import java.net.InetAddress;
 import java.time.Duration;
 import org.slf4j.Logger;
@@ -82,6 +83,15 @@ public class RestService {
         } catch (Exception ex) {
             LOG.error("cannot post device data", ex);
             return "NOK";
+        }
+    }
+
+    public Result skipCalibration(InetAddress ipAddress) {
+        try {
+            return getRestTemplate().getForObject(buildUrl(ipAddress, "skipcalibration"), Result.class);
+        } catch (Exception ex) {
+            LOG.error("cannot reboot device", ex);
+            return new Result("NOK");
         }
     }
 

@@ -5,6 +5,7 @@ import de.warhog.fpvlaptracker.service.RestService;
 import de.warhog.fpvlaptracker.entities.Rssi;
 import de.warhog.fpvlaptracker.entities.Participant;
 import de.warhog.fpvlaptracker.entities.ParticipantDeviceData;
+import de.warhog.fpvlaptracker.entities.Result;
 import de.warhog.fpvlaptracker.service.AudioService;
 import de.warhog.fpvlaptracker.service.ParticipantsDbService;
 import de.warhog.fpvlaptracker.service.ParticipantsService;
@@ -96,6 +97,22 @@ public class ParticipantController {
                 webSocketController.sendNewParticipantMessage(participant.getChipId());
                 audioService.speakUnregistered(participant.getName());
                 participantsService.removeParticipant(participant);
+            }
+        } catch (Exception ex) {
+            LOG.error("cannot reboot device", ex);
+        }
+        return result;
+    }
+
+    @RequestMapping(path = "/api/auth/participant/skipcalibration", method = RequestMethod.GET)
+    public StatusResult skipCalibration(@RequestParam(name = "chipid", required = true) Long chipid) {
+        StatusResult result = new StatusResult(StatusResult.Status.NOK);
+        try {
+            Participant participant = participantsService.getParticipant(chipid);
+            Result data = restService.skipCalibration(participant.getIp());
+            LOG.debug("return for skipCalibration: " + data.toString());
+            if (data.isOK()) {
+                result = new StatusResult(StatusResult.Status.OK);
             }
         } catch (Exception ex) {
             LOG.error("cannot reboot device", ex);
