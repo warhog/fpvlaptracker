@@ -230,7 +230,7 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
                     console.log("invalid alert type: " + type);
                     return;
                 }
-                let timeoutSeconds = 5;
+                let timeoutSeconds = 3;
                 let timeout = (permanent) ? null : moment().unix() + timeoutSeconds;
                 alerts.push({
                     type: type,

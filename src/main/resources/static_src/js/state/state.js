@@ -11,6 +11,16 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
     $scope.sleepDisabled = false;
     $scope.isMobile = UAUtil.isMobile();
 
+    $scope.raceTypes = [{
+            id: 'ROUND_BASED',
+            name: 'round based'
+        }, {
+            id: 'FIXED_TIME',
+            name: 'fixed time'
+        }];
+
+    $scope.state.raceType = $scope.raceTypes[0].id;
+
     NotificationService.on($scope, Constants.MESSAGES["raceStateChanged"], function (message) {
         console.log("got raceStateChanged message", message);
         $scope.loadStateData();
@@ -34,6 +44,23 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
         return moment.duration(duration).asSeconds().toFixed(2) + " s";
     };
 
+    $scope.updateRaceType = function () {
+        console.log("update race type");
+        $scope.state.raceType = $scope.state.raceType.id;
+        StateService.setRaceType($scope.state.raceType)
+                .then(function () {
+                    $scope.loadStateData();
+                })
+                .catch(function (response) {
+                    if (response.data === null) {
+                        response.data = {message: "unable to set race type"};
+                    }
+                    ngDialog.open({template: "raceFailure", scope: $scope, data: {message: response.data.message}});
+                    $scope.progressbar.complete();
+                });
+    };
+
+
     $scope.convertTime = function (time) {
         return moment(time).format("HH:mm:ss, DD.MM.");
     };
@@ -45,6 +72,7 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
             $scope.state = ret.state;
             $scope.toplist = ret.topList;
             $scope.lastState = ret.state.state;
+
             StateService.loadChartData().then(function (ret) {
                 if (!$scope.chartInitialized) {
                     $scope.chartInitialized = true;
@@ -71,20 +99,6 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
         }).finally(function () {
             $scope.progressbar.complete();
         });
-    };
-
-    $scope.setRaceType = function (raceType) {
-        StateService.setRaceType(raceType)
-                .then(function () {
-                    $scope.loadStateData();
-                })
-                .catch(function (response) {
-                    if (response.data === null) {
-                        response.data = {message: "unable to set race type"};
-                    }
-                    ngDialog.open({template: "raceFailure", scope: $scope, data: {message: response.data.message}});
-                    $scope.progressbar.complete();
-                });
     };
 
     $scope.startRace = function () {

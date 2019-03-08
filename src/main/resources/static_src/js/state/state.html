@@ -16,8 +16,8 @@
     <div>
         <div class="floatDifLeft raceStateTopLine">
             type: {{state.raceTypeText}}
-            <button class="btn btn-default" ng-disabled="!authenticated || checkRunning()" ng-click="setRaceType('ROUND_BASED');">round based</button> 
-            <button class="btn btn-default" ng-disabled="!authenticated || checkRunning()" ng-click="setRaceType('FIXED_TIME');">fixed time</button> 
+            <select ng-disabled="!authenticated || checkRunning()" ng-model="state.raceType" ng-change="updateRaceType();" ng-options="r.name disable when state.raceType === r for r in raceTypes"></select>
+            <!--<select ng-disabled="!authenticated || checkRunning()" ng-model="state.raceType" ng-change="updateRaceType();" ng-options="raceType.id as raceType.name disable when state.raceType.id === raceType.id for raceType in raceTypes"></select>-->
         </div>
         
         <div class="floatDivLeft raceStateTopLine" style="width: 120px;">
@@ -47,6 +47,7 @@
     </div>
     <div style="clear: both;"></div>
 
+    <div style="clear: both;"></div>
     <div>
         <div class="floatDivLeft" style="width: 200px;">
             <h3>toplist</h3>
@@ -77,12 +78,14 @@
                     <tr>
                         <th style="padding-right: 10px;">lap</th>
                         <th>duration</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tr ng-hide="x.currentLap > 1"><td colspan="2">not finished a lap yet</td></tr>
                 <tr ng-repeat="(lap, duration) in x.laps">
                     <td style="padding-right: 10px;">{{lap}}</td>
                     <td>{{convertDuration(duration)}}</td>
+                    <td><input type="button" value="&otimes;" ng-click="invalidateLap(lap, name);" class="btn btn-primary btn-sm" /></td>
                 </tr>
             </table>
         </div>
