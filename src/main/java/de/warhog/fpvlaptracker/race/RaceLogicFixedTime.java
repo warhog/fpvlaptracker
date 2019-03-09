@@ -4,14 +4,19 @@ import de.warhog.fpvlaptracker.controllers.WebSocketController;
 import de.warhog.fpvlaptracker.entities.Participant;
 import de.warhog.fpvlaptracker.entities.RaceState;
 import de.warhog.fpvlaptracker.entities.racedata.FixedTimeRaceParticipantData;
-import de.warhog.fpvlaptracker.entities.racedata.LapTimeList;
+import de.warhog.fpvlaptracker.entities.racedata.LapStorage;
 import de.warhog.fpvlaptracker.service.AudioService;
+import de.warhog.fpvlaptracker.service.ConfigService;
+import de.warhog.fpvlaptracker.service.ServiceLayerException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import static java.util.Map.Entry.comparingByValue;
+import static java.util.stream.Collectors.toMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,13 +36,19 @@ public class RaceLogicFixedTime implements IRaceLogic {
     @Autowired
     WebSocketController webSocketController;
 
+    @Autowired
+    LapStorage lapStorage;
+
+    @Autowired
+    ConfigService configService;
+
     Map<Long, FixedTimeRaceParticipantData> participantData = new HashMap<>();
     Map<Long, Instant> raceTimes = new HashMap<>();
     RaceState state = RaceState.WAITING;
-    Integer maxRunDuration = 120;
-    Integer maxOverDuration = 60;
-    Integer startPrepareTime = 10;
-    Integer startInterval = 2;
+    Integer raceDuration = 120;
+    Integer overtimeDuration = 60;
+    Integer startPreparationDuration = 10;
+    Integer startInterval = 3;
     Instant nextStart = Instant.MIN;
     RaceRunnable raceRunnable = null;
     Thread thread = null;
@@ -67,6 +78,21 @@ public class RaceLogicFixedTime implements IRaceLogic {
     public void setState(RaceState state) {
         this.state = state;
         webSocketController.sendRaceStateChangedMessage(state);
+    }
+
+    @Override
+    public Map<String, Long> getToplist() {
+        HashMap<String, Long> map = new HashMap<>();
+        for (Participant participant : participantsList.getParticipants()) {
+            Duration duration = lapStorage.getLapData(participant.getChipId()).getFastestLapDuration();
+            map.put(participant.getName(), duration.toMillis());
+        }
+        Map<String, Long> sorted = map
+                .entrySet()
+                .stream()
+                .sorted(comparingByValue())
+                .collect(toMap(e -> e.getKey(), e -> e.getValue(), (e1, e2) -> e2, LinkedHashMap::new));
+        return sorted;
     }
 
     public class RaceRunnable implements Runnable {
@@ -121,9 +147,9 @@ public class RaceLogicFixedTime implements IRaceLogic {
                     LOG.debug("participant " + name + " already ended this run: " + entry.getValue().getState());
                 } else {
                     // start testing if regular run time for this participant is exceeded
-                    if (runDuration.compareTo(Duration.ofSeconds(maxRunDuration)) >= 0) {
+                    if (runDuration.compareTo(Duration.ofSeconds(raceDuration)) >= 0) {
                         // test if run duration is exceeding run time + over time
-                        if (runDuration.compareTo(Duration.ofSeconds(maxRunDuration + maxOverDuration)) >= 0) {
+                        if (runDuration.compareTo(Duration.ofSeconds(raceDuration + overtimeDuration)) >= 0) {
                             // maximum time (run duration + overtime duration) reached
                             // -> invalid run
                             LOG.info("participant exceeded run + overtime duration: " + name + ": " + runDuration.toString());
@@ -185,13 +211,14 @@ public class RaceLogicFixedTime implements IRaceLogic {
     @Override
     public void init() {
         LOG.debug("init");
-    }
-
-    public void setParameters(Integer maxRunDuration, Integer maxOverDuration) {
-        LOG.debug("setParameters with runtime " + maxRunDuration + " and overtime " + maxOverDuration);
-        this.maxRunDuration = maxRunDuration;
-        this.maxOverDuration = maxOverDuration;
-        // TODO add startPrepareTime and others
+        try {
+            raceDuration = configService.getRaceDuration();
+            overtimeDuration = configService.getOvertimeDuration();
+            startPreparationDuration = configService.getPreparationDuration();
+            startInterval = configService.getStartInterval();
+        } catch (ServiceLayerException ex) {
+            LOG.error("cannot get settings, init with default value: " + ex.getMessage(), ex);
+        }
     }
 
     @Override
@@ -228,9 +255,8 @@ public class RaceLogicFixedTime implements IRaceLogic {
         raceRunnable = new RaceRunnable();
         thread = new Thread(raceRunnable);
         thread.start();
-        nextStart = Instant.now().plus(startPrepareTime, ChronoUnit.SECONDS);
+        nextStart = Instant.now().plus(startPreparationDuration, ChronoUnit.SECONDS);
         audioService.speakPleasePrepareForRace();
-
     }
 
     private boolean allStarted() {
@@ -288,12 +314,12 @@ public class RaceLogicFixedTime implements IRaceLogic {
                         // participant started -> real lap -> add to laptimelist
                         audioService.playLap();
                         webSocketController.sendNewLapMessage(chipId);
-                        participantData.get(chipId).getLapTimeList().addLap(duration, rssi);
+                        lapStorage.addLap(chipId, duration, rssi);
                         break;
                     case LAST_LAP:
                         // this was the last lap
                         data.setState(FixedTimeRaceParticipantData.ParticipantState.FINISHED);
-                        participantData.get(chipId).getLapTimeList().addLap(duration, rssi);
+                        lapStorage.addLap(chipId, duration, rssi);
                         audioService.speakParticipantEnded(name);
                         break;
                     case FINISHED:
@@ -314,11 +340,4 @@ public class RaceLogicFixedTime implements IRaceLogic {
         }
     }
 
-    @Override
-    public LapTimeList getLapData(Long chipId) {
-        if (participantData.containsKey(chipId)) {
-            return participantData.get(chipId).getLapTimeList();
-        }
-        return new LapTimeList();
-    }
 }

@@ -16,23 +16,13 @@ public class FixedTimeRaceParticipantData {
         INVALID
     };
 
-    private LapTimeList lapTimeList = new LapTimeList();
     private ParticipantState state = ParticipantState.WAITING_FOR_START;
 
     public FixedTimeRaceParticipantData() {
     }
 
-    public FixedTimeRaceParticipantData(LapTimeList lapTimeList, ParticipantState state) {
-        this.lapTimeList = lapTimeList;
+    public FixedTimeRaceParticipantData(ParticipantState state) {
         this.state = state;
-    }
-
-    public LapTimeList getLapTimeList() {
-        return lapTimeList;
-    }
-
-    public void setLapTimeList(LapTimeList lapTimeList) {
-        this.lapTimeList = lapTimeList;
     }
 
     public ParticipantState getState() {

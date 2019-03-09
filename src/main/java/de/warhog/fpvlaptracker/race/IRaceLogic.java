@@ -1,8 +1,8 @@
 package de.warhog.fpvlaptracker.race;
 
 import de.warhog.fpvlaptracker.entities.RaceState;
-import de.warhog.fpvlaptracker.entities.racedata.LapTimeList;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 public interface IRaceLogic {
 
@@ -23,6 +23,7 @@ public interface IRaceLogic {
     LocalDateTime getStartTime();
 
     void setStartTime(LocalDateTime startTime);
-    
-    LapTimeList getLapData(Long chipId);
+
+    public Map<String, Long> getToplist();
+
 }

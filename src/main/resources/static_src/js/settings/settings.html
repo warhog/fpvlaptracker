@@ -12,26 +12,100 @@
     </div>
 </script>
 <div>
-    <label for="maxLaps">lap limit</label><br />
-    sets the maximum lap limit for a race.
-    <div class="input-group col-lg-2">
-        <input class="form-control" type="number" min="1" max="255" step="1" name="maxLaps" ng-model="maxLaps" required/>
-        <span class="input-group-btn">
-            <button class="btn btn-default" ng-click="setMaxLaps();">save</button>        
-        </span>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">overall race settings</h3>
+        </div>
+        <div class="panel-body">
+            <label for="preparationDuration">preparation duration</label><br />
+            time in seconds for the pilots to prepare
+            <div class="input-group col-lg-2">
+                <input class="form-control" type="number" min="1" max="255" step="1" name="preparationDuration" ng-model="data.preparationDuration" required/>
+            </div>
+            <br />            
+        </div>
     </div>
-    <br /><br />
-    
-    <label for="timezone">timezone</label><br />
-    sets the timezone (see <a target="_blank" href="https://garygregory.wordpress.com/2013/06/18/what-are-the-java-timezone-ids/">timezone list</a>).
-    <div class="input-group col-lg-4">
-        <input class="form-control" type="text" name="timezone" ng-model="timezone" required/>
-        <span class="input-group-btn">
-            <button class="btn btn-default" ng-click="setTimezone();">save</button>        
-        </span>
-    </div>
+    <span class="input-group-btn">
+        <button class="btn btn-default" ng-click="storeSettings();">save</button>
+    </span>
+    <br />
+    <br />
+    <hr size="1" />
 
-    <br /><br />
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">round based race specific settings</h3>
+        </div>
+        <div class="panel-body">
+            <label for="maxLaps">lap limit</label><br />
+            sets the maximum lap limit for a race.
+            <div class="input-group col-lg-2">
+                <input class="form-control" type="number" min="1" max="255" step="1" name="maxLaps" ng-model="data.numberOfLaps" required/>
+            </div>
+            <br />
+        </div>
+    </div>
+    <span class="input-group-btn">
+        <button class="btn btn-default" ng-click="storeSettings();">save</button>
+    </span>
+    <br />
+    <br />
+    <hr size="1" />
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">fixed time race specific settings</h3>
+        </div>
+        <div class="panel-body">
+            <label for="raceDuration">race duration</label><br />
+            time in seconds for a race
+            <div class="input-group col-lg-2">
+                <input class="form-control" type="number" min="1" max="255" step="1" name="raceDuration" ng-model="data.raceDuration" required/>
+            </div>
+            <br />
+
+            <label for="overtimeDuration">overtime duration</label><br />
+            time in seconds a pilot can over. the pilot needs to end the race within the race duration plus the overtime duration.
+            <div class="input-group col-lg-2">
+                <input class="form-control" type="number" min="1" max="255" step="1" name="overtimeDuration" ng-model="data.overtimeDuration" required/>
+            </div>
+            <br />
+
+            <label for="startInterval">start interval</label><br />
+            time in seconds that is between the start of each pilot.
+            <div class="input-group col-lg-2">
+                <input class="form-control" type="number" min="1" max="255" step="1" name="startInterval" ng-model="data.startInterval" required/>
+            </div>
+            <br />
+        </div>
+    </div>
+    <span class="input-group-btn">
+        <button class="btn btn-default" ng-click="storeSettings();">save</button>
+    </span>
+    <br />
+    <br />
+    <hr size="1" />
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">misc settings</h3>
+        </div>
+        <div class="panel-body">
+            <label for="timezone">timezone</label><br />
+            sets the timezone (see <a target="_blank" href="https://garygregory.wordpress.com/2013/06/18/what-are-the-java-timezone-ids/">timezone list</a>).
+            <div class="input-group col-lg-4">
+                <input class="form-control" type="text" name="timezone" ng-model="data.timezone" required/>
+            </div>
+            <br />
+        </div>
+    </div>
+    <span class="input-group-btn">
+        <button class="btn btn-default" ng-click="storeSettings();">save</button>
+    </span>
+    <br />
+    <br />
+    <hr size="1" />
+
     <label for="shutdown">shutdown</label><br />
     shutdown the system.<br />
     <button name="shutdown" class="btn btn-default" flt-confirm-click="shutdown();" flt-confirm-click-message="Really shutdown?">shutdown</button>

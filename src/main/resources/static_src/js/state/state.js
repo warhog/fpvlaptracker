@@ -4,9 +4,7 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
         ) {
 
     $scope.progressbar = ngProgressFactory.createInstance();
-    $scope.toplist = [];
-    $scope.state = {};
-    $scope.lastState = null;
+    $scope.raceData = {};
     $scope.authenticated = LoginService.isAuthenticated();
     $scope.sleepDisabled = false;
     $scope.isMobile = UAUtil.isMobile();
@@ -19,7 +17,7 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
             name: 'fixed time'
         }];
 
-    $scope.state.raceType = $scope.raceTypes[0].id;
+    $scope.raceData.raceType = $scope.raceTypes[0].id;
 
     NotificationService.on($scope, Constants.MESSAGES["raceStateChanged"], function (message) {
         console.log("got raceStateChanged message", message);
@@ -44,10 +42,17 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
         return moment.duration(duration).asSeconds().toFixed(2) + " s";
     };
 
+    $scope.nonEmptyToplist = function() {
+        if ($scope.raceData.toplist !== undefined) {
+            return Object.keys($scope.raceData.toplist).length > 0;
+        }
+        return false;
+    };
+    
     $scope.updateRaceType = function () {
         console.log("update race type");
-        $scope.state.raceType = $scope.state.raceType.id;
-        StateService.setRaceType($scope.state.raceType)
+        $scope.raceData.raceType = $scope.raceData.raceType.id;
+        StateService.setRaceType($scope.raceData.raceType)
                 .then(function () {
                     $scope.loadStateData();
                 })
@@ -60,7 +65,6 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
                 });
     };
 
-
     $scope.convertTime = function (time) {
         return moment(time).format("HH:mm:ss, DD.MM.");
     };
@@ -69,9 +73,7 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
     $scope.loadStateData = function () {
         $scope.progressbar.start();
         StateService.loadData().then(function (ret) {
-            $scope.state = ret.state;
-            $scope.toplist = ret.topList;
-            $scope.lastState = ret.state.state;
+            $scope.raceData = ret;
 
             StateService.loadChartData().then(function (ret) {
                 if (!$scope.chartInitialized) {
@@ -99,6 +101,11 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
         }).finally(function () {
             $scope.progressbar.complete();
         });
+    };
+    
+    $scope.invalidateLap = function(lap, name) {
+        console.log('invalidate lap ', lap, ' for ', name);
+        console.log($scope.raceData);
     };
 
     $scope.startRace = function () {
@@ -147,7 +154,7 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
     });
 
     $scope.checkRunning = function () {
-        if ($scope.state.state === "RUNNING" || $scope.state.state === "GETREADY" || $scope.state.state === "PREPARE") {
+        if ($scope.raceData.state === "RUNNING" || $scope.raceData.state === "GETREADY" || $scope.raceData.state === "PREPARE") {
             return true;
         }
         return false;
@@ -224,26 +231,9 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
 
     factory.loadData = function () {
         return $http.get("/api/race/state").then(function (response) {
-            let toplist = [];
-            Object.keys(response.data.raceData).forEach(function (value) {
-                toplist.push({
-                    name: value,
-                    duration: moment.duration(response.data.raceData[value].totalDuration).asMilliseconds()
-                });
-            });
-
-            toplist = toplist.sort(function (a, b) {
-                return a.duration - b.duration;
-            }).reverse();
-
-            let state = response.data;
-            state.stateText = StateTranslation.getText(response.data.state);
-            state.raceTypeText = RaceTypeTranslation.getText(response.data.raceType);
-
-            return {
-                topList: toplist,
-                state: state
-            };
+            response.data.stateText = StateTranslation.getText(response.data.state);
+            response.data.raceTypeText = RaceTypeTranslation.getText(response.data.raceType);
+            return response.data;
         });
     };
 

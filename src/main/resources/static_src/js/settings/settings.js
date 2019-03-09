@@ -4,8 +4,13 @@ angular.module('settings', ['ngDialog', 'ngProgress']).controller('settings', fu
         ) {
 
     $scope.progressbar = ngProgressFactory.createInstance();
-    $scope.maxLaps = 0;
-    $scope.timezone = "-";
+    $scope.data = {};
+    $scope.data.numberOfLaps = 0;
+    $scope.data.startInterval = 0;
+    $scope.data.raceDuration = 0;
+    $scope.data.overtimeDuration = 0;
+    $scope.data.preparationDuration = 0;
+    $scope.data.timezone = "-";
 
     $scope.shutdown = function () {
         Util.displayOverlay(true);
@@ -16,10 +21,7 @@ angular.module('settings', ['ngDialog', 'ngProgress']).controller('settings', fu
     Util.displayOverlay(true);
     SettingsService.loadData()
             .then(function (data) {
-                if (data) {
-                    $scope.maxLaps = data.numberOfLaps;
-                    $scope.timezone = data.timezone;
-                }
+                $scope.data = data;
             })
             .catch(function (response) {
                 console.log(response);
@@ -33,16 +35,16 @@ angular.module('settings', ['ngDialog', 'ngProgress']).controller('settings', fu
                 Util.displayOverlay(false);
             });
 
-    $scope.setMaxLaps = function () {
+    $scope.storeSettings = function () {
         $scope.progressbar.start();
         Util.displayOverlay(true);
-        SettingsService.setMaxLaps($scope.maxLaps)
+        SettingsService.storeSettings($scope.data)
                 .then(function (data) {
                     Alerts.addSuccess();
                 })
                 .catch(function (response) {
                     if (response.data === null) {
-                        response.data = {message: "unable to load"};
+                        response.data = {message: "unable to store settings"};
                     }
                     ngDialog.open({template: 'failedSave', scope: $scope, data: {message: response.data.message}});
                 })
@@ -51,25 +53,6 @@ angular.module('settings', ['ngDialog', 'ngProgress']).controller('settings', fu
                     Util.displayOverlay(false);
                 });
 
-    };
-
-    $scope.setTimezone = function () {
-        $scope.progressbar.start();
-        Util.displayOverlay(true);
-        SettingsService.setTimezone($scope.timezone)
-                .then(function (data) {
-                    Alerts.addSuccess();
-                })
-                .catch(function (response) {
-                    if (response.data === null) {
-                        response.data = {message: "unable to load"};
-                    }
-                    ngDialog.open({template: 'failedSave', scope: $scope, data: {message: response.data.message}});
-                })
-                .finally(function () {
-                    $scope.progressbar.complete();
-                    Util.displayOverlay(false);
-                });
     };
 
 }).factory('SettingsService', function ($http) {
@@ -80,22 +63,14 @@ angular.module('settings', ['ngDialog', 'ngProgress']).controller('settings', fu
     };
 
     factory.loadData = function () {
-        return $http.get("/api/auth/miscdata").then(function (response) {
-            if (response.data !== undefined && response.data.numberOfLaps !== undefined) {
-                response.data.numberOfLaps = parseInt(response.data.numberOfLaps);
-            }
+        return $http.get("/api/auth/misc/loadsettings").then(function (response) {
             return response.data;
         });
     };
 
-    factory.setMaxLaps = function (maxLaps) {
-        return $http.post("/api/auth/race/maxlaps?laps=" + maxLaps).then(function (response) {
-            return response.data;
-        });
-    };
-
-    factory.setTimezone = function (timezone) {
-        return $http.post("/api/auth/misc/timezone?timezone=" + timezone).then(function (response) {
+    factory.storeSettings = function (data) {
+        console.log("storeSettings", data);
+        return $http.post("/api/auth/misc/storesettings", data, {timeout: 2000}, null).then(function (response) {
             return response.data;
         });
     };

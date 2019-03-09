@@ -1,5 +1,5 @@
 angular.module('participants', ['ngDialog']).controller('participants', function (
-        $scope, ngDialog, $location, ParticipantsService, WebSocketService, NotificationService, Constants, LoginService
+        $scope, ngDialog, $location, ParticipantsService, NotificationService, Constants, LoginService
         ) {
     
     $scope.participants = {};
@@ -14,7 +14,7 @@ angular.module('participants', ['ngDialog']).controller('participants', function
         ParticipantsService.loadParticipantData().then(function (data) {
             $scope.participants = data;
         }).catch(function () {
-            ngDialog.open({template: "dataFailure", scope: $scope, data: "cannot load participants data"});
+            ngDialog.open({template: "dataFailure", scope: $scope, data: "cannot load pilots data"});
         });
     };
 

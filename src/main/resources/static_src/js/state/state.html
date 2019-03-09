@@ -14,31 +14,24 @@
 
 <div>
     <div>
-        <div class="floatDifLeft raceStateTopLine">
-            type: {{state.raceTypeText}}
-            <select ng-disabled="!authenticated || checkRunning()" ng-model="state.raceType" ng-change="updateRaceType();" ng-options="r.name disable when state.raceType === r for r in raceTypes"></select>
-            <!--<select ng-disabled="!authenticated || checkRunning()" ng-model="state.raceType" ng-change="updateRaceType();" ng-options="raceType.id as raceType.name disable when state.raceType.id === raceType.id for raceType in raceTypes"></select>-->
+        <div>
+            type: {{raceData.raceTypeText}}
+            <select class="form-control" style="width: 250px;" ng-disabled="!authenticated || checkRunning()" ng-model="raceData.raceType" ng-change="updateRaceType();" ng-options="r.name disable when raceData.raceType ===  r for r in raceTypes"></select>
         </div>
-        
+
         <div class="floatDivLeft raceStateTopLine" style="width: 120px;">
-            <button class="btn btn-default" ng-disabled="!authenticated || toplist.length === 0 || checkRunning()" ng-click="startRace();">start</button> 
+            <button class="btn btn-default" ng-disabled="!authenticated || raceData.toplist.length === 0 || checkRunning()" ng-click="startRace();">start</button> 
             <button class="btn btn-default" ng-disabled="!authenticated || !checkRunning()" ng-click="stopRace();">stop</button>
         </div>
 
         <div class="floatDivLeft raceStateTopLine" style="width: 100px;">
-            state: {{state.stateText}}
-        </div>
-        <div class="floatDivLeft raceStateTopLine" style="width: 5px;">
-            |
-        </div>
-        <div class="floatDivLeft raceStateTopLine" style="width: 80px;">
-            lap limit: {{state.maxLaps}}
+            state: {{raceData.stateText}}
         </div>
         <div class="floatDivLeft raceStateTopLine" style="width: 5px;">
             |
         </div>
         <div class="floatDivLeft raceStateTopLine" style="width: 200px;">
-            starting time: {{state.startTime == null ? '-' : convertTime(state.startTime)}}
+            starting time: {{raceData.startTime == null ? '-' : convertTime(raceData.startTime)}}
         </div>
         <div ng-show="isMobile" class="floatDivLeft raceStateTopLine" style="width: 200px;">
             <button class="btn btn-default" ng-hide="sleepDisabled" ng-click="sleepDisable()">disable sleepmode</button>
@@ -46,6 +39,19 @@
         </div>
     </div>
     <div style="clear: both;"></div>
+
+    <br />
+    <div ng-hide="raceData.raceType !== 'ROUND_BASED'">
+        <div>lap limit: {{raceData.typeSpecific.maxLaps}} | 
+        preparation time: {{convertDuration(raceData.typeSpecific.preparationTime * 1000)}}</div>
+    </div>
+    <div ng-hide="raceData.raceType !== 'FIXED_TIME'">
+        <div>race duration: {{convertDuration(raceData.typeSpecific.raceDuration * 1000)}} | 
+        overtime duration: {{convertDuration(raceData.typeSpecific.overtimeDuration * 1000)}} | 
+        preparation time: {{convertDuration(raceData.typeSpecific.preparationTime * 1000)}} | 
+        start interval: {{convertDuration(raceData.typeSpecific.startInterval * 1000)}}</div>
+    </div>
+    <br />
 
     <div style="clear: both;"></div>
     <div>
@@ -58,14 +64,14 @@
                         <th>total duration</th>
                     </tr>
                 </thead>
-                <tr ng-hide="toplist.length > 0"><td colspan="2">no participants</td></tr>
-                <tr ng-repeat="x in toplist">
-                    <td style="padding-right: 10px;">{{x.name}}</td>
-                    <td>{{convertDuration(x.duration)}}</td>
+                <tr ng-hide="nonEmptyToplist()"><td colspan="2">no participants</td></tr>
+                <tr ng-repeat="(key, value) in raceData.toplist">
+                    <td style="padding-right: 10px;">{{key}}</td>
+                    <td>{{convertDuration(value)}}</td>
                 </tr>
             </table>
         </div>
-        <div class="floatDivLeft" style="width: 200px;" ng-repeat="(name, x) in state.raceData">
+        <div class="floatDivLeft" style="width: 200px;" ng-repeat="(name, x) in raceData.lapData">
             <h3>{{name}}</h3>
             current lap: {{x.currentLap}}<br />
             fastest lap: {{convertDuration(x.fastestLapDuration)}} in lap {{x.fastestLap}}<br />

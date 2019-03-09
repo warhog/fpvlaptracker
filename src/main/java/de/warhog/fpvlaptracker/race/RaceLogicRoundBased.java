@@ -3,13 +3,18 @@ package de.warhog.fpvlaptracker.race;
 import de.warhog.fpvlaptracker.controllers.WebSocketController;
 import de.warhog.fpvlaptracker.entities.Participant;
 import de.warhog.fpvlaptracker.entities.RaceState;
+import de.warhog.fpvlaptracker.entities.racedata.LapStorage;
 import de.warhog.fpvlaptracker.entities.racedata.LapTimeList;
 import de.warhog.fpvlaptracker.service.AudioService;
 import de.warhog.fpvlaptracker.service.ConfigService;
 import de.warhog.fpvlaptracker.service.ServiceLayerException;
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import static java.util.stream.Collectors.toMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,9 +37,12 @@ public class RaceLogicRoundBased implements IRaceLogic {
     @Autowired
     ConfigService configService;
 
-    Map<Long, LapTimeList> participantData = new HashMap<>();
+    @Autowired
+    LapStorage lapStorage;
+
     RaceState state = RaceState.WAITING;
     Integer numberOfLaps = 10;
+    Integer preparationDuration = 10;
     private LocalDateTime startTime = null;
     private Countdown countdownRunnable = null;
     private Thread countdownThread = null;
@@ -46,7 +54,7 @@ public class RaceLogicRoundBased implements IRaceLogic {
             LOG.debug("entering run()");
             try {
                 audioService.speakPleasePrepareForRace();
-                Thread.sleep(10000);
+                Thread.sleep(preparationDuration * 1000);
                 audioService.speakNumberThree();
                 Thread.sleep(1000);
                 audioService.speakNumberTwo();
@@ -67,9 +75,26 @@ public class RaceLogicRoundBased implements IRaceLogic {
         LOG.debug("init");
         try {
             numberOfLaps = configService.getNumberOfLaps();
+            preparationDuration = configService.getPreparationDuration();
         } catch (ServiceLayerException ex) {
-            LOG.debug("cannot get number of laps, staying with default value");
+            LOG.error("cannot get settings, init with default value: " + ex.getMessage(), ex);
         }
+    }
+
+    @Override
+    public Map<String, Long> getToplist() {
+        HashMap<String, Long> map = new HashMap<>();
+        for (Participant participant : participantsList.getParticipants()) {
+            Duration duration = lapStorage.getLapData(participant.getChipId()).getTotalDuration();
+            map.put(participant.getName(), duration.toMillis());
+        }
+        Map<String, Long> sorted = map
+                .entrySet()
+                .stream()
+                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                .collect(toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
+
+        return sorted;
     }
 
     @Override
@@ -101,7 +126,7 @@ public class RaceLogicRoundBased implements IRaceLogic {
     public void setNumberOfLaps(final Integer numberOfLaps) {
         this.numberOfLaps = numberOfLaps;
     }
-    
+
     public Integer getNumberOfLaps() {
         return this.numberOfLaps;
     }
@@ -117,10 +142,6 @@ public class RaceLogicRoundBased implements IRaceLogic {
         LOG.info("initialize new race");
         setState(RaceState.PREPARE);
         LOG.info("start race");
-        participantData.clear();
-        for (Participant participant : participantsList.getParticipants()) {
-            participantData.put(participant.getChipId(), new LapTimeList());
-        }
 
         if (countdownRunnable != null) {
             countdownThread.interrupt();
@@ -162,13 +183,9 @@ public class RaceLogicRoundBased implements IRaceLogic {
     @Override
     public void addLap(Long chipId, Long duration, Integer rssi) {
         LOG.debug("add lap", chipId, duration, rssi);
-        if (!participantData.containsKey(chipId)) {
-            LOG.info("participant not found: " + chipId);
-            return;
-        }
         Participant participant = participantsList.getParticipantByChipId(chipId);
         String name = participant.getName();
-        
+
         boolean raceStartedInThisLap = false;
         boolean oneParticipantReachedEnd = false;
         String participantEndedName = "";
@@ -180,30 +197,25 @@ public class RaceLogicRoundBased implements IRaceLogic {
             }
             return;
         }
-        
+
         if (getState() == RaceState.GETREADY) {
             LOG.info("starting race");
             setState(RaceState.RUNNING);
             audioService.playStart();
             raceStartedInThisLap = true;
         }
-        
-        if (!participantData.containsKey(chipId)) {
-            throw new RuntimeException("no data for participant found: " + participant.toString());
-        }
-        
-        LapTimeList data = participantData.get(chipId);
 
-        if (data.getCurrentLap() > numberOfLaps) {
+        Integer currentLap = lapStorage.getLapData(chipId).getCurrentLap();
+        if (currentLap > numberOfLaps) {
             LOG.info("participant already ended race " + name);
             audioService.speakAlreadyDone(name);
         } else {
-            if (data.getCurrentLap() > numberOfLaps) {
+            if (currentLap > numberOfLaps) {
                 LOG.info("participant reached lap limit " + name);
                 oneParticipantReachedEnd = true;
                 participantEndedName = name;
             } else if (!raceStartedInThisLap) {
-                data.addLap(duration, rssi);
+                lapStorage.addLap(chipId, duration, rssi);
                 audioService.playLap();
             }
 
@@ -222,7 +234,7 @@ public class RaceLogicRoundBased implements IRaceLogic {
     }
 
     public boolean checkEnded() {
-        for (Map.Entry<Long, LapTimeList> entry : participantData.entrySet()) {
+        for (Map.Entry<Long, LapTimeList> entry : lapStorage.getLapDataWithChipId().entrySet()) {
             String name = participantsList.getParticipantByChipId(entry.getKey()).getName();
             if (entry.getValue().getCurrentLap() <= numberOfLaps) {
                 LOG.debug("participant has not completed yet: " + name + ", numberOfLaps: " + numberOfLaps + ", currentLap: " + entry.getValue().getCurrentLap());
@@ -232,11 +244,4 @@ public class RaceLogicRoundBased implements IRaceLogic {
         return true;
     }
 
-    @Override
-    public LapTimeList getLapData(Long chipId) {
-        if (participantData.containsKey(chipId)) {
-            return participantData.get(chipId);
-        }
-        return new LapTimeList();
-    }
 }

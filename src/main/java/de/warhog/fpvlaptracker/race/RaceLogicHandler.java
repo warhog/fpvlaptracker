@@ -3,10 +3,12 @@ package de.warhog.fpvlaptracker.race;
 import de.warhog.fpvlaptracker.entities.RaceState;
 import de.warhog.fpvlaptracker.controllers.WebSocketController;
 import de.warhog.fpvlaptracker.entities.Participant;
-import de.warhog.fpvlaptracker.entities.racedata.LapTimeList;
+import de.warhog.fpvlaptracker.entities.racedata.LapStorage;
 import de.warhog.fpvlaptracker.service.AudioService;
 import de.warhog.fpvlaptracker.service.RestService;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +41,9 @@ public class RaceLogicHandler {
     @Autowired
     RaceLogicRoundBased raceLogicRoundBased;
 
+    @Autowired
+    LapStorage lapStorage;
+    
     public void init(RaceType raceType) {
         this.raceType = raceType;
         if (this.raceType == RaceType.ROUND_BASED) {
@@ -86,9 +91,14 @@ public class RaceLogicHandler {
     public void startRace() {
         fillRaceLogic();
         LOG.info("starting race");
+        lapStorage.repopulate();
         checkParticipantsStillAvailable();
         raceLogic.startRace();
         setStartTime(LocalDateTime.now());
+    }
+    
+    public Map<String, Long> getToplist() {
+        return raceLogic.getToplist();
     }
 
     public void stopRace() {
@@ -127,11 +137,6 @@ public class RaceLogicHandler {
         raceLogic.setStartTime(startTime);
     }
     
-    public LapTimeList getLapData(Long chipId) {
-        fillRaceLogic();
-        return raceLogic.getLapData(chipId);
-    }
-
     @Scheduled(fixedDelay = 60000L)
     public void checkParticipantsStillAvailable() {
         fillRaceLogic();

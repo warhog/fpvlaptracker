@@ -27,7 +27,14 @@ public class ConfigService {
     }
 
     public String getValueForKey(String key) throws ServiceLayerException {
+        return getValueForKey(key, null);
+    }
+    
+    public String getValueForKey(String key, String defaultValue) throws ServiceLayerException {
         try {
+            if (defaultValue != null && !dbLayer.hasConfigRecordForKey(key)) {
+                return defaultValue;
+            }
             ConfigRecord cr = dbLayer.getConfigRecordForKey(key);
             return cr.getConfigValue();
         } catch (DbLayerException ex) {
@@ -36,7 +43,14 @@ public class ConfigService {
     }
     
     public Integer getIntegerValueForKey(String key) throws ServiceLayerException {
+        return getIntegerValueForKey(key, null);
+    }
+    
+    public Integer getIntegerValueForKey(String key, Integer defaultValue) throws ServiceLayerException {
         try {
+            if (defaultValue != null && !dbLayer.hasConfigRecordForKey(key)) {
+                return defaultValue;
+            }
             ConfigRecord cr = dbLayer.getConfigRecordForKey(key);
             return Integer.parseInt(cr.getConfigValue());
         } catch (DbLayerException ex) {
@@ -47,11 +61,43 @@ public class ConfigService {
     }
     
     public Integer getNumberOfLaps() throws ServiceLayerException {
-        return getIntegerValueForKey("numberOfLaps");
+        return getIntegerValueForKey("numberOfLaps", 10);
     }
     
     public void setNumberOfLaps(Integer numberOfLaps) throws ServiceLayerException {
         createOrUpdateKey("numberOfLaps", numberOfLaps.toString());
+    }
+    
+    public Integer getPreparationDuration() throws ServiceLayerException {
+        return getIntegerValueForKey("preparationTime", 10);
+    }
+    
+    public void setPreparationTime(Integer preparationTime) throws ServiceLayerException {
+        createOrUpdateKey("preparationTime", preparationTime.toString());
+    }
+    
+    public Integer getStartInterval() throws ServiceLayerException {
+        return getIntegerValueForKey("startInterval", 3);
+    }
+    
+    public void setStartInterval(Integer startInterval) throws ServiceLayerException {
+        createOrUpdateKey("startInterval", startInterval.toString());
+    }
+    
+    public Integer getRaceDuration() throws ServiceLayerException {
+        return getIntegerValueForKey("raceDuration", 120);
+    }
+    
+    public void setRaceDuration(Integer raceDuration) throws ServiceLayerException {
+        createOrUpdateKey("raceDuration", raceDuration.toString());
+    }
+    
+    public Integer getOvertimeDuration() throws ServiceLayerException {
+        return getIntegerValueForKey("overtimeDuration", 60);
+    }
+    
+    public void setOvertimeDuration(Integer overtimeDuration) throws ServiceLayerException {
+        createOrUpdateKey("overtimeDuration", overtimeDuration.toString());
     }
     
     public void setTimezone(String timezone) throws ServiceLayerException {

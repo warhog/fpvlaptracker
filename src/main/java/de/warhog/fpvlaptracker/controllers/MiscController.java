@@ -1,6 +1,7 @@
 package de.warhog.fpvlaptracker.controllers;
 
 import de.warhog.fpvlaptracker.configuration.ApplicationConfig;
+import de.warhog.fpvlaptracker.controllers.dtos.SettingsResult;
 import de.warhog.fpvlaptracker.controllers.dtos.StatusResult;
 import de.warhog.fpvlaptracker.race.RaceLogicHandler;
 import de.warhog.fpvlaptracker.service.ConfigService;
@@ -13,9 +14,9 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -43,21 +44,34 @@ public class MiscController {
         return ret;
     }
 
-    @RequestMapping(path = "/api/auth/miscdata", method = RequestMethod.GET)
-    public Map<String, String> getMiscData() throws ServiceLayerException {
-        Map<String, String> ret = new HashMap<>();
-//        ret.put("numberOfLaps", race.getNumberOfLaps().toString());
-        ret.put("numberOfLaps", "10");
-        ret.put("timezone", configService.getTimezone());
-        return ret;
+    @RequestMapping(path = "/api/auth/misc/loadsettings", method = RequestMethod.GET)
+    public SettingsResult loadSettings() {
+        final SettingsResult result = new SettingsResult();
+        try {
+            result.setNumberOfLaps(configService.getNumberOfLaps());
+            result.setPreparationDuration(configService.getPreparationDuration());
+            result.setRaceDuration(configService.getRaceDuration());
+            result.setOvertimeDuration(configService.getOvertimeDuration());
+            result.setStartInterval(configService.getStartInterval());
+            result.setTimezone(configService.getTimezone());
+        } catch (ServiceLayerException ex) {
+            LOG.error("service layer exception: " + ex.getMessage(), ex);
+        }
+        return result;
     }
 
-    @RequestMapping(path = "/api/auth/misc/timezone", method = RequestMethod.POST)
-    public StatusResult setTimezone(@RequestParam(name = "timezone") String timezone) {
+    @RequestMapping(path = "/api/auth/misc/storesettings", method = RequestMethod.POST)
+    public StatusResult storeSettings(@RequestBody SettingsResult settingsResult) {
+        LOG.error("storeSettings " + settingsResult.toString());
         try {
-            configService.setTimezone(timezone);
+            configService.setTimezone(settingsResult.getTimezone());
+            configService.setNumberOfLaps(settingsResult.getNumberOfLaps());
+            configService.setOvertimeDuration(settingsResult.getOvertimeDuration());
+            configService.setPreparationTime(settingsResult.getPreparationDuration());
+            configService.setRaceDuration(settingsResult.getRaceDuration());
+            configService.setStartInterval(settingsResult.getStartInterval());
         } catch (ServiceLayerException ex) {
-            LOG.debug("cannot store timezone", ex);
+            LOG.error("cannot store settings: " + ex.getMessage(), ex);
             return new StatusResult(StatusResult.Status.NOK);
         }
         return new StatusResult(StatusResult.Status.OK);

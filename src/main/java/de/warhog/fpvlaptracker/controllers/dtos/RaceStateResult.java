@@ -15,10 +15,27 @@ public class RaceStateResult {
     private static final Logger LOG = LoggerFactory.getLogger(RaceStateResult.class);
 
     private RaceState state;
-    private Map<Participant, LapTimeList> raceData = new HashMap<>();
+    private Map<Participant, LapTimeList> lapData = new HashMap<>();
     private LocalDateTime startTime;
-    private Integer maxLaps;
     private RaceType raceType;
+    private Map<String, Long> toplist = new HashMap<>();
+    private Map<String, String> typeSpecific = new HashMap<>();
+
+    public Map<String, String> getTypeSpecific() {
+        return typeSpecific;
+    }
+    
+    public void addTypeSpecific(final String key, final String value) {
+        typeSpecific.put(key, value);
+    }
+    
+    public Map<String, Long> getToplist() {
+        return toplist;
+    }
+
+    public void setToplist(Map<String, Long> toplist) {
+        this.toplist = toplist;
+    }
 
     public RaceState getState() {
         return state;
@@ -28,28 +45,20 @@ public class RaceStateResult {
         this.state = state;
     }
 
-    public Map<Participant, LapTimeList> getRaceData() {
-        return raceData;
+    public Map<Participant, LapTimeList> getLapData() {
+        return lapData;
     }
 
-    public void setRaceData(Map<Participant, LapTimeList> raceData) {
-        this.raceData = raceData;
+    public void setLapData(Map<Participant, LapTimeList> lapData) {
+        this.lapData = lapData;
     }
-
+    
     public LocalDateTime getStartTime() {
         return startTime;
     }
 
     public void setStartTime(LocalDateTime startTime) {
         this.startTime = startTime;
-    }
-
-    public Integer getMaxLaps() {
-        return maxLaps;
-    }
-
-    public void setMaxLaps(Integer maxLaps) {
-        this.maxLaps = maxLaps;
     }
 
     public RaceType getRaceType() {

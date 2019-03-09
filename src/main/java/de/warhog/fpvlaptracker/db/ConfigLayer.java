@@ -50,4 +50,11 @@ public class ConfigLayer {
         throw new DbLayerException("cannot find data for key " + key);
     }
 
+    public boolean hasConfigRecordForKey(String key) throws DbLayerException {
+        DSLContext dslContext = db.connectDatabase();
+        ConfigRecord rec = dslContext.selectFrom(Tables.CONFIG).where(Tables.CONFIG.CONFIG_KEY.equal(key)).limit(1).fetchOne();
+        db.closeDatabase();
+        return rec != null;
+    }
+
 }
