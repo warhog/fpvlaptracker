@@ -124,6 +124,16 @@ public class UdpHandler implements Runnable {
         }
     }
 
+    public static boolean isValidJson(String json) {
+        try {
+            final ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.readTree(json);
+            return true;
+        } catch (IOException ex) {
+            return false;
+        }
+    }
+
     @SuppressFBWarnings(value = "REC_CATCH_EXCEPTION", justification = "catch exception to make sure all types of exceptions are catched and the loop is not ended in this cases")
     @Override
     public void run() {
@@ -138,14 +148,13 @@ public class UdpHandler implements Runnable {
                 socket.receive(packet);
                 LOG.debug("got packet: " + new String(packet.getData(), Charset.defaultCharset()).trim());
 
-                if (testLocalAddress(((InetSocketAddress) packet.getSocketAddress()).getAddress())) {
-                    LOG.info("packet from same ip");
-                    continue;
-                }
-
                 lastPacketReceived = System.currentTimeMillis();
 
                 String packetString = new String(packet.getData(), Charset.defaultCharset()).trim();
+                if (!isValidJson(packetString)) {
+                    LOG.debug("invalid json string, skipping");
+                    continue;
+                }
                 JsonNode rootNode = mapper.readValue(packetString, JsonNode.class);
                 PacketType packetType = PacketType.valueOf(rootNode.path("type").asText().toUpperCase());
                 LOG.debug("packet type is " + packetType);
@@ -186,6 +195,10 @@ public class UdpHandler implements Runnable {
                         processBatteryShutdown(udpPacketBatteryShutdown);
                         break;
                     default:
+                        if (testLocalAddress(((InetSocketAddress) packet.getSocketAddress()).getAddress())) {
+                            LOG.info("packet from same ip");
+                            continue;
+                        }
                         LOG.error("unknown packet type: " + packetType);
                         break;
                 }

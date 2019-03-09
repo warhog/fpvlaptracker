@@ -1,8 +1,11 @@
 package de.warhog.fpvlaptracker.entities.racedata;
 
+import de.warhog.fpvlaptracker.controllers.dtos.LapDataResult;
 import de.warhog.fpvlaptracker.entities.Participant;
 import de.warhog.fpvlaptracker.race.ParticipantsList;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +19,7 @@ public class LapStorage {
 
     @Autowired
     private ParticipantsList participantsList;
-    
+
     final Map<Long, LapTimeList> lapData = new HashMap<>();
 
     public void clear() {
@@ -53,8 +56,10 @@ public class LapStorage {
         }
         LapTimeList ltl = lapData.get(chipid);
         if (ltl.isLapValid(lap)) {
+            LOG.debug("set lap invalid");
             ltl.invalidateLap(lap, true);
         } else {
+            LOG.debug("set lap valid");
             ltl.invalidateLap(lap, false);
         }
     }
@@ -66,7 +71,7 @@ public class LapStorage {
         }
         return lapData.get(chipid);
     }
-    
+
     public HashMap<Participant, LapTimeList> getLapData() {
         final HashMap<Participant, LapTimeList> data = new HashMap<>();
         for (Participant participant : participantsList.getParticipants()) {
@@ -77,6 +82,19 @@ public class LapStorage {
 
     public Map<Long, LapTimeList> getLapDataWithChipId() {
         return lapData;
+    }
+
+    public List<LapDataResult> getLapDataExtended() {
+        List<LapDataResult> result = new ArrayList<>();
+        for (Participant participant : participantsList.getParticipants()) {
+            LapDataResult lapDataResult = new LapDataResult();
+            LapTimeList participantLapData = getLapData(participant.getChipId());
+            lapDataResult.setLapTimeList(participantLapData);
+            lapDataResult.setParticipant(participant);
+            lapDataResult.setLapValidity(participantLapData.getInvalidLaps());
+            result.add(lapDataResult);
+        }
+        return result;
     }
 
     public void repopulate() {

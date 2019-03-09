@@ -7,7 +7,6 @@ import de.warhog.fpvlaptracker.entities.racedata.LapStorage;
 import de.warhog.fpvlaptracker.service.AudioService;
 import de.warhog.fpvlaptracker.service.RestService;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

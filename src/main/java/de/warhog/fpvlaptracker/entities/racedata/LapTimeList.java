@@ -31,9 +31,17 @@ public class LapTimeList {
 
     public boolean isLapValid(Integer lap) {
         if (lapValidity.containsKey(lap)) {
-            return lapValidity.get(lap);
+            return !lapValidity.get(lap);
         }
         return true;
+    }
+
+    public Map<Integer, Boolean> getInvalidLaps() {
+        return new HashMap<>(lapValidity);
+    }
+    
+    public boolean noValidLapAvailable() {
+        return numberOfInvalidLaps() == laps.size();
     }
 
     public Integer numberOfInvalidLaps() {
@@ -53,7 +61,7 @@ public class LapTimeList {
     }
 
     public Duration getAverageLapDuration() {
-        if (laps.isEmpty()) {
+        if (laps.isEmpty() || noValidLapAvailable()) {
             return Duration.ZERO;
         }
         Duration avg = getTotalDuration();
@@ -62,7 +70,7 @@ public class LapTimeList {
     }
 
     public Duration getTotalDuration() {
-        if (laps.isEmpty()) {
+        if (laps.isEmpty() || noValidLapAvailable()) {
             return Duration.ZERO;
         }
         Duration total = Duration.ZERO;
@@ -87,7 +95,7 @@ public class LapTimeList {
     }
 
     public Duration getFastestLapDuration() {
-        if (laps.isEmpty()) {
+        if (laps.isEmpty() || noValidLapAvailable()) {
             return Duration.ZERO;
         }
         Duration fastest = Duration.of(1, ChronoUnit.HOURS);
@@ -102,7 +110,7 @@ public class LapTimeList {
     }
 
     public Integer getFastestLap() {
-        if (laps.isEmpty()) {
+        if (laps.isEmpty() || noValidLapAvailable()) {
             return 1;
         }
         Integer fastestLap = 1;

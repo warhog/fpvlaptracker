@@ -71,13 +71,13 @@
                 </tr>
             </table>
         </div>
-        <div class="floatDivLeft" style="width: 200px;" ng-repeat="(name, x) in raceData.lapData">
-            <h3>{{name}}</h3>
-            current lap: {{x.currentLap}}<br />
-            fastest lap: {{convertDuration(x.fastestLapDuration)}} in lap {{x.fastestLap}}<br />
-            average lap: {{convertDuration(x.averageLapDuration)}}<br />
-            total duration: {{convertDuration(x.totalDuration)}}<br />
-            last rssi: {{x.lastRssi}}<br />
+        <div class="floatDivLeft" style="width: 200px;" ng-repeat="x in raceData.lapData">
+            <h3>{{x.participant.name}}</h3>
+            current lap: {{x.lapTimeList.currentLap}}<br />
+            fastest lap: {{convertDuration(x.lapTimeList.fastestLapDuration)}} in lap {{x.lapTimeList.fastestLap}}<br />
+            average lap: {{convertDuration(x.lapTimeList.averageLapDuration)}}<br />
+            total duration: {{convertDuration(x.lapTimeList.totalDuration)}}<br />
+            last rssi: {{x.lapTimeList.lastRssi}}<br />
             <br />
             <table class="table table-striped">
                 <thead>
@@ -87,11 +87,14 @@
                         <th></th>
                     </tr>
                 </thead>
-                <tr ng-hide="x.currentLap > 1"><td colspan="2">not finished a lap yet</td></tr>
-                <tr ng-repeat="(lap, duration) in x.laps">
+                <tr ng-hide="x.lapTimeList.currentLap > 1"><td colspan="3">not finished a lap yet</td></tr>
+                <tr ng-repeat="(lap, duration) in x.lapTimeList.laps">
                     <td style="padding-right: 10px;">{{lap}}</td>
-                    <td>{{convertDuration(duration)}}</td>
-                    <td><input type="button" value="&otimes;" ng-click="invalidateLap(lap, name);" class="btn btn-primary btn-sm" /></td>
+                    <td data-ng-class="isInvalidLap(x.lapValidity, lap) && 'strikethrough' || 'null'"> {{convertDuration(duration)}}</td>
+                    <td>
+                        <input ng-hide="isInvalidLap(x.lapValidity, lap)" type="button" value="&otimes;" ng-click="invalidateLap(x.participant.chipId, lap);" class="btn btn-sm" />
+                        <input ng-hide="!isInvalidLap(x.lapValidity, lap)" type="button" value="&oplus;" ng-click="invalidateLap(x.participant.chipId, lap);" class="btn btn-sm" />
+                    </td>
                 </tr>
             </table>
         </div>

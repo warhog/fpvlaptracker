@@ -53,6 +53,9 @@ body {
     vertical-align: middle;
 }
 
+.strikethrough {
+  text-decoration: line-through;
+}
 
 .alert-message {
     position: fixed;

@@ -42,11 +42,15 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
         return moment.duration(duration).asSeconds().toFixed(2) + " s";
     };
 
-    $scope.nonEmptyToplist = function() {
+    $scope.nonEmptyToplist = function () {
         if ($scope.raceData.toplist !== undefined) {
             return Object.keys($scope.raceData.toplist).length > 0;
         }
         return false;
+    };
+
+    $scope.isInvalidLap = function(lapValidity, lap) {
+        return lapValidity[lap] !== undefined && lapValidity[lap] === true;
     };
     
     $scope.updateRaceType = function () {
@@ -102,10 +106,20 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
             $scope.progressbar.complete();
         });
     };
-    
-    $scope.invalidateLap = function(lap, name) {
-        console.log('invalidate lap ', lap, ' for ', name);
-        console.log($scope.raceData);
+
+    $scope.invalidateLap = function (chipid, lap) {
+        console.log('invalidate lap ', lap, ' for ', chipid);
+        StateService.invalidateLap(chipid, lap)
+                .then(function () {
+                    $scope.loadStateData();
+                })
+                .catch(function (response) {
+                    if (response.data === null) {
+                        response.data = {message: "unable to invalidate lap"};
+                    }
+                    ngDialog.open({template: "raceFailure", scope: $scope, data: {message: response.data.message}});
+                    $scope.progressbar.complete();
+                });
     };
 
     $scope.startRace = function () {
@@ -210,9 +224,8 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
 ).factory('StateService', function ($http, StateTranslation, RaceTypeTranslation) {
     var factory = {};
 
-    factory.startRace = function (laps) {
-        // TODO laps ersetzen mit type
-        return $http.get("/api/auth/race/start", {params: {laps: laps}}).then(function (response) {
+    factory.startRace = function () {
+        return $http.get("/api/auth/race/start").then(function (response) {
             return response.data;
         });
     };
@@ -240,6 +253,12 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
     factory.loadChartData = function () {
         return $http.get("/api/race/chartdata").then(function (response) {
             console.log(response.data);
+            return response.data;
+        });
+    };
+
+    factory.invalidateLap = function (chipid, lap) {
+        return $http.get("/api/auth/race/invalidatelap?chipid=" + chipid + "&lap=" + lap).then(function (response) {
             return response.data;
         });
     };

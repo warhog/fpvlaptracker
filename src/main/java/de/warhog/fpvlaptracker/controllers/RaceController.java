@@ -42,17 +42,6 @@ public class RaceController {
     @Autowired
     private LapStorage lapStorage;
 
-    @RequestMapping(path = "/api/auth/race/maxlaps", method = RequestMethod.POST)
-    public StatusResult setMaxLaps(@RequestParam(name = "laps", defaultValue = "10") Integer laps) {
-        raceLogic.setNumberOfLaps(laps);
-        try {
-            configService.setNumberOfLaps(laps);
-        } catch (ServiceLayerException ex) {
-            LOG.debug("cannot store number of laps", ex);
-        }
-        return new StatusResult(StatusResult.Status.OK);
-    }
-
     @RequestMapping(path = "/api/auth/race/type", method = RequestMethod.GET)
     public StatusResult type(@RequestParam(name = "type", defaultValue = "ROUND_BASED") RaceType raceType) {
         LOG.debug("requested /api/auth/race/type with raceType: " + raceType);
@@ -104,6 +93,14 @@ public class RaceController {
         return new StatusResult(StatusResult.Status.OK);
     }
 
+    @RequestMapping(path = "/api/auth/race/invalidatelap", method = RequestMethod.GET)
+    public StatusResult invalidateLap(@RequestParam(name = "chipid", required = true) String chipid, @RequestParam(name = "lap", required = true) String lapString) {
+        Long chipId = Long.parseLong(chipid);
+        Integer lap = Integer.parseInt(lapString);
+        lapStorage.toggleLapValidity(chipId, lap);
+        return new StatusResult(StatusResult.Status.OK);
+    }
+
     @RequestMapping(path = "/api/race/participants", method = RequestMethod.GET)
     public List<Participant> getParticipants() {
         return participantsList.getParticipants();
@@ -113,7 +110,7 @@ public class RaceController {
     public RaceStateResult getState() {
         RaceStateResult rsr = new RaceStateResult();
         rsr.setState(raceLogic.getState());
-        rsr.setLapData(lapStorage.getLapData());
+        rsr.setLapData(lapStorage.getLapDataExtended());
         rsr.setToplist(raceLogic.getToplist());
         rsr.setStartTime(raceLogic.getStartTime());
         rsr.setRaceType(raceLogic.getRaceType());
