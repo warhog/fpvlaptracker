@@ -142,18 +142,7 @@ public class RaceLogicRoundBased implements IRaceLogic {
         setState(RaceState.PREPARE);
         LOG.info("start race");
 
-        if (countdownRunnable != null) {
-            countdownThread.interrupt();
-            try {
-                LOG.debug("waiting for thread join");
-                countdownThread.join();
-                LOG.debug("thread joined");
-            } catch (InterruptedException ex) {
-                LOG.debug("interrupted during join");
-            }
-            countdownRunnable = null;
-            countdownThread = null;
-        }
+        stopCountdownThread();
         countdownRunnable = new Countdown();
         countdownThread = new Thread(countdownRunnable);
         countdownThread.start();
@@ -163,7 +152,10 @@ public class RaceLogicRoundBased implements IRaceLogic {
     public void stopRace() {
         LOG.info("stopping race");
         setState(RaceState.FINISHED);
+        stopCountdownThread();
+    }
 
+    private void stopCountdownThread() {
         if (countdownRunnable != null) {
             countdownThread.interrupt();
             try {
@@ -176,7 +168,6 @@ public class RaceLogicRoundBased implements IRaceLogic {
             countdownRunnable = null;
             countdownThread = null;
         }
-
     }
 
     @Override
@@ -189,9 +180,19 @@ public class RaceLogicRoundBased implements IRaceLogic {
         boolean oneParticipantReachedEnd = false;
         String participantEndedName = "";
 
+        if (getState() == RaceState.PREPARE) {
+            LOG.info("false start chipid: " + chipId);
+            audioService.speakFalseStartParticipant(name);
+            webSocketController.sendAlertMessage(WebSocketController.WarningMessageTypes.WARNING, "early start", name + " was starting too early!", true);
+            setState(RaceState.FAULT);
+            stopCountdownThread();
+            return;
+        }
+
         if (!isRunning()) {
             LOG.info("cannot add lap when race is not running, chipid: " + chipId);
             if (participantsList.hasParticipant(chipId)) {
+                webSocketController.sendAlertMessage(WebSocketController.WarningMessageTypes.INFO, "invalid lap", "invalid lap for pilot " + name, false);
                 audioService.speakInvalidLap(name);
             }
             return;
