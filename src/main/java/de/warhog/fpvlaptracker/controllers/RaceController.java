@@ -63,7 +63,7 @@ public class RaceController {
         for (Participant participant : participants) {
             chartResult.addParticipant(participant.getChipId(), participant.getName());
             if (participantsList.hasParticipant(participant.getChipId())) {
-                for (Map.Entry<Integer, Duration> entry : lapStorage.getLapData(participant.getChipId()).getLaps().entrySet()) {
+                for (Map.Entry<Integer, Duration> entry : lapStorage.getLapData(participant.getChipId()).getLapsFilterInvalid().entrySet()) {
                     chartResult.addLapTimes(entry.getKey(), participant.getChipId(), entry.getValue());
                 }
             }

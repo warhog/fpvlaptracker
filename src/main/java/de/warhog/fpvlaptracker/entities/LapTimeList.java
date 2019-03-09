@@ -39,7 +39,7 @@ public class LapTimeList {
     public Map<Integer, Boolean> getInvalidLaps() {
         return new HashMap<>(lapValidity);
     }
-    
+
     public boolean noValidLapAvailable() {
         return numberOfInvalidLaps() == laps.size();
     }
@@ -80,6 +80,13 @@ public class LapTimeList {
             }
         }
         return total;
+    }
+
+    public Map<Integer, Duration> getLapsFilterInvalid() {
+        Map<Integer, Duration> filtered = laps.entrySet().stream()
+                .filter(x -> isLapValid(x.getKey()))
+                .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
+        return filtered;
     }
 
     public Map<Integer, Duration> getLaps() {
