@@ -24,6 +24,8 @@ public interface IRaceLogic {
 
     void setStartTime(LocalDateTime startTime);
 
-    public Map<String, Long> getToplist();
+    Map<String, Long> getToplist();
+    
+    
 
 }
