@@ -300,6 +300,7 @@ public class RaceLogicFixedTime implements IRaceLogic {
                         // false start, participant is not allowed to start yet
                         LOG.error("false start participant " + name + ", " + participant.getChipId());
                         audioService.speakFalseStartParticipant(name);
+                        webSocketController.sendAlertMessage(WebSocketController.WarningMessageTypes.WARNING, "early start", name + " was starting too early!", true);
                         data.setState(FixedTimeRaceParticipantData.ParticipantState.INVALID);
                         break;
                     case WAITING_FOR_FIRST_PASS:

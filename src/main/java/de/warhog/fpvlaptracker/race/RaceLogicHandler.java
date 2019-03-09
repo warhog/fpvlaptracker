@@ -109,6 +109,7 @@ public class RaceLogicHandler {
         fillRaceLogic();
         LOG.info("stopping race");
         raceLogic.stopRace();
+        audioService.speakRaceAborted();
     }
 
     public void addLap(Long chipId, Long duration, Integer rssi) {
