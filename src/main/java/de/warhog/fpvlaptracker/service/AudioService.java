@@ -157,6 +157,14 @@ public class AudioService {
         }
     }
 
+    public void speakRaceAborted() {
+        try {
+            speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.RACE_ABORTED)));
+        } catch (NoSuchFieldException ex) {
+            LOG.error("cannot speak race aborted", ex);
+        }
+    }
+
     public void speakNumberThree() {
         speak("3");
     }

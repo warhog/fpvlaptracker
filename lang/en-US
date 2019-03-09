@@ -13,3 +13,4 @@ LAST_LAP_PARTICIPANT=Last lap %s.
 TIME_OVER_PARTICIPANT=Time over for %s.
 PREPARE_FOR_RACE=Please prepare for the race.
 GO=Go!
+RACE_ABORTED=Race aborted!
