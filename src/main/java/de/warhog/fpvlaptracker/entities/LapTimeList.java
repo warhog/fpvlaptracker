@@ -1,4 +1,4 @@
-package de.warhog.fpvlaptracker.entities.racedata;
+package de.warhog.fpvlaptracker.entities;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;

@@ -3,7 +3,6 @@ package de.warhog.fpvlaptracker.race;
 import de.warhog.fpvlaptracker.entities.RaceState;
 import de.warhog.fpvlaptracker.controllers.WebSocketController;
 import de.warhog.fpvlaptracker.entities.Participant;
-import de.warhog.fpvlaptracker.entities.racedata.LapStorage;
 import de.warhog.fpvlaptracker.service.AudioService;
 import de.warhog.fpvlaptracker.service.RestService;
 import java.time.LocalDateTime;

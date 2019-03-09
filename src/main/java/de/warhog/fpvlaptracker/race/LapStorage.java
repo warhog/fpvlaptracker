@@ -1,6 +1,8 @@
-package de.warhog.fpvlaptracker.entities.racedata;
+package de.warhog.fpvlaptracker.race;
 
 import de.warhog.fpvlaptracker.controllers.dtos.LapDataResult;
+import de.warhog.fpvlaptracker.entities.LapTimeList;
+import de.warhog.fpvlaptracker.entities.Participant;
 import de.warhog.fpvlaptracker.entities.Participant;
 import de.warhog.fpvlaptracker.race.ParticipantsList;
 import java.util.ArrayList;

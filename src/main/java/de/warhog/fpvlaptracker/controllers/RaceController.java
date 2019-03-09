@@ -4,7 +4,7 @@ import de.warhog.fpvlaptracker.controllers.dtos.ChartResult;
 import de.warhog.fpvlaptracker.controllers.dtos.RaceStateResult;
 import de.warhog.fpvlaptracker.controllers.dtos.StatusResult;
 import de.warhog.fpvlaptracker.entities.Participant;
-import de.warhog.fpvlaptracker.entities.racedata.LapStorage;
+import de.warhog.fpvlaptracker.race.LapStorage;
 import de.warhog.fpvlaptracker.race.RaceLogicHandler;
 import de.warhog.fpvlaptracker.service.ConfigService;
 import de.warhog.fpvlaptracker.service.ParticipantsService;

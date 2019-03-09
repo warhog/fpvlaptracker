@@ -1,7 +1,7 @@
 package de.warhog.fpvlaptracker.controllers.dtos;
 
 import de.warhog.fpvlaptracker.entities.Participant;
-import de.warhog.fpvlaptracker.entities.racedata.LapTimeList;
+import de.warhog.fpvlaptracker.entities.LapTimeList;
 import java.util.HashMap;
 import java.util.Map;
 
