@@ -7,6 +7,7 @@ import de.warhog.fpvlaptracker.service.AudioService;
 import de.warhog.fpvlaptracker.service.RestService;
 import java.time.LocalDateTime;
 import java.util.Map;
+import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,11 @@ public class RaceLogicHandler {
 
     @Autowired
     LapStorage lapStorage;
+
+    @PostConstruct
+    public void postConstruct() {
+        init(RaceType.ROUND_BASED);
+    }
     
     public void init(RaceType raceType) {
         this.raceType = raceType;
