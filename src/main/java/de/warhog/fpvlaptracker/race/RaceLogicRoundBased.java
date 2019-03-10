@@ -91,7 +91,9 @@ public class RaceLogicRoundBased implements IRaceLogic {
         HashMap<String, Long> map = new HashMap<>();
         for (Participant participant : participantsList.getParticipants()) {
             Duration duration = lapStorage.getLapData(participant.getChipId()).getTotalDuration();
-            map.put(participant.getName(), duration.toMillis());
+            if (duration != Duration.ZERO) {
+                map.put(participant.getName(), duration.toMillis());
+            }
         }
         Map<String, Long> sorted = map
                 .entrySet()
