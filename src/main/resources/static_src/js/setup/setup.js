@@ -133,7 +133,7 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
         return tt;
     };
     
-    $scope.loadProfile = function (data) {
+    $scope.loadProfile = function (data, apply) {
         data = JSON.parse(data);
         $scope.deviceData.minimumLapTime = data.minimumLapTime;
         $scope.deviceData.triggerThreshold = data.triggerThreshold;
@@ -142,6 +142,10 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
         $scope.deviceData.triggerValue = data.triggerValue;
         $scope.deviceData.filterRatio = data.filterRatio;
         $scope.deviceData.filterRatioCalibration = data.filterRatioCalibration;
+        
+        if (apply !== undefined && apply === true) {
+            $scope.saveDeviceData();
+        }
     };
 
     $scope.deleteProfile = function (name) {

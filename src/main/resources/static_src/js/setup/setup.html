@@ -61,13 +61,14 @@
             <span style="width: 50px;">&nbsp;</span>
             <input class="btn btn-sm" type="button" value="update" ng-click="createOrUpdateProfile(x.name);" />
             <input class="btn btn-sm" type="button" value="load" ng-click="loadProfile(x.data);" />
+            <input class="btn btn-sm" type="button" value="apply" ng-click="loadProfile(x.data, true);" />
             <input class="btn btn-sm" type="button" value="&otimes;" flt-confirm-click-message="Really delete profile &quot;{{x.name}}&quot;?" flt-confirm-click="deleteProfile(x.name);" />
         </div>
         <br />
         <div class="form-group">
             Create profile
             <input type="text" class="form-control" id="profileName" ng-model="newProfileName" aria-describedby="profileNameHelp" placeholder="Enter profile name">
-            <small id="profileNameHelp" class="form-text text-muted">Give the new profile a name.</small>
+            <small id="profileNameHelp" class="form-text text-muted">give the new profile a name</small>
         </div>
         <input type="button" value="create profile" class="btn btn-sm" ng-click="createOrUpdateProfile();" />
     </div>
