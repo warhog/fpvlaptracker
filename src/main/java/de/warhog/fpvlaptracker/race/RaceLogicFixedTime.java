@@ -303,6 +303,7 @@ public class RaceLogicFixedTime implements IRaceLogic {
     @Override
     public void stopRace() {
         LOG.info("stopping race");
+        setState(RaceState.FINISHED);
         if (raceRunnable != null) {
             raceRunnable.stop();
             try {
