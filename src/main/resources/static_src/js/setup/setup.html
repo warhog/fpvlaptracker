@@ -55,6 +55,7 @@
     </div>
     <div class="float-right">
         <u>Profiles:</u><br />
+        <div ng-hide="profiles.length > 0">no profile yet</div>
         <div ng-repeat="x in profiles">
             <span title="{{createProfileTooltip(x.data);}}">{{x.name}}</span>
             <span style="width: 50px;">&nbsp;</span>
