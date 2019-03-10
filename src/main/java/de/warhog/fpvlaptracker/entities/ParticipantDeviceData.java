@@ -1,6 +1,5 @@
 package de.warhog.fpvlaptracker.entities;
 
-import de.warhog.fpvlaptracker.communication.entities.*;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

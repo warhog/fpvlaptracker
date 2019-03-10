@@ -1,5 +1,6 @@
 package de.warhog.fpvlaptracker.race;
 
+import de.warhog.fpvlaptracker.entities.ParticipantExtraData;
 import de.warhog.fpvlaptracker.entities.RaceState;
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -25,7 +26,7 @@ public interface IRaceLogic {
     void setStartTime(LocalDateTime startTime);
 
     Map<String, Long> getToplist();
-    
-    
+
+    Map<Long, ParticipantExtraData> getParticipantExtraData();
 
 }

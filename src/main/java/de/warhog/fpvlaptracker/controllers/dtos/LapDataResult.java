@@ -37,7 +37,7 @@ public class LapDataResult {
 
     @Override
     public String toString() {
-        return "LapDataResult{" + "participant=" + participant + ", lapTimeList=" + lapTimeList + '}';
+        return "LapDataResult{" + "participant=" + participant + ", lapTimeList=" + lapTimeList + ", lapValidity=" + lapValidity + '}';
     }
 
 }

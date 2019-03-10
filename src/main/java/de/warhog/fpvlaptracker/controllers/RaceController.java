@@ -1,6 +1,7 @@
 package de.warhog.fpvlaptracker.controllers;
 
 import de.warhog.fpvlaptracker.controllers.dtos.ChartResult;
+import de.warhog.fpvlaptracker.controllers.dtos.LapDataResult;
 import de.warhog.fpvlaptracker.controllers.dtos.RaceStateResult;
 import de.warhog.fpvlaptracker.controllers.dtos.StatusResult;
 import de.warhog.fpvlaptracker.entities.Participant;
@@ -106,29 +107,9 @@ public class RaceController {
         return participantsList.getParticipants();
     }
 
-    @RequestMapping(path = "/api/race/state", method = RequestMethod.GET)
-    public RaceStateResult getState() {
-        RaceStateResult rsr = new RaceStateResult();
-        rsr.setState(raceLogic.getState());
-        rsr.setLapData(lapStorage.getLapDataExtended());
-        rsr.setToplist(raceLogic.getToplist());
-        rsr.setStartTime(raceLogic.getStartTime());
-        rsr.setRaceType(raceLogic.getRaceType());
-
-        try {
-            if (raceLogic.getRaceType() == RaceType.ROUND_BASED) {
-                rsr.addTypeSpecific("maxLaps", configService.getNumberOfLaps().toString());
-            } else if (raceLogic.getRaceType() == RaceType.FIXED_TIME) {
-                rsr.addTypeSpecific("startInterval", configService.getStartInterval().toString());
-                rsr.addTypeSpecific("raceDuration", configService.getRaceDuration().toString());
-                rsr.addTypeSpecific("overtimeDuration", configService.getOvertimeDuration().toString());
-            }
-            rsr.addTypeSpecific("preparationTime", configService.getPreparationDuration().toString());
-        } catch (ServiceLayerException ex) {
-            LOG.error("cannot get data: " + ex.getMessage(), ex);
-        }
-
-        return rsr;
+    @RequestMapping(path = "/api/race/data", method = RequestMethod.GET)
+    public RaceStateResult getData() {
+        return raceLogic.getRaceData();
     }
 
 }

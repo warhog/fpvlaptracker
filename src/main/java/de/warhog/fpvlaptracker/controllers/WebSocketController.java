@@ -29,7 +29,7 @@ public class WebSocketController {
     public String sendMessage(String message) {
         return message;
     }
-
+    
     
     public void sendRaceStateChangedMessage(RaceState raceState) {
         LOG.debug("sending race state changed message: " + raceState.toString());

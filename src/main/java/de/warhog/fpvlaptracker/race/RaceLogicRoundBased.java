@@ -4,6 +4,7 @@ import de.warhog.fpvlaptracker.controllers.WebSocketController;
 import de.warhog.fpvlaptracker.entities.Participant;
 import de.warhog.fpvlaptracker.entities.RaceState;
 import de.warhog.fpvlaptracker.entities.LapTimeList;
+import de.warhog.fpvlaptracker.entities.ParticipantExtraData;
 import de.warhog.fpvlaptracker.service.AudioService;
 import de.warhog.fpvlaptracker.service.ConfigService;
 import de.warhog.fpvlaptracker.service.ServiceLayerException;
@@ -39,12 +40,17 @@ public class RaceLogicRoundBased implements IRaceLogic {
     @Autowired
     LapStorage lapStorage;
 
-    RaceState state = RaceState.WAITING;
-    Integer numberOfLaps = 10;
-    Integer preparationDuration = 10;
+    private RaceState state = RaceState.WAITING;
+    private Integer numberOfLaps = 10;
+    private Integer preparationDuration = 10;
     private LocalDateTime startTime = null;
     private Countdown countdownRunnable = null;
     private Thread countdownThread = null;
+
+    @Override
+    public Map<Long, ParticipantExtraData> getParticipantExtraData() {
+        return new HashMap<>();
+    }
 
     class Countdown implements Runnable {
 

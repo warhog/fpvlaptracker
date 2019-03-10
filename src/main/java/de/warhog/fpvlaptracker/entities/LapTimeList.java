@@ -133,4 +133,9 @@ public class LapTimeList {
         return fastestLap;
     }
 
+    @Override
+    public String toString() {
+        return "LapTimeList{" + "laps=" + laps + ", lapValidity=" + lapValidity + ", currentLap=" + currentLap + ", lastRssi=" + lastRssi + '}';
+    }
+    
 }

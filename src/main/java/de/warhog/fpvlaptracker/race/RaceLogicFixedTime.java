@@ -4,6 +4,7 @@ import de.warhog.fpvlaptracker.controllers.WebSocketController;
 import de.warhog.fpvlaptracker.entities.Participant;
 import de.warhog.fpvlaptracker.entities.RaceState;
 import de.warhog.fpvlaptracker.entities.FixedTimeRaceParticipantData;
+import de.warhog.fpvlaptracker.entities.ParticipantExtraData;
 import de.warhog.fpvlaptracker.service.AudioService;
 import de.warhog.fpvlaptracker.service.ConfigService;
 import de.warhog.fpvlaptracker.service.ServiceLayerException;
@@ -41,16 +42,16 @@ public class RaceLogicFixedTime implements IRaceLogic {
     @Autowired
     ConfigService configService;
 
-    Map<Long, FixedTimeRaceParticipantData> participantData = new HashMap<>();
-    Map<Long, Instant> raceTimes = new HashMap<>();
-    RaceState state = RaceState.WAITING;
-    Integer raceDuration = 120;
-    Integer overtimeDuration = 60;
-    Integer startPreparationDuration = 10;
-    Integer startInterval = 3;
-    Instant nextStart = Instant.MIN;
-    RaceRunnable raceRunnable = null;
-    Thread thread = null;
+    private final Map<Long, FixedTimeRaceParticipantData> participantData = new HashMap<>();
+    private final Map<Long, Instant> raceTimes = new HashMap<>();
+    private RaceState state = RaceState.WAITING;
+    private Integer raceDuration = 120;
+    private Integer overtimeDuration = 60;
+    private Integer startPreparationDuration = 10;
+    private Integer startInterval = 3;
+    private Instant nextStart = Instant.MIN;
+    private RaceRunnable raceRunnable = null;
+    private Thread thread = null;
     private LocalDateTime startTime = null;
 
     @Override
@@ -92,6 +93,33 @@ public class RaceLogicFixedTime implements IRaceLogic {
                 .sorted(comparingByValue())
                 .collect(toMap(e -> e.getKey(), e -> e.getValue(), (e1, e2) -> e2, LinkedHashMap::new));
         return sorted;
+    }
+
+    @Override
+    public Map<Long, ParticipantExtraData> getParticipantExtraData() {
+        HashMap<Long, ParticipantExtraData> participantsExtraData = new HashMap<>();
+        for (Participant participant : participantsList.getParticipants()) {
+            Long chipId = participant.getChipId();
+            ParticipantExtraData participantExtraData = new ParticipantExtraData();
+            if (participantData.containsKey(chipId)) {
+                FixedTimeRaceParticipantData data = participantData.get(chipId);
+                participantExtraData.setState(data.getState().getText());
+                if (data.isStateLastLap() || data.isStateStarted()) {
+                    if (raceTimes.containsKey(chipId)) {
+                        Duration currentRaceDuration = Duration.between(raceTimes.get(chipId), Instant.now());
+                        Duration raceDurationLeft = Duration.ofSeconds(raceDuration).minus(currentRaceDuration);
+                        if (raceDurationLeft.plus(Duration.ofSeconds(overtimeDuration)).isNegative()) {
+                            raceDurationLeft = Duration.ofSeconds(-overtimeDuration);
+                        }
+                        participantExtraData.setDuration(raceDurationLeft);
+                    }
+                } else {
+                    participantExtraData.setDuration(Duration.ofSeconds(raceDuration));
+                }
+            }
+            participantsExtraData.put(chipId, participantExtraData);
+        }
+        return participantsExtraData;
     }
 
     public class RaceRunnable implements Runnable {
@@ -169,6 +197,7 @@ public class RaceLogicFixedTime implements IRaceLogic {
                                 // participant not started yet
                                 LOG.info("participant not started during run time: " + name);
                                 audioService.speakTimeOverParticipant(name);
+                                entry.getValue().setState(FixedTimeRaceParticipantData.ParticipantState.INVALID);
                             }
                         }
                     }
@@ -300,27 +329,28 @@ public class RaceLogicFixedTime implements IRaceLogic {
                         // false start, participant is not allowed to start yet
                         LOG.error("false start participant " + name + ", " + participant.getChipId());
                         audioService.speakFalseStartParticipant(name);
-                        webSocketController.sendAlertMessage(WebSocketController.WarningMessageTypes.WARNING, "early start", name + " was starting too early!", true);
                         data.setState(FixedTimeRaceParticipantData.ParticipantState.INVALID);
+                        webSocketController.sendAlertMessage(WebSocketController.WarningMessageTypes.WARNING, "early start", name + " was starting too early!", true);
                         break;
                     case WAITING_FOR_FIRST_PASS:
                         // is first pass, dont count the lap
                         audioService.playStart();
-                        webSocketController.sendNewLapMessage(chipId);
                         raceTimes.put(chipId, Instant.now());
                         data.setState(FixedTimeRaceParticipantData.ParticipantState.STARTED);
+                        webSocketController.sendNewLapMessage(chipId);
                         break;
                     case STARTED:
                         // participant started -> real lap -> add to laptimelist
                         audioService.playLap();
-                        webSocketController.sendNewLapMessage(chipId);
                         lapStorage.addLap(chipId, duration, rssi);
+                        webSocketController.sendNewLapMessage(chipId);
                         break;
                     case LAST_LAP:
                         // this was the last lap
                         data.setState(FixedTimeRaceParticipantData.ParticipantState.FINISHED);
                         lapStorage.addLap(chipId, duration, rssi);
                         audioService.speakParticipantEnded(name);
+                        webSocketController.sendNewLapMessage(chipId);
                         break;
                     case FINISHED:
                         // participant already finished the race

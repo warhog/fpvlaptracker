@@ -73,6 +73,8 @@
         </div>
         <div class="floatDivLeft" style="width: 200px;" ng-repeat="x in raceData.lapData">
             <h3>{{x.participant.name}}</h3>
+            <span ng-hide="getPilotState(raceData, x.participant.chipId) === ''">state: {{getPilotState(raceData, x.participant.chipId)}}<br /></span>
+            <span ng-hide="getPilotDuration(raceData, x.participant.chipId) === 0">duration: {{convertDuration(getPilotDuration(raceData, x.participant.chipId))}}<br /></span>
             current lap: {{x.lapTimeList.currentLap}}<br />
             fastest lap: {{convertDuration(x.lapTimeList.fastestLapDuration)}} in lap {{x.lapTimeList.fastestLap}}<br />
             average lap: {{convertDuration(x.lapTimeList.averageLapDuration)}}<br />

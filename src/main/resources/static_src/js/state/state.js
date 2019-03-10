@@ -41,6 +41,20 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
     $scope.convertDuration = function (duration) {
         return moment.duration(duration).asSeconds().toFixed(2) + " s";
     };
+    
+    $scope.getPilotState = function(raceData, chipId) {
+        if (raceData.participantExtraData[chipId] !== undefined) {
+            return raceData.participantExtraData[chipId].state;
+        }
+        return "";
+    };
+
+    $scope.getPilotDuration = function(raceData, chipId) {
+        if (raceData.participantExtraData[chipId] !== undefined) {
+            return raceData.participantExtraData[chipId].duration;
+        }
+        return 0;
+    };
 
     $scope.nonEmptyToplist = function () {
         if ($scope.raceData.toplist !== undefined) {
@@ -243,7 +257,7 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
     };
 
     factory.loadData = function () {
-        return $http.get("/api/race/state").then(function (response) {
+        return $http.get("/api/race/data").then(function (response) {
             response.data.stateText = StateTranslation.getText(response.data.state);
             response.data.raceTypeText = RaceTypeTranslation.getText(response.data.raceType);
             return response.data;

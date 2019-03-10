@@ -1,5 +1,6 @@
 package de.warhog.fpvlaptracker.controllers.dtos;
 
+import de.warhog.fpvlaptracker.entities.ParticipantExtraData;
 import de.warhog.fpvlaptracker.entities.RaceState;
 import de.warhog.fpvlaptracker.race.RaceType;
 import java.time.LocalDateTime;
@@ -18,16 +19,17 @@ public class RaceStateResult {
     private LocalDateTime startTime;
     private RaceType raceType;
     private Map<String, Long> toplist = new HashMap<>();
-    private Map<String, String> typeSpecific = new HashMap<>();
+    private final Map<String, String> typeSpecific = new HashMap<>();
+    private Map<Long, ParticipantExtraData> participantExtraData = new HashMap<>();
 
     public Map<String, String> getTypeSpecific() {
         return typeSpecific;
     }
-    
+
     public void addTypeSpecific(final String key, final String value) {
         typeSpecific.put(key, value);
     }
-    
+
     public Map<String, Long> getToplist() {
         return toplist;
     }
@@ -51,7 +53,7 @@ public class RaceStateResult {
     public void setLapData(List<LapDataResult> lapData) {
         this.lapData = lapData;
     }
-    
+
     public LocalDateTime getStartTime() {
         return startTime;
     }
@@ -67,5 +69,18 @@ public class RaceStateResult {
     public void setRaceType(RaceType raceType) {
         this.raceType = raceType;
     }
-    
+
+    public Map<Long, ParticipantExtraData> getParticipantExtraData() {
+        return participantExtraData;
+    }
+
+    public void setParticipantExtraData(Map<Long, ParticipantExtraData> participantExtraData) {
+        this.participantExtraData = participantExtraData;
+    }
+
+    @Override
+    public String toString() {
+        return "RaceStateResult{" + "state=" + state + ", lapData=" + lapData + ", startTime=" + startTime + ", raceType=" + raceType + ", toplist=" + toplist + ", typeSpecific=" + typeSpecific + ", participantExtraData=" + participantExtraData + '}';
+    }
+
 }

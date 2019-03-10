@@ -2,9 +2,13 @@ package de.warhog.fpvlaptracker.race;
 
 import de.warhog.fpvlaptracker.entities.RaceState;
 import de.warhog.fpvlaptracker.controllers.WebSocketController;
+import de.warhog.fpvlaptracker.controllers.dtos.RaceStateResult;
 import de.warhog.fpvlaptracker.entities.Participant;
+import de.warhog.fpvlaptracker.entities.ParticipantExtraData;
 import de.warhog.fpvlaptracker.service.AudioService;
+import de.warhog.fpvlaptracker.service.ConfigService;
 import de.warhog.fpvlaptracker.service.RestService;
+import de.warhog.fpvlaptracker.service.ServiceLayerException;
 import java.time.LocalDateTime;
 import java.util.Map;
 import javax.annotation.PostConstruct;
@@ -42,12 +46,16 @@ public class RaceLogicHandler {
 
     @Autowired
     LapStorage lapStorage;
+    
+    @Autowired
+    ConfigService configService;
 
     @PostConstruct
     public void postConstruct() {
         init(RaceType.ROUND_BASED);
+        raceLogic = raceLogicRoundBased;
     }
-    
+
     public void init(RaceType raceType) {
         this.raceType = raceType;
         if (this.raceType == RaceType.ROUND_BASED) {
@@ -57,23 +65,8 @@ public class RaceLogicHandler {
         }
         raceLogic.init();
     }
-    
-    public void setNumberOfLaps(Integer numberOfLaps) {
-        raceLogicRoundBased.setNumberOfLaps(numberOfLaps);
-    }
-    
-    public Integer getNumberOfLaps() {
-        return raceLogicRoundBased.getNumberOfLaps();
-    }
 
-    private void fillRaceLogic() {
-        if (raceLogic == null) {
-            raceLogic = raceLogicRoundBased;
-        }
-    }
-    
     public void addParticipant(Participant participant) {
-        fillRaceLogic();
         if (raceLogic.isRunning()) {
             throw new IllegalStateException("cannot add participants to running race");
         }
@@ -81,7 +74,6 @@ public class RaceLogicHandler {
     }
 
     public void removeParticipant(Participant participant) {
-        fillRaceLogic();
         if (raceLogic.isRunning()) {
             throw new IllegalStateException("cannot remove participants from running race");
         }
@@ -93,58 +85,50 @@ public class RaceLogicHandler {
     }
 
     public void startRace() {
-        fillRaceLogic();
         LOG.info("starting race");
         lapStorage.repopulate();
         checkParticipantsStillAvailable();
         raceLogic.startRace();
         setStartTime(LocalDateTime.now());
     }
-    
+
     public Map<String, Long> getToplist() {
         return raceLogic.getToplist();
     }
 
     public void stopRace() {
-        fillRaceLogic();
         LOG.info("stopping race");
         raceLogic.stopRace();
         audioService.speakRaceAborted();
     }
 
     public void addLap(Long chipId, Long duration, Integer rssi) {
-        fillRaceLogic();
         LOG.debug("add lap", chipId, duration, rssi);
         raceLogic.addLap(chipId, duration, rssi);
     }
 
     public RaceState getState() {
-        fillRaceLogic();
         return raceLogic.getState();
     }
-    
+
     public RaceType getRaceType() {
         return raceType;
     }
 
     public void setState(RaceState state) {
-        fillRaceLogic();
         raceLogic.setState(state);
     }
 
     public LocalDateTime getStartTime() {
-        fillRaceLogic();
         return raceLogic.getStartTime();
     }
 
     private void setStartTime(LocalDateTime startTime) {
-        fillRaceLogic();
         raceLogic.setStartTime(startTime);
     }
-    
+
     @Scheduled(fixedDelay = 60000L)
     public void checkParticipantsStillAvailable() {
-        fillRaceLogic();
         LOG.debug("checking for non-existing participants");
         if (!raceLogic.isRunning()) {
             for (Participant participant : participantsList.getParticipants()) {
@@ -164,6 +148,29 @@ public class RaceLogicHandler {
         } else {
             LOG.debug("race is running, skipping check");
         }
+    }
+    
+    public RaceStateResult getRaceData() {
+        RaceStateResult rsr = new RaceStateResult();
+        rsr.setState(raceLogic.getState());
+        rsr.setLapData(lapStorage.getLapDataExtended());
+        rsr.setToplist(raceLogic.getToplist());
+        rsr.setStartTime(raceLogic.getStartTime());
+        rsr.setRaceType(getRaceType());
+        rsr.setParticipantExtraData(raceLogic.getParticipantExtraData());
+        try {
+            if (getRaceType() == RaceType.ROUND_BASED) {
+                rsr.addTypeSpecific("maxLaps", configService.getNumberOfLaps().toString());
+            } else if (getRaceType() == RaceType.FIXED_TIME) {
+                rsr.addTypeSpecific("startInterval", configService.getStartInterval().toString());
+                rsr.addTypeSpecific("raceDuration", configService.getRaceDuration().toString());
+                rsr.addTypeSpecific("overtimeDuration", configService.getOvertimeDuration().toString());
+            }
+            rsr.addTypeSpecific("preparationTime", configService.getPreparationDuration().toString());
+        } catch (ServiceLayerException ex) {
+            LOG.error("cannot get data: " + ex.getMessage(), ex);
+        }
+        return rsr;
     }
 
 }

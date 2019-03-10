@@ -8,12 +8,20 @@ public class FixedTimeRaceParticipantData {
     private static final Logger LOG = LoggerFactory.getLogger(FixedTimeRaceParticipantData.class);
 
     public enum ParticipantState {
-        WAITING_FOR_START,
-        WAITING_FOR_FIRST_PASS,
-        STARTED,
-        LAST_LAP,
-        FINISHED,
-        INVALID
+        WAITING_FOR_START("waiting for start"),
+        WAITING_FOR_FIRST_PASS("waiting for first pass"),
+        STARTED("started"),
+        LAST_LAP("last lap"),
+        FINISHED("finished"),
+        INVALID("invalid");
+
+        private final String text;
+        private ParticipantState(String text) {
+            this.text = text;
+        }
+        public String getText() {
+            return text;
+        }
     };
 
     private ParticipantState state = ParticipantState.WAITING_FOR_START;
