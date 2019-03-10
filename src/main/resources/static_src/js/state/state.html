@@ -16,7 +16,8 @@
     <div>
         <div>
             type: {{raceData.raceTypeText}}
-            <select class="form-control" style="width: 250px;" ng-disabled="!authenticated || checkRunning()" ng-model="raceData.raceType" ng-change="updateRaceType();" ng-options="r.name disable when raceData.raceType ===  r for r in raceTypes"></select>
+            <input type="button" class="btn btn-default" ng-disabled="!authenticated || checkRunning()" ng-hide="raceData.raceType === 'FIXED_TIME'" value="switch to fixed time" ng-click="updateRaceType('FIXED_TIME');" />
+            <input type="button" class="btn btn-default" ng-disabled="!authenticated || checkRunning()" ng-hide="raceData.raceType === 'ROUND_BASED'" value="switch to round based" ng-click="updateRaceType('ROUND_BASED');" />
         </div>
 
         <div class="floatDivLeft raceStateTopLine" style="width: 120px;">
@@ -64,7 +65,7 @@
                         <th>total duration</th>
                     </tr>
                 </thead>
-                <tr ng-hide="nonEmptyToplist()"><td colspan="2">no participants</td></tr>
+                <tr ng-hide="nonEmptyToplist()"><td colspan="2">no pilot completed a lap yet</td></tr>
                 <tr ng-repeat="(key, value) in raceData.toplist">
                     <td style="padding-right: 10px;">{{key}}</td>
                     <td>{{convertDuration(value)}}</td>

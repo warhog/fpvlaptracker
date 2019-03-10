@@ -9,15 +9,7 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
     $scope.sleepDisabled = false;
     $scope.isMobile = UAUtil.isMobile();
 
-    $scope.raceTypes = [{
-            id: 'ROUND_BASED',
-            name: 'round based'
-        }, {
-            id: 'FIXED_TIME',
-            name: 'fixed time'
-        }];
-
-    $scope.raceData.raceType = $scope.raceTypes[0].id;
+    $scope.raceData.raceType = 'ROUND_BASED';
 
     NotificationService.on($scope, Constants.MESSAGES["raceStateChanged"], function (message) {
         console.log("got raceStateChanged message", message);
@@ -67,9 +59,9 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
         return lapValidity[lap] !== undefined && lapValidity[lap] === true;
     };
     
-    $scope.updateRaceType = function () {
-        console.log("update race type");
-        $scope.raceData.raceType = $scope.raceData.raceType.id;
+    $scope.updateRaceType = function (newType) {
+        console.log("update race type to ", newType);
+        $scope.raceData.raceType = newType;
         StateService.setRaceType($scope.raceData.raceType)
                 .then(function () {
                     $scope.loadStateData();
