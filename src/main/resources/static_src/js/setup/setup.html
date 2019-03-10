@@ -39,17 +39,38 @@
 </script>
 
 <div>
-    <button class="btn btn-info" ng-disabled="promise !== null || loadingDeviceData === true" ng-click="loadDeviceData();">reload device data</button>
-    <br /><br />
-    unique chip id: {{chipid}}<br />
-    ip address: {{deviceData.ipAddress}}<br />
-    version: {{deviceData.version}}<br />
-    state: {{deviceData.state}}<br />
-    voltage: {{deviceData.voltage | number : 2}} V (cells: {{(deviceData.voltage / cells) | number : 2}} V)<br />
-    uptime: {{deviceData.uptime}} seconds<br />
-    looptime: {{deviceData.loopTime}} µs<br />
-    <br />
-    <input type="button" value="skip calibration" ng-click="skipCalibration();" ng-hide="deviceData.state !== 'Calibration'" class="btn btn-primary btn-sm" />
+    <div class="float-left">
+        <button class="btn btn-info" ng-disabled="promise !== null || loadingDeviceData === true" ng-click="loadDeviceData();">reload device data</button>
+        <br /><br />
+
+        unique chip id: {{chipid}}<br />
+        ip address: {{deviceData.ipAddress}}<br />
+        version: {{deviceData.version}}<br />
+        state: {{deviceData.state}}<br />
+        voltage: {{deviceData.voltage| number : 2}} V (cells: {{(deviceData.voltage / cells) | number : 2}} V)<br />
+        uptime: {{deviceData.uptime}} seconds<br />
+        looptime: {{deviceData.loopTime}} µs<br />
+        <br />
+        <input type="button" value="skip calibration" ng-click="skipCalibration();" ng-hide="deviceData.state !== 'Calibration'" class="btn btn-primary btn-sm" />
+    </div>
+    <div class="float-right">
+        <u>Profiles:</u><br />
+        <div ng-repeat="x in profiles">
+            <span title="{{createProfileTooltip(x.data);}}">{{x.name}}</span>
+            <span style="width: 50px;">&nbsp;</span>
+            <input class="btn btn-sm" type="button" value="update" ng-click="createOrUpdateProfile(x.name);" />
+            <input class="btn btn-sm" type="button" value="load" ng-click="loadProfile(x.data);" />
+            <input class="btn btn-sm" type="button" value="&otimes;" flt-confirm-click-message="Really delete profile &quot;{{x.name}}&quot;?" flt-confirm-click="deleteProfile(x.name);" />
+        </div>
+        <br />
+        <div class="form-group">
+            Create profile
+            <input type="text" class="form-control" id="profileName" ng-model="newProfileName" aria-describedby="profileNameHelp" placeholder="Enter profile name">
+            <small id="profileNameHelp" class="form-text text-muted">Give the new profile a name.</small>
+        </div>
+        <input type="button" value="create profile" class="btn btn-sm" ng-click="createOrUpdateProfile();" />
+    </div>
+    <div style="clear: both;"></div>
     <br />
     <br />
     <label for="name">name</label><br />

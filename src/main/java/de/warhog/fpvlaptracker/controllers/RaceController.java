@@ -9,7 +9,7 @@ import de.warhog.fpvlaptracker.race.LapStorage;
 import de.warhog.fpvlaptracker.race.RaceLogicHandler;
 import de.warhog.fpvlaptracker.service.ConfigService;
 import de.warhog.fpvlaptracker.service.ParticipantsService;
-import de.warhog.fpvlaptracker.race.ParticipantsList;
+import de.warhog.fpvlaptracker.race.ParticipantsRaceList;
 import de.warhog.fpvlaptracker.race.RaceType;
 import de.warhog.fpvlaptracker.service.ServiceLayerException;
 import java.time.Duration;
@@ -32,13 +32,10 @@ public class RaceController {
     private RaceLogicHandler raceLogic;
 
     @Autowired
-    private ConfigService configService;
-
-    @Autowired
     private ParticipantsService participantsDbService;
 
     @Autowired
-    private ParticipantsList participantsList;
+    private ParticipantsRaceList participantsList;
 
     @Autowired
     private LapStorage lapStorage;
@@ -60,8 +57,7 @@ public class RaceController {
     @RequestMapping(path = "/api/race/chartdata", method = RequestMethod.GET)
     public ChartResult chartdata() {
         ChartResult chartResult = new ChartResult();
-        List<Participant> participants = participantsDbService.getAllParticipants();
-        for (Participant participant : participants) {
+        for (Participant participant : participantsList.getParticipants()) {
             chartResult.addParticipant(participant.getChipId(), participant.getName());
             if (participantsList.hasParticipant(participant.getChipId())) {
                 for (Map.Entry<Integer, Duration> entry : lapStorage.getLapData(participant.getChipId()).getLapsFilterInvalid().entrySet()) {

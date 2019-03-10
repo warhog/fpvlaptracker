@@ -29,7 +29,7 @@ public class RaceLogicRoundBased implements IRaceLogic {
     AudioService audioService;
 
     @Autowired
-    ParticipantsList participantsList;
+    ParticipantsRaceList participantsRaceList;
 
     @Autowired
     WebSocketController webSocketController;
@@ -89,7 +89,7 @@ public class RaceLogicRoundBased implements IRaceLogic {
     @Override
     public Map<String, Long> getToplist() {
         HashMap<String, Long> map = new HashMap<>();
-        for (Participant participant : participantsList.getParticipants()) {
+        for (Participant participant : participantsRaceList.getParticipants()) {
             Duration duration = lapStorage.getLapData(participant.getChipId()).getTotalDuration();
             if (duration != Duration.ZERO) {
                 map.put(participant.getName(), duration.toMillis());
@@ -143,7 +143,7 @@ public class RaceLogicRoundBased implements IRaceLogic {
         if (isRunning()) {
             stopRace();
         }
-        if (!participantsList.hasParticipants()) {
+        if (!participantsRaceList.hasParticipants()) {
             throw new IllegalStateException("no participants");
         }
         LOG.info("initialize new race");
@@ -181,7 +181,7 @@ public class RaceLogicRoundBased implements IRaceLogic {
     @Override
     public void addLap(Long chipId, Long duration, Integer rssi) {
         LOG.debug("add lap", chipId, duration, rssi);
-        Participant participant = participantsList.getParticipantByChipId(chipId);
+        Participant participant = participantsRaceList.getParticipantByChipId(chipId);
         String name = participant.getName();
 
         boolean raceStartedInThisLap = false;
@@ -200,7 +200,7 @@ public class RaceLogicRoundBased implements IRaceLogic {
 
         if (!isRunning()) {
             LOG.info("cannot add lap when race is not running, chipid: " + chipId);
-            if (participantsList.hasParticipant(chipId)) {
+            if (participantsRaceList.hasParticipant(chipId)) {
                 webSocketController.sendAlertMessage(WebSocketController.WarningMessageTypes.INFO, "invalid lap", "invalid lap for pilot " + name, false);
                 audioService.speakInvalidLap(name);
             }
@@ -244,7 +244,7 @@ public class RaceLogicRoundBased implements IRaceLogic {
 
     public boolean checkEnded() {
         for (Map.Entry<Long, LapTimeList> entry : lapStorage.getLapDataWithChipId().entrySet()) {
-            String name = participantsList.getParticipantByChipId(entry.getKey()).getName();
+            String name = participantsRaceList.getParticipantByChipId(entry.getKey()).getName();
             if (entry.getValue().getCurrentLap() <= numberOfLaps) {
                 LOG.debug("participant has not completed yet: " + name + ", numberOfLaps: " + numberOfLaps + ", currentLap: " + entry.getValue().getCurrentLap());
                 return false;

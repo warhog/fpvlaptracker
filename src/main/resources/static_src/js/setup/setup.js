@@ -6,6 +6,7 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
     $scope.upperRssi = 0;
     $scope.lowerRssi = 0;
     $scope.chipid = parseInt($location.search().chipid);
+    $scope.profiles = [];
 
     $scope.frequencies = [
         5865, 5845, 5825, 5805, 5785, 5765, 5745, 5725, // Band A
@@ -102,6 +103,103 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
                 });
     };
 
+    $scope.loadProfiles = function () {
+        $scope.progressbar.start();
+        Util.displayOverlay(true);
+        SetupService.loadProfiles($scope.chipid)
+                .then(function (response) {
+                    $scope.profiles = response;
+                    console.log($scope.profiles);
+                })
+                .catch(function (response) {
+                    ngDialog.open({template: 'dataFailure', scope: $scope, data: {message: "failed to load profiles: " + response}});
+                })
+                .finally(function () {
+                    $scope.progressbar.complete();
+                    Util.displayOverlay(false);
+                });
+    };
+
+    $scope.createProfileTooltip = function(data) {
+        data = JSON.parse(data);
+        let tt = "";
+        tt += "trigger value: " + data.triggerValue + "\n";
+        tt += "trigger threshold: " + data.triggerThreshold + "\n";
+        tt += "trigger threshold calibration: " + data.triggerThresholdCalibration + "\n";
+        tt += "calibration offset: " + data.calibrationOffset + "\n";
+        tt += "minimum lap time: " + data.minimumLapTime + "\n";
+        tt += "filter ratio: " + data.filterRatio + "\n";
+        tt += "filter ratio calibration: " + data.filterRatioCalibration;
+        return tt;
+    };
+    
+    $scope.loadProfile = function (data) {
+        data = JSON.parse(data);
+        $scope.deviceData.minimumLapTime = data.minimumLapTime;
+        $scope.deviceData.triggerThreshold = data.triggerThreshold;
+        $scope.deviceData.triggerThresholdCalibration = data.triggerThresholdCalibration;
+        $scope.deviceData.calibrationOffset = data.calibrationOffset;
+        $scope.deviceData.triggerValue = data.triggerValue;
+        $scope.deviceData.filterRatio = data.filterRatio;
+        $scope.deviceData.filterRatioCalibration = data.filterRatioCalibration;
+    };
+
+    $scope.deleteProfile = function (name) {
+        $scope.progressbar.start();
+        Util.displayOverlay(true);
+        SetupService.deleteProfile($scope.chipid, name)
+                .then(function (response) {
+                    if (response.status !== "OK") {
+                        ngDialog.open({template: 'dataFailure', scope: $scope, data: {message: "failed to delete profile"}});
+                    } else {
+                        Alerts.addSuccess("success", "profile '" + name + "' deleted");
+                    }
+                    $scope.loadProfiles();
+                })
+                .catch(function (response) {
+                    ngDialog.open({template: 'dataFailure', scope: $scope, data: {message: "failed to delete profile: " + response.error}});
+                })
+                .finally(function () {
+                    $scope.progressbar.complete();
+                    Util.displayOverlay(false);
+                });
+    };
+
+    $scope.createOrUpdateProfile = function (name) {
+        $scope.progressbar.start();
+        Util.displayOverlay(true);
+        let data = {
+            minimumLapTime: $scope.deviceData.minimumLapTime,
+            triggerThreshold: $scope.deviceData.triggerThreshold,
+            triggerThresholdCalibration: $scope.deviceData.triggerThresholdCalibration,
+            calibrationOffset: $scope.deviceData.calibrationOffset,
+            triggerValue: $scope.deviceData.triggerValue,
+            filterRatio: $scope.deviceData.filterRatio,
+            filterRatioCalibration: $scope.deviceData.filterRatioCalibration
+        };
+        let useName = $scope.newProfileName;
+        if (name !== undefined) {
+            console.log("update using name:" + name);
+            useName = name;
+        }
+        SetupService.createProfile($scope.chipid, useName, data)
+                .then(function (response) {
+                    if (response.status !== "OK") {
+                        ngDialog.open({template: 'dataFailure', scope: $scope, data: {message: "failed to create profile"}});
+                    } else {
+                        Alerts.addSuccess("success", "profile '" + useName + "' created / updated");
+                        $scope.loadProfiles();
+                    }
+                })
+                .catch(function (response) {
+                    ngDialog.open({template: 'dataFailure', scope: $scope, data: {message: "failed to create profile: " + response.error}});
+                })
+                .finally(function () {
+                    $scope.progressbar.complete();
+                    Util.displayOverlay(false);
+                });
+    };
+
     $scope.skipCalibration = function () {
         $scope.progressbar.start();
         Util.displayOverlay(true);
@@ -166,6 +264,8 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
                         } else if ($scope.deviceData.voltage > 21.5 && $scope.deviceData.voltage <= 26) {
                             $scope.cells = 6;
                         }
+
+                        $scope.loadProfiles();
                     })
                     .catch(function (response) {
                         ngDialog.open({template: 'dataFailure', scope: $scope, data: {message: "failed to load device data"}});
@@ -235,6 +335,30 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
 
     factory.loadDeviceData = function (chipid) {
         return $http.get("/api/participant/deviceData", {params: {chipid: chipid}, timeout: 10000}).then(function (response) {
+            return response.data;
+        });
+    };
+
+    factory.loadProfiles = function (chipid) {
+        return $http.get("/api/auth/participants/profiles", {params: {chipid: chipid}, timeout: 2000}).then(function (response) {
+            return response.data;
+        });
+    };
+
+    factory.deleteProfile = function (chipid, name) {
+        return $http.delete("/api/auth/participants/profile", {params: {chipid: chipid, name: name}, timeout: 2000}).then(function (response) {
+            return response.data;
+        });
+    };
+
+    factory.createProfile = function (chipid, name, data) {
+        let data2 = {
+            data: JSON.stringify(data),
+            chipId: chipid,
+            name: name
+        };
+        console.log(data2);
+        return $http.post("/api/auth/participants/profile", data2, {timeout: 2000}, null).then(function (response) {
             return response.data;
         });
     };

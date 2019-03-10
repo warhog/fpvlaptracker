@@ -93,6 +93,16 @@ public class Db {
                     )
                     .execute();
 
+            LOG.info("create table profiles if not existing");
+            dslContext.createTableIfNotExists(Tables.PROFILES)
+                    .column(Tables.PROFILES.CHIPID, SQLDataType.BIGINT.nullable(false))
+                    .column(Tables.PROFILES.NAME, SQLDataType.VARCHAR(256).nullable(false))
+                    .column(Tables.PROFILES.DATA, SQLDataType.VARCHAR(4096).nullable(false))
+                    .constraints(
+                            DSL.constraint("pk_profiles").primaryKey(Tables.PROFILES.CHIPID, Tables.PROFILES.NAME)
+                    )
+                    .execute();
+
         } catch (SQLException ex) {
             LOG.error(ex.getMessage(), ex);
         } finally {

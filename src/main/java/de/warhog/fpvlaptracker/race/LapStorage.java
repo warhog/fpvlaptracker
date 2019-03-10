@@ -18,7 +18,7 @@ public class LapStorage {
     private static final Logger LOG = LoggerFactory.getLogger(LapStorage.class);
 
     @Autowired
-    private ParticipantsList participantsList;
+    private ParticipantsRaceList participantsRaceList;
 
     final Map<Long, LapTimeList> lapData = new HashMap<>();
 
@@ -74,7 +74,7 @@ public class LapStorage {
 
     public HashMap<Participant, LapTimeList> getLapData() {
         final HashMap<Participant, LapTimeList> data = new HashMap<>();
-        for (Participant participant : participantsList.getParticipants()) {
+        for (Participant participant : participantsRaceList.getParticipants()) {
             data.put(participant, getLapData(participant.getChipId()));
         }
         return data;
@@ -86,7 +86,7 @@ public class LapStorage {
 
     public List<LapDataResult> getLapDataExtended() {
         List<LapDataResult> result = new ArrayList<>();
-        for (Participant participant : participantsList.getParticipants()) {
+        for (Participant participant : participantsRaceList.getParticipants()) {
             LapDataResult lapDataResult = new LapDataResult();
             LapTimeList participantLapData = getLapData(participant.getChipId());
             lapDataResult.setLapTimeList(participantLapData);
@@ -99,7 +99,7 @@ public class LapStorage {
 
     public void repopulate() {
         clear();
-        for (Participant participant : participantsList.getParticipants()) {
+        for (Participant participant : participantsRaceList.getParticipants()) {
             addParticipant(participant.getChipId());
         }
     }

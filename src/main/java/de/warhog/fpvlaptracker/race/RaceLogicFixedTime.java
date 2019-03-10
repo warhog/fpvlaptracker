@@ -31,7 +31,7 @@ public class RaceLogicFixedTime implements IRaceLogic {
     AudioService audioService;
 
     @Autowired
-    ParticipantsList participantsList;
+    ParticipantsRaceList participantsRaceList;
 
     @Autowired
     WebSocketController webSocketController;
@@ -83,7 +83,7 @@ public class RaceLogicFixedTime implements IRaceLogic {
     @Override
     public Map<String, Long> getToplist() {
         HashMap<String, Long> map = new HashMap<>();
-        for (Participant participant : participantsList.getParticipants()) {
+        for (Participant participant : participantsRaceList.getParticipants()) {
             Duration duration = lapStorage.getLapData(participant.getChipId()).getFastestLapDuration();
             if (duration != Duration.ZERO) {
                 map.put(participant.getName(), duration.toMillis());
@@ -100,7 +100,7 @@ public class RaceLogicFixedTime implements IRaceLogic {
     @Override
     public Map<Long, ParticipantExtraData> getParticipantExtraData() {
         HashMap<Long, ParticipantExtraData> participantsExtraData = new HashMap<>();
-        for (Participant participant : participantsList.getParticipants()) {
+        for (Participant participant : participantsRaceList.getParticipants()) {
             Long chipId = participant.getChipId();
             ParticipantExtraData participantExtraData = new ParticipantExtraData();
             if (participantData.containsKey(chipId)) {
@@ -141,7 +141,7 @@ public class RaceLogicFixedTime implements IRaceLogic {
             boolean allFinished = true;
             for (Map.Entry<Long, FixedTimeRaceParticipantData> entry : participantData.entrySet()) {
                 if (!entry.getValue().isStateFinished() && !entry.getValue().isStateInvalid()) {
-//                    LOG.debug("participant " + participantsList.getParticipantByChipId(entry.getKey()).getName() + " not finished yet: " + entry.getValue().getState());
+//                    LOG.debug("participant " + participantsRaceList.getParticipantByChipId(entry.getKey()).getName() + " not finished yet: " + entry.getValue().getState());
                     allFinished = false;
                 }
             }
@@ -156,7 +156,7 @@ public class RaceLogicFixedTime implements IRaceLogic {
         private void startNextParticipant() {
             for (Map.Entry<Long, FixedTimeRaceParticipantData> entry : participantData.entrySet()) {
                 if (entry.getValue().isStateWaitingForStart()) {
-                    String name = participantsList.getParticipantByChipId(entry.getKey()).getName();
+                    String name = participantsRaceList.getParticipantByChipId(entry.getKey()).getName();
                     // found participant that is waiting for start -> start that participant
                     LOG.info("starting participant " + name);
                     entry.getValue().setState(FixedTimeRaceParticipantData.ParticipantState.WAITING_FOR_FIRST_PASS);
@@ -168,7 +168,7 @@ public class RaceLogicFixedTime implements IRaceLogic {
         private void testTimeExceeded() {
             for (Map.Entry<Long, FixedTimeRaceParticipantData> entry : participantData.entrySet()) {
                 // get race duration for participant
-                String name = participantsList.getParticipantByChipId(entry.getKey()).getName();
+                String name = participantsRaceList.getParticipantByChipId(entry.getKey()).getName();
                 Duration runDuration = Duration.between(raceTimes.get(entry.getKey()), Instant.now());
 //                LOG.debug("run duration " + runDuration.toString());
                 if (entry.getValue().isStateFinished() || entry.getValue().isStateInvalid()) {
@@ -254,12 +254,12 @@ public class RaceLogicFixedTime implements IRaceLogic {
     @Override
     public void startRace() {
         LOG.info("start race");
-        if (!participantsList.hasParticipants()) {
+        if (!participantsRaceList.hasParticipants()) {
             throw new IllegalStateException("no participants");
         }
         participantData.clear();
         raceTimes.clear();
-        for (Participant participant : participantsList.getParticipants()) {
+        for (Participant participant : participantsRaceList.getParticipants()) {
             participantData.put(participant.getChipId(), new FixedTimeRaceParticipantData());
             raceTimes.put(participant.getChipId(), Instant.now());
         }
@@ -322,7 +322,7 @@ public class RaceLogicFixedTime implements IRaceLogic {
     public void addLap(Long chipId, Long duration, Integer rssi) {
         if (participantData.containsKey(chipId)) {
             FixedTimeRaceParticipantData data = participantData.get(chipId);
-            Participant participant = participantsList.getParticipantByChipId(chipId);
+            Participant participant = participantsRaceList.getParticipantByChipId(chipId);
             String name = participant.getName();
             if (null == data.getState()) {
                 LOG.error("invalid state: " + data.getState().toString());

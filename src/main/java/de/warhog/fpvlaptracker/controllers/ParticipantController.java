@@ -1,15 +1,19 @@
 package de.warhog.fpvlaptracker.controllers;
 
+import de.warhog.fpvlaptracker.controllers.dtos.ProfileResult;
 import de.warhog.fpvlaptracker.controllers.dtos.StatusResult;
 import de.warhog.fpvlaptracker.service.RestService;
 import de.warhog.fpvlaptracker.entities.Rssi;
 import de.warhog.fpvlaptracker.entities.Participant;
 import de.warhog.fpvlaptracker.entities.ParticipantDeviceData;
+import de.warhog.fpvlaptracker.entities.Profile;
 import de.warhog.fpvlaptracker.entities.Result;
 import de.warhog.fpvlaptracker.service.AudioService;
 import de.warhog.fpvlaptracker.service.ParticipantsDbService;
 import de.warhog.fpvlaptracker.service.ParticipantsService;
+import de.warhog.fpvlaptracker.service.ProfilesService;
 import de.warhog.fpvlaptracker.service.ServiceLayerException;
+import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +43,9 @@ public class ParticipantController {
 
     @Autowired
     private WebSocketController webSocketController;
+    
+    @Autowired
+    private ProfilesService profilesService;
 
     @RequestMapping(path = "/api/participant/rssi", method = RequestMethod.GET)
     public Rssi getRssi(@RequestParam(name = "chipid", required = true) Long chipid) {
@@ -105,10 +112,10 @@ public class ParticipantController {
     }
 
     @RequestMapping(path = "/api/auth/participant/skipcalibration", method = RequestMethod.GET)
-    public StatusResult skipCalibration(@RequestParam(name = "chipid", required = true) Long chipid) {
+    public StatusResult skipCalibration(@RequestParam(name = "chipid", required = true) Long chipId) {
         StatusResult result = new StatusResult(StatusResult.Status.NOK);
         try {
-            Participant participant = participantsService.getParticipant(chipid);
+            Participant participant = participantsService.getParticipant(chipId);
             Result data = restService.skipCalibration(participant.getIp());
             LOG.debug("return for skipCalibration: " + data.toString());
             if (data.isOK()) {
@@ -123,6 +130,50 @@ public class ParticipantController {
     @RequestMapping(path = "/api/participants", method = RequestMethod.GET)
     public List<Participant> getAll() {
         return participantsService.getAllParticipants();
+    }
+    
+    @RequestMapping(path = "/api/auth/participants/profiles", method = RequestMethod.GET)
+    public List<Profile> getProfiles(@RequestParam(name = "chipid", required = true) Long chipId) {
+        try {
+            return profilesService.getProfiles(chipId);
+        } catch (ServiceLayerException ex) {
+            LOG.error("cannot get profiles: " + ex.getMessage(), ex);
+            return new ArrayList<>();
+        }
+    }
+
+    @RequestMapping(path = "/api/auth/participants/profile", method = RequestMethod.GET)
+    public Profile getProfiles(@RequestParam(name = "chipid", required = true) Long chipId, @RequestParam(name = "name", required = true) String name) {
+        try {
+            return profilesService.getProfile(chipId, name);
+        } catch (ServiceLayerException ex) {
+            LOG.error("cannot get profile: " + ex.getMessage(), ex);
+            return new Profile();
+        }
+    }
+
+    @RequestMapping(path = "/api/auth/participants/profile", method = RequestMethod.POST)
+    public StatusResult setProfile(@RequestBody ProfileResult profileResult) {
+        LOG.debug("setProfile " + profileResult.toString());
+        try {
+            profilesService.createOrUpdateProfile(profileResult.getChipId(), profileResult.getName(), profileResult.getData());
+            return new StatusResult(StatusResult.Status.OK);
+        } catch (ServiceLayerException ex) {
+            LOG.error("cannot get profile: " + ex.getMessage(), ex);
+            return new StatusResult(StatusResult.Status.NOK, "cannot save profile: " + ex.getMessage());
+        }
+    }
+
+    @RequestMapping(path = "/api/auth/participants/profile", method = RequestMethod.DELETE)
+    public StatusResult deleteProfile(@RequestParam(name = "chipid", required = true) Long chipId, @RequestParam(name = "name", required = true) String name) {
+        LOG.debug("deleteProfile " + chipId + " - " + name);
+        try {
+            profilesService.deleteProfile(chipId, name);
+            return new StatusResult(StatusResult.Status.OK);
+        } catch (ServiceLayerException ex) {
+            LOG.error("cannot get profile: " + ex.getMessage(), ex);
+            return new StatusResult(StatusResult.Status.NOK, "cannot delete profile: " + ex.getMessage());
+        }
     }
 
 }

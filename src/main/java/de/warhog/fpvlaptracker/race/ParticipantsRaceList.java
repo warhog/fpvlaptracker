@@ -8,9 +8,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ParticipantsList {
+public class ParticipantsRaceList {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ParticipantsList.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ParticipantsRaceList.class);
 
     private final List<Participant> participants = new ArrayList<>();
 

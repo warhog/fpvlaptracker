@@ -27,7 +27,7 @@ public class RaceLogicHandler {
     private RaceType raceType = RaceType.ROUND_BASED;
 
     @Autowired
-    ParticipantsList participantsList;
+    ParticipantsRaceList participantsRaceList;
 
     @Autowired
     WebSocketController webSocketController;
@@ -70,15 +70,15 @@ public class RaceLogicHandler {
         if (raceLogic.isRunning()) {
             throw new IllegalStateException("cannot add participants to running race");
         }
-        participantsList.addParticipant(participant);
+        participantsRaceList.addParticipant(participant);
     }
 
     public void removeParticipant(Participant participant) {
         if (raceLogic.isRunning()) {
             throw new IllegalStateException("cannot remove participants from running race");
         }
-        participantsList.removeParticipant(participant);
-        if (!participantsList.hasParticipants()) {
+        participantsRaceList.removeParticipant(participant);
+        if (!participantsRaceList.hasParticipants()) {
             LOG.info("no participants anymore, setting state to waiting");
             raceLogic.setState(RaceState.WAITING);
         }
@@ -131,13 +131,13 @@ public class RaceLogicHandler {
     public void checkParticipantsStillAvailable() {
         LOG.debug("checking for non-existing participants");
         if (!raceLogic.isRunning()) {
-            for (Participant participant : participantsList.getParticipants()) {
+            for (Participant participant : participantsRaceList.getParticipants()) {
                 try {
                     if (restService.checkAvailability(participant.getIp())) {
                         LOG.debug("participant with chipid " + participant.getChipId() + " found");
                     } else {
                         LOG.info("participant with chipid " + participant.getChipId() + " not found, removing");
-                        participantsList.removeParticipant(participant);
+                        participantsRaceList.removeParticipant(participant);
                         webSocketController.sendNewParticipantMessage(participant.getChipId());
                         audioService.speakUnregistered(participant.getName());
                     }
