@@ -115,7 +115,7 @@ public class RaceLogicFixedTime implements IRaceLogic {
                         }
                         participantExtraData.setDuration(raceDurationLeft);
                     }
-                } else {
+                } else if (data.isStateWaitingForFirstPass() || data.isStateWaitingForStart()) {
                     participantExtraData.setDuration(Duration.ofSeconds(raceDuration));
                 }
             }
