@@ -25,7 +25,7 @@ if [[ $? -ne 0 ]]; then
     exit 1
 fi
 
-unzip fpvlaptracker-${VERSION}.zip
+unzip -f fpvlaptracker-${VERSION}.zip
 if [[ $? -ne 0 ]]; then
     echo "failed to unzip"
     exit 1
@@ -35,7 +35,7 @@ rm fpvlaptracker-${VERSION}.zip
 
 chmod +x fpvlaptracker-${VERSION}.jar
 
-sed "s/0.0.0/${VERSION}/g" fpvlaptracker.service
+sed -i "s/0.0.0/${VERSION}/g" fpvlaptracker.service
 cp fpvlaptracker.service /lib/systemd/system/
 chown 644 /lib/systemd/system/fpvlaptracker.service
 
