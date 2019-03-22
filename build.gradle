@@ -35,6 +35,10 @@ idea {
     }
 }
 
+bootJar {
+    launchScript()
+}
+
 configurations {
     all*.exclude group: 'commons-logging'
 }
