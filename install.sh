@@ -33,6 +33,8 @@ fi
 
 rm fpvlaptracker-${VERSION}.zip
 
+chmod +x fpvlaptracker-${VERSION}.jar
+
 sed "s/0.0.0/${VERSION}/g" fpvlaptracker.service
 cp fpvlaptracker.service /lib/systemd/system/
 chown 644 /lib/systemd/system/fpvlaptracker.service
