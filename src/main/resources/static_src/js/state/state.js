@@ -33,15 +33,19 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
     $scope.convertDuration = function (duration) {
         return moment.duration(duration).asSeconds().toFixed(2) + " s";
     };
-    
-    $scope.getPilotState = function(raceData, chipId) {
+
+    $scope.convertJavaDurationToUnixSeconds = function (duration) {
+        return moment.duration(duration).asMilliseconds();
+    };
+
+    $scope.getPilotState = function (raceData, chipId) {
         if (raceData.participantExtraData[chipId] !== undefined) {
             return raceData.participantExtraData[chipId].state;
         }
         return "";
     };
 
-    $scope.getPilotDuration = function(raceData, chipId) {
+    $scope.getPilotDuration = function (raceData, chipId) {
         if (raceData.participantExtraData[chipId] !== undefined) {
             return raceData.participantExtraData[chipId].duration;
         }
@@ -55,10 +59,10 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
         return false;
     };
 
-    $scope.isInvalidLap = function(lapValidity, lap) {
+    $scope.isInvalidLap = function (lapValidity, lap) {
         return lapValidity[lap] !== undefined && lapValidity[lap] === true;
     };
-    
+
     $scope.updateRaceType = function (newType) {
         console.log("update race type to ", newType);
         $scope.raceData.raceType = newType;
@@ -157,6 +161,23 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
                 });
     };
 
+    var countdownInterval = $interval(function () {
+        var results = document.getElementsByClassName("duration");
+        if (results.length > 0) {
+            for (var i = 0; i < results.length; i++) {
+                let entry = results[i];
+                if (entry.attributes['data-state'] !== undefined && entry.attributes['data-state'].value !== undefined) {
+                    if (entry.attributes['data-state'].value === 'started' || entry.attributes['data-state'].value === 'last lap') {
+                        if (entry.attributes['data-duration'] !== undefined && entry.attributes['data-duration'].value !== undefined) {
+                            entry.attributes['data-duration'].value -= 100;
+                            entry.innerText = $scope.convertDuration(parseInt(entry.attributes['data-duration'].value));
+                        }
+                    }
+                }
+            }
+        }
+    }, 100);
+
     var promise = $interval(function () {
         $scope.loadStateData();
     }, 60000);
@@ -168,6 +189,10 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
         if (angular.isDefined(promise)) {
             $interval.cancel(promise);
             promise = undefined;
+        }
+        if (angular.isDefined(countdownInterval)) {
+            $interval.cancel(countdownInterval);
+            countdownInterval = undefined;
         }
         SleepService.enableSleep();
         $scope.sleepDisabled = false;

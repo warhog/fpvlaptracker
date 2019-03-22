@@ -12,10 +12,12 @@ import de.warhog.fpvlaptracker.controllers.WebSocketController;
 import de.warhog.fpvlaptracker.entities.Participant;
 import de.warhog.fpvlaptracker.race.RaceLogicHandler;
 import de.warhog.fpvlaptracker.service.AudioService;
+import de.warhog.fpvlaptracker.service.LedService;
 import de.warhog.fpvlaptracker.service.ParticipantsDbService;
 import de.warhog.fpvlaptracker.service.ParticipantsService;
 import de.warhog.fpvlaptracker.service.ServiceLayerException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.awt.Color;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -56,6 +58,9 @@ public class UdpHandler implements Runnable {
     @Autowired
     private AudioService audioService;
 
+    @Autowired
+    private LedService ledService;
+    
     public void setup() {
         try {
             LOG.info("setting up udp receiver");
@@ -75,18 +80,12 @@ public class UdpHandler implements Runnable {
     }
 
     private void processRegister(UdpPacketRegister udpPacketRegister) {
-        Long ip = udpPacketRegister.getIp();
-        String ipStr = String.format("%d.%d.%d.%d",
-                (ip & 0xff),
-                (ip >> 8 & 0xff),
-                (ip >> 16 & 0xff),
-                (ip >> 24 & 0xff));
-
+        String ipStr = getIpFromLong(udpPacketRegister.getIp());
         InetAddress inetAddress;
         try {
             inetAddress = InetAddress.getByName(ipStr);
         } catch (UnknownHostException ex) {
-            LOG.error("invalid ip address given: " + ip, ex);
+            LOG.error("invalid ip address given: " + ipStr, ex);
             throw new RuntimeException("invalid ip");
         }
 
@@ -164,6 +163,11 @@ public class UdpHandler implements Runnable {
                         UdpPacketRegister udpPacketRegister = mapper.readValue(packet.getData(), UdpPacketRegister.class);
                         udpPacketRegister.setPacketType(packetType);
                         processRegister(udpPacketRegister);
+                        break;
+                    case REGISTERLED:
+                        UdpPacketRegister udpPacketRegisterLed = mapper.readValue(packet.getData(), UdpPacketRegister.class);
+                        udpPacketRegisterLed.setPacketType(packetType);
+                        processRegisterLed(udpPacketRegisterLed);
                         break;
                     case LAP:
                         UdpPacketLap udpPacketLap = mapper.readValue(packet.getData(), UdpPacketLap.class);
@@ -245,14 +249,30 @@ public class UdpHandler implements Runnable {
 
     private void requestRegistrationBroadcast() {
         LOG.info("sending request registration broadcast");
-        byte data[] = new byte[1024];
+        sendDataBroadcast("requestRegistration");
+    }
+    
+    public void sendDataBroadcast(String data) {
+        LOG.info("sending broadcast: " + data);
+        byte dataBuf[] = new byte[1024];
         try {
-            DatagramPacket packet = new DatagramPacket(data, data.length, InetAddress.getByName("255.255.255.255"), 31337);
-            String request = "requestRegistration";
-            packet.setData(request.getBytes(Charset.defaultCharset()));
+            DatagramPacket packet = new DatagramPacket(dataBuf, dataBuf.length, InetAddress.getByName("255.255.255.255"), 31337);
+            packet.setData(data.getBytes(Charset.defaultCharset()));
             socket.send(packet);
         } catch (IOException ex) {
-            LOG.error("cannot send registration request");
+            LOG.error("cannot send data broadcast: " + ex.getMessage(), ex);
+        }
+    }
+    
+    public void sendDataUnicast(InetAddress inetAddress, String data) {
+        LOG.info("sending unicast to " + inetAddress.toString() + ": " + data);
+        byte dataBuf[] = new byte[1024];
+        try {
+            DatagramPacket packet = new DatagramPacket(dataBuf, dataBuf.length, inetAddress, 31337);
+            packet.setData(data.getBytes(Charset.defaultCharset()));
+            socket.send(packet);
+        } catch (IOException ex) {
+            LOG.error("cannot send data unicast: " + ex.getMessage(), ex);
         }
     }
 
@@ -260,8 +280,9 @@ public class UdpHandler implements Runnable {
         if (!participantsService.hasParticipant(udpPacketCalibrationDone.getChipid())) {
             LOG.info("got calibration done from non registered participant");
         } else {
-            audioService.speakCalibrationDone(participantsService.getParticipant(udpPacketCalibrationDone.getChipid()).getName());
-//            webSocketController.sendAudioMessage(AudioFile.CALIBRATION_DONE);
+            String name = participantsService.getParticipant(udpPacketCalibrationDone.getChipid()).getName();
+            audioService.speakCalibrationDone(name);
+            webSocketController.sendAlertMessage(WebSocketController.WarningMessageTypes.INFO, "calibration done", "calibration done for pilot " + name);
         }
     }
 
@@ -291,6 +312,37 @@ public class UdpHandler implements Runnable {
             audioService.speakBatteryShutdown(participantName);
             webSocketController.sendAlertMessage(WebSocketController.WarningMessageTypes.DANGER, "battery shutdown voltage reached", "battery of participant " + participantName + " is empty, shutting down tracker node", true);
         }
+    }
+
+    private String getIpFromLong(Long ip) {
+        String ipStr = String.format("%d.%d.%d.%d",
+                (ip & 0xff),
+                (ip >> 8 & 0xff),
+                (ip >> 16 & 0xff),
+                (ip >> 24 & 0xff));
+        return ipStr;
+    }
+    
+    private void processRegisterLed(UdpPacketRegister udpPacketRegisterLed) {
+        String ipStr = getIpFromLong(udpPacketRegisterLed.getIp());
+        InetAddress inetAddress;
+        try {
+            inetAddress = InetAddress.getByName(ipStr);
+        } catch (UnknownHostException ex) {
+            LOG.error("invalid ip address given: " + ipStr, ex);
+            throw new RuntimeException("invalid ip");
+        }
+        
+        ledService.addInetAddress(inetAddress);
+
+        try {
+            audioService.speakRegistered("LED");
+            LOG.info("registered led board: " + inetAddress.toString());
+        } catch (Exception ex) {
+            LOG.error(ex.getMessage(), ex);
+        }
+        
+        ledService.countdownColor(Color.blue, 5000);
     }
 
 }

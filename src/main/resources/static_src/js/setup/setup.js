@@ -226,6 +226,28 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
                 });
     };
 
+    $scope.backToCalibration = function () {
+        $scope.progressbar.start();
+        Util.displayOverlay(true);
+        SetupService.backToCalibration($scope.chipid)
+                .then(function (response) {
+                    if (response.status !== "OK") {
+                        ngDialog.open({template: 'dataFailure', scope: $scope, data: {message: "failed to go back to calibration (device error)"}});
+                    } else {
+                        $timeout(function () {
+                            $scope.loadDeviceData(true);
+                        }, 500);
+                    }
+                })
+                .catch(function (response) {
+                    ngDialog.open({template: 'dataFailure', scope: $scope, data: {message: "failed to go back to calibration: " + response}});
+                })
+                .finally(function () {
+                    $scope.progressbar.complete();
+                    Util.displayOverlay(false);
+                });
+    };
+    
     $scope.loadDeviceData = function (overlay) {
         if (overlay === undefined || overlay === null) {
             overlay = true;
@@ -375,6 +397,12 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
 
     factory.skipCalibration = function (chipid) {
         return $http.get("/api/auth/participant/skipcalibration", {params: {chipid: chipid}, timeout: 2000}).then(function (response) {
+            return response.data;
+        });
+    };
+
+    factory.backToCalibration = function (chipid) {
+        return $http.get("/api/auth/participant/backtocalibration", {params: {chipid: chipid}, timeout: 2000}).then(function (response) {
             return response.data;
         });
     };

@@ -7,7 +7,9 @@ import de.warhog.fpvlaptracker.entities.LapTimeList;
 import de.warhog.fpvlaptracker.entities.ParticipantExtraData;
 import de.warhog.fpvlaptracker.service.AudioService;
 import de.warhog.fpvlaptracker.service.ConfigService;
+import de.warhog.fpvlaptracker.service.LedService;
 import de.warhog.fpvlaptracker.service.ServiceLayerException;
+import java.awt.Color;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -39,6 +41,9 @@ public class RaceLogicRoundBased implements IRaceLogic {
 
     @Autowired
     LapStorage lapStorage;
+    
+    @Autowired
+    LedService ledService;
 
     private RaceState state = RaceState.WAITING;
     private Integer numberOfLaps = 10;
@@ -58,14 +63,19 @@ public class RaceLogicRoundBased implements IRaceLogic {
         public void run() {
             LOG.debug("entering run()");
             try {
+                ledService.expandColor(Color.BLUE, 150);
                 audioService.speakPleasePrepareForRace();
                 Thread.sleep(preparationDuration * 1000);
+                ledService.countdownColor(Color.RED, 500);
                 audioService.speakNumberThree();
                 Thread.sleep(1000);
+                ledService.countdownColor(Color.RED, 500);
                 audioService.speakNumberTwo();
                 Thread.sleep(1000);
+                ledService.countdownColor(Color.RED, 500);
                 audioService.speakNumberOne();
                 Thread.sleep(1000);
+                ledService.countdownColor(Color.GREEN, 5000);
                 setState(RaceState.GETREADY);
                 audioService.speakGo();
             } catch (InterruptedException ex) {
@@ -161,6 +171,7 @@ public class RaceLogicRoundBased implements IRaceLogic {
         LOG.info("stopping race");
         setState(RaceState.FINISHED);
         stopCountdownThread();
+        ledService.blinkColor(Color.RED, 1000);
     }
 
     private void stopCountdownThread() {
@@ -195,6 +206,7 @@ public class RaceLogicRoundBased implements IRaceLogic {
             webSocketController.sendAlertMessage(WebSocketController.WarningMessageTypes.WARNING, "early start", name + " was starting too early!", true);
             setState(RaceState.FAULT);
             stopCountdownThread();
+            ledService.blinkColor(Color.RED, 250);
             return;
         }
 
@@ -203,6 +215,7 @@ public class RaceLogicRoundBased implements IRaceLogic {
             if (participantsRaceList.hasParticipant(chipId)) {
                 webSocketController.sendAlertMessage(WebSocketController.WarningMessageTypes.INFO, "invalid lap", "invalid lap for pilot " + name, false);
                 audioService.speakInvalidLap(name);
+                ledService.countdownColor(Color.RED, 100);
             }
             return;
         }
@@ -212,12 +225,14 @@ public class RaceLogicRoundBased implements IRaceLogic {
             setState(RaceState.RUNNING);
             audioService.playStart();
             raceStartedInThisLap = true;
+            ledService.countdownColor(Color.GREEN, 100);
         }
 
         Integer currentLap = lapStorage.getLapData(chipId).getCurrentLap();
         if (currentLap > numberOfLaps) {
             LOG.info("participant already ended race " + name);
             audioService.speakAlreadyDone(name);
+            ledService.countdownColor(Color.RED, 100);
         } else {
             if (currentLap > numberOfLaps) {
                 LOG.info("participant reached lap limit " + name);
@@ -226,6 +241,7 @@ public class RaceLogicRoundBased implements IRaceLogic {
             } else if (!raceStartedInThisLap) {
                 lapStorage.addLap(chipId, duration, rssi);
                 audioService.playLap();
+                ledService.countdownColor(Color.GREEN, 100);
             }
 
         }

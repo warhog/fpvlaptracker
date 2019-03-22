@@ -43,7 +43,7 @@ public class ParticipantController {
 
     @Autowired
     private WebSocketController webSocketController;
-    
+
     @Autowired
     private ProfilesService profilesService;
 
@@ -70,7 +70,7 @@ public class ParticipantController {
         LOG.info("sending participant data " + participantDeviceData.toString());
         return participantDeviceData;
     }
-    
+
     @RequestMapping(path = "/api/auth/participant/deviceData", method = RequestMethod.POST)
     public StatusResult setDeviceData(@RequestBody ParticipantDeviceData participantDeviceData) {
         LOG.error("posting deviceData " + participantDeviceData.toString());
@@ -116,13 +116,29 @@ public class ParticipantController {
         StatusResult result = new StatusResult(StatusResult.Status.NOK);
         try {
             Participant participant = participantsService.getParticipant(chipId);
-            Result data = restService.skipCalibration(participant.getIp());
+            final Result data = restService.skipCalibration(participant.getIp());
             LOG.debug("return for skipCalibration: " + data.toString());
             if (data.isOK()) {
                 result = new StatusResult(StatusResult.Status.OK);
             }
         } catch (Exception ex) {
-            LOG.error("cannot reboot device", ex);
+            LOG.error("cannot skip calibration: " + ex.getMessage(), ex);
+        }
+        return result;
+    }
+
+    @RequestMapping(path = "/api/auth/participant/backtocalibration", method = RequestMethod.GET)
+    public StatusResult backToCalibration(@RequestParam(name = "chipid", required = true) Long chipId) {
+        StatusResult result = new StatusResult(StatusResult.Status.NOK);
+        try {
+            Participant participant = participantsService.getParticipant(chipId);
+            final Result data = restService.backToCalibration(participant.getIp());
+            LOG.debug("return for backToCalibration: " + data.toString());
+            if (data.isOK()) {
+                result = new StatusResult(StatusResult.Status.OK);
+            }
+        } catch (Exception ex) {
+            LOG.error("cannot go back to calibration: " + ex.getMessage(), ex);
         }
         return result;
     }
@@ -131,7 +147,7 @@ public class ParticipantController {
     public List<Participant> getAll() {
         return participantsService.getAllParticipants();
     }
-    
+
     @RequestMapping(path = "/api/auth/participants/profiles", method = RequestMethod.GET)
     public List<Profile> getProfiles(@RequestParam(name = "chipid", required = true) Long chipId) {
         try {

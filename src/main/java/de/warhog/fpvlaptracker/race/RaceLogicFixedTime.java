@@ -7,7 +7,9 @@ import de.warhog.fpvlaptracker.entities.FixedTimeRaceParticipantData;
 import de.warhog.fpvlaptracker.entities.ParticipantExtraData;
 import de.warhog.fpvlaptracker.service.AudioService;
 import de.warhog.fpvlaptracker.service.ConfigService;
+import de.warhog.fpvlaptracker.service.LedService;
 import de.warhog.fpvlaptracker.service.ServiceLayerException;
+import java.awt.Color;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -41,6 +43,9 @@ public class RaceLogicFixedTime implements IRaceLogic {
 
     @Autowired
     ConfigService configService;
+
+    @Autowired
+    LedService ledService;
 
     private final Map<Long, FixedTimeRaceParticipantData> participantData = new HashMap<>();
     private final Map<Long, Instant> raceTimes = new HashMap<>();
@@ -161,6 +166,7 @@ public class RaceLogicFixedTime implements IRaceLogic {
                     LOG.info("starting participant " + name);
                     entry.getValue().setState(FixedTimeRaceParticipantData.ParticipantState.WAITING_FOR_FIRST_PASS);
                     audioService.speakParticipantStart(name);
+                    ledService.countdownColor(Color.GREEN, 1000);
                 }
             }
         }
@@ -173,7 +179,7 @@ public class RaceLogicFixedTime implements IRaceLogic {
 //                LOG.debug("run duration " + runDuration.toString());
                 if (entry.getValue().isStateFinished() || entry.getValue().isStateInvalid()) {
                     // participant already ended run
-                    LOG.debug("participant " + name + " already ended this run: " + entry.getValue().getState());
+//                    LOG.debug("participant " + name + " already ended this run: " + entry.getValue().getState());
                 } else {
                     // start testing if regular run time for this participant is exceeded
                     if (runDuration.compareTo(Duration.ofSeconds(raceDuration)) >= 0) {
@@ -184,6 +190,7 @@ public class RaceLogicFixedTime implements IRaceLogic {
                             LOG.info("participant exceeded run + overtime duration: " + name + ": " + runDuration.toString());
                             entry.getValue().setState(FixedTimeRaceParticipantData.ParticipantState.INVALID);
                             audioService.speakTimeOverParticipant(name);
+                            ledService.countdownColor(Color.RED, 100);
                         } else {
                             // run time + over time not yet exceeded
                             // but run time is exceeded -> every participant should have been started
@@ -195,11 +202,13 @@ public class RaceLogicFixedTime implements IRaceLogic {
                                 LOG.debug("participant is in started, setting state last_lap");
                                 entry.getValue().setState(FixedTimeRaceParticipantData.ParticipantState.LAST_LAP);
                                 audioService.speakLastLapParticipant(name);
+                                ledService.countdownColor(Color.BLUE, 100);
                             } else if (entry.getValue().isStateWaitingForFirstPass() || entry.getValue().isStateWaitingForStart()) {
                                 // participant not started yet
                                 LOG.info("participant not started during run time: " + name);
                                 audioService.speakTimeOverParticipant(name);
                                 entry.getValue().setState(FixedTimeRaceParticipantData.ParticipantState.INVALID);
+                                ledService.countdownColor(Color.RED, 100);
                             }
                         }
                     }
@@ -264,6 +273,7 @@ public class RaceLogicFixedTime implements IRaceLogic {
             raceTimes.put(participant.getChipId(), Instant.now());
         }
         setState(RaceState.PREPARE);
+        nextStart = Instant.now().plusSeconds(startPreparationDuration);
         if (raceRunnable != null) {
             raceRunnable.stop();
             try {
@@ -285,7 +295,7 @@ public class RaceLogicFixedTime implements IRaceLogic {
         raceRunnable = new RaceRunnable();
         thread = new Thread(raceRunnable);
         thread.start();
-        nextStart = Instant.now().plus(startPreparationDuration, ChronoUnit.SECONDS);
+        ledService.expandColor(Color.BLUE, 150);
         audioService.speakPleasePrepareForRace();
     }
 
@@ -304,6 +314,10 @@ public class RaceLogicFixedTime implements IRaceLogic {
     public void stopRace() {
         LOG.info("stopping race");
         setState(RaceState.FINISHED);
+        for (Map.Entry<Long, FixedTimeRaceParticipantData> entry : participantData.entrySet()) {
+            entry.getValue().setState(FixedTimeRaceParticipantData.ParticipantState.FINISHED);
+        }
+        ledService.blinkColor(Color.RED, 1000);
         if (raceRunnable != null) {
             raceRunnable.stop();
             try {
@@ -334,6 +348,7 @@ public class RaceLogicFixedTime implements IRaceLogic {
                         audioService.speakFalseStartParticipant(name);
                         data.setState(FixedTimeRaceParticipantData.ParticipantState.INVALID);
                         webSocketController.sendAlertMessage(WebSocketController.WarningMessageTypes.WARNING, "early start", name + " was starting too early!", true);
+                        ledService.countdownColor(Color.RED, 1000);
                         break;
                     case WAITING_FOR_FIRST_PASS:
                         // is first pass, dont count the lap
@@ -341,12 +356,14 @@ public class RaceLogicFixedTime implements IRaceLogic {
                         raceTimes.put(chipId, Instant.now());
                         data.setState(FixedTimeRaceParticipantData.ParticipantState.STARTED);
                         webSocketController.sendNewLapMessage(chipId);
+                        ledService.countdownColor(Color.GREEN, 100);
                         break;
                     case STARTED:
                         // participant started -> real lap -> add to laptimelist
                         audioService.playLap();
                         lapStorage.addLap(chipId, duration, rssi);
                         webSocketController.sendNewLapMessage(chipId);
+                        ledService.countdownColor(Color.GREEN, 100);
                         break;
                     case LAST_LAP:
                         // this was the last lap
@@ -354,14 +371,17 @@ public class RaceLogicFixedTime implements IRaceLogic {
                         lapStorage.addLap(chipId, duration, rssi);
                         audioService.speakParticipantEnded(name);
                         webSocketController.sendNewLapMessage(chipId);
+                        ledService.countdownColor(Color.BLUE, 1000);
                         break;
                     case FINISHED:
                         // participant already finished the race
                         audioService.speakAlreadyDone(name);
+                        ledService.countdownColor(Color.GREEN, 1000);
                         break;
                     case INVALID:
                         // invalid lap (e.g. after false start)
                         audioService.speakInvalidLap(name);
+                        ledService.countdownColor(Color.RED, 100);
                         break;
                     default:
                         LOG.error("invalid state: " + data.getState().toString());

@@ -52,6 +52,7 @@
         looptime: {{deviceData.loopTime}} µs<br />
         <br />
         <input type="button" value="skip calibration" ng-click="skipCalibration();" ng-hide="deviceData.state !== 'Calibration'" class="btn btn-primary btn-sm" />
+        <input type="button" value="back to calibration" ng-click="backToCalibration();" ng-hide="deviceData.state === 'Calibration'" class="btn btn-primary btn-sm" />
     </div>
     <div class="float-right">
         <u>Profiles:</u><br />

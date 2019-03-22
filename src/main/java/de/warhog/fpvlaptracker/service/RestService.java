@@ -91,7 +91,16 @@ public class RestService {
         try {
             return getRestTemplate().getForObject(buildUrl(ipAddress, "skipcalibration"), Result.class);
         } catch (Exception ex) {
-            LOG.error("cannot reboot device", ex);
+            LOG.error("cannot skip calibraion: " + ex.getMessage(), ex);
+            return new Result("NOK");
+        }
+    }
+
+    public Result backToCalibration(InetAddress ipAddress) {
+        try {
+            return getRestTemplate().getForObject(buildUrl(ipAddress, "backtocalibration"), Result.class);
+        } catch (Exception ex) {
+            LOG.error("cannot go back to calibraion: " + ex.getMessage(), ex);
             return new Result("NOK");
         }
     }
