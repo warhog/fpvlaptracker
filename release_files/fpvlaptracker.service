@@ -5,7 +5,6 @@ After=multi-user.target
 [Service]
 WorkingDirectory=/home/pi
 ExecStart=/home/pi/fpvlaptracker/fpvlaptracker-0.0.0.jar
-User=pi
 
 [Install]
 WantedBy=multi-user.target
