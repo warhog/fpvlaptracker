@@ -8,6 +8,7 @@ import de.warhog.fpvlaptracker.communication.entities.UdpPacketCalibrationDone;
 import de.warhog.fpvlaptracker.communication.entities.UdpPacketLap;
 import de.warhog.fpvlaptracker.communication.entities.UdpPacketMessage;
 import de.warhog.fpvlaptracker.communication.entities.UdpPacketRegister;
+import de.warhog.fpvlaptracker.communication.entities.UdpPacketRssi;
 import de.warhog.fpvlaptracker.controllers.WebSocketController;
 import de.warhog.fpvlaptracker.entities.Participant;
 import de.warhog.fpvlaptracker.race.RaceLogicHandler;
@@ -60,7 +61,7 @@ public class UdpHandler implements Runnable {
 
     @Autowired
     private LedService ledService;
-    
+
     public void setup() {
         try {
             LOG.info("setting up udp receiver");
@@ -174,6 +175,11 @@ public class UdpHandler implements Runnable {
                         udpPacketLap.setPacketType(packetType);
                         processLap(udpPacketLap, packet.getAddress());
                         break;
+                    case RSSI:
+                        UdpPacketRssi udpPacketRssi = mapper.readValue(packet.getData(), UdpPacketRssi.class);
+                        udpPacketRssi.setPacketType(packetType);
+                        processRssi(udpPacketRssi, packet.getAddress());
+                        break;
                     case CALIBRATIONDONE:
                         LOG.info("got calibration packet");
                         UdpPacketCalibrationDone udpPacketCalibrationDone = mapper.readValue(packet.getData(), UdpPacketCalibrationDone.class);
@@ -251,7 +257,7 @@ public class UdpHandler implements Runnable {
         LOG.info("sending request registration broadcast");
         sendDataBroadcast("requestRegistration");
     }
-    
+
     public void sendDataBroadcast(String data) {
         LOG.info("sending broadcast: " + data);
         byte dataBuf[] = new byte[1024];
@@ -263,7 +269,7 @@ public class UdpHandler implements Runnable {
             LOG.error("cannot send data broadcast: " + ex.getMessage(), ex);
         }
     }
-    
+
     public void sendDataUnicast(InetAddress inetAddress, String data) {
         LOG.info("sending unicast to " + inetAddress.toString() + ": " + data);
         byte dataBuf[] = new byte[1024];
@@ -322,7 +328,7 @@ public class UdpHandler implements Runnable {
                 (ip >> 24 & 0xff));
         return ipStr;
     }
-    
+
     private void processRegisterLed(UdpPacketRegister udpPacketRegisterLed) {
         String ipStr = getIpFromLong(udpPacketRegisterLed.getIp());
         InetAddress inetAddress;
@@ -332,7 +338,7 @@ public class UdpHandler implements Runnable {
             LOG.error("invalid ip address given: " + ipStr, ex);
             throw new RuntimeException("invalid ip");
         }
-        
+
         ledService.addInetAddress(inetAddress);
 
         try {
@@ -341,8 +347,19 @@ public class UdpHandler implements Runnable {
         } catch (Exception ex) {
             LOG.error(ex.getMessage(), ex);
         }
-        
+
         ledService.countdownColor(Color.blue, 5000);
+    }
+
+    private void processRssi(UdpPacketRssi udpPacketRssi, InetAddress address) {
+        if (!participantsService.hasParticipant(udpPacketRssi.getChipid())) {
+            LOG.info("got rssi from non registered participant");
+        } else {
+            LOG.debug("update rssi to " + udpPacketRssi.getRssi() + " of " + udpPacketRssi.getChipid());
+            webSocketController.sendRssiMessage(udpPacketRssi.getChipid(), udpPacketRssi.getRssi());
+//            Participant participant = participantsService.getParticipant(udpPacketRssi.getChipid());
+//            participant.getParticipantDeviceData().setRssi(udpPacketRssi.getRssi());
+        }
     }
 
 }

@@ -7,5 +7,6 @@ public enum PacketType {
     CALIBRATIONDONE,
     MESSAGE,
     BATTERY_LOW,
-    BATTERY_SHUTDOWN
+    BATTERY_SHUTDOWN,
+    RSSI
 }

@@ -111,34 +111,19 @@ public class ParticipantController {
         return result;
     }
 
-    @RequestMapping(path = "/api/auth/participant/skipcalibration", method = RequestMethod.GET)
-    public StatusResult skipCalibration(@RequestParam(name = "chipid", required = true) Long chipId) {
+    @RequestMapping(path = "/api/auth/participant/setstate", method = RequestMethod.GET)
+    public StatusResult setState(@RequestParam(name = "chipid", required = true) Long chipId, @RequestParam(name = "state", required = true) String state) {
+        LOG.debug("setting state for " + chipId + " to " + state);
         StatusResult result = new StatusResult(StatusResult.Status.NOK);
         try {
             Participant participant = participantsService.getParticipant(chipId);
-            final Result data = restService.skipCalibration(participant.getIp());
-            LOG.debug("return for skipCalibration: " + data.toString());
+            final Result data = restService.setState(participant.getIp(), state);
+            LOG.debug("return for setstate: " + data.toString());
             if (data.isOK()) {
                 result = new StatusResult(StatusResult.Status.OK);
             }
         } catch (Exception ex) {
-            LOG.error("cannot skip calibration: " + ex.getMessage(), ex);
-        }
-        return result;
-    }
-
-    @RequestMapping(path = "/api/auth/participant/backtocalibration", method = RequestMethod.GET)
-    public StatusResult backToCalibration(@RequestParam(name = "chipid", required = true) Long chipId) {
-        StatusResult result = new StatusResult(StatusResult.Status.NOK);
-        try {
-            Participant participant = participantsService.getParticipant(chipId);
-            final Result data = restService.backToCalibration(participant.getIp());
-            LOG.debug("return for backToCalibration: " + data.toString());
-            if (data.isOK()) {
-                result = new StatusResult(StatusResult.Status.OK);
-            }
-        } catch (Exception ex) {
-            LOG.error("cannot go back to calibration: " + ex.getMessage(), ex);
+            LOG.error("cannot set state: " + ex.getMessage(), ex);
         }
         return result;
     }

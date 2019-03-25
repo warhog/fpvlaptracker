@@ -67,10 +67,18 @@ public class WebSocketController {
     }
     
     public void sendStatusMessage(String status) {
-        LOG.debug("sending status message");
+        LOG.debug("sending status message: " + status);
         ObjectNode node = JsonNodeFactory.instance.objectNode();
         node.put("udp", status);
         this.template.convertAndSend("/topic/status", node.toString());
+    }
+
+    public void sendRssiMessage(Long chipid, Integer rssi) {
+        LOG.debug("sending new rssi message");
+        ObjectNode node = JsonNodeFactory.instance.objectNode();
+        node.put("rssi", rssi);
+        node.put("chipid", chipid);
+        this.template.convertAndSend("/topic/rssi", node.toString());
     }
 
     public enum WarningMessageTypes {

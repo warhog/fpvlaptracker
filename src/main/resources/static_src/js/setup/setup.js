@@ -1,12 +1,22 @@
 /* global moment */
 angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('setup', function (
-        $scope, ngDialog, $interval, $timeout, $location, ngProgressFactory, SetupService, Alerts, Util
+        $scope, ngDialog, $interval, $timeout, $location, ngProgressFactory, SetupService, Alerts, Util, NotificationService, Constants
         ) {
 
     $scope.upperRssi = 0;
     $scope.lowerRssi = 0;
     $scope.chipid = parseInt($location.search().chipid);
     $scope.profiles = [];
+    $scope.fastRssi = 0;
+
+    NotificationService.on($scope, Constants.MESSAGES["rssi"], function (message) {
+        let rssidata = JSON.parse(message.body);
+        if (rssidata.chipid === $scope.chipid) {
+            $scope.$apply(function () {
+                $scope.fastRssi = rssidata.rssi;
+            });
+        }
+    });
 
     $scope.frequencies = [
         5865, 5845, 5825, 5805, 5785, 5765, 5745, 5725, // Band A
@@ -120,7 +130,7 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
                 });
     };
 
-    $scope.createProfileTooltip = function(data) {
+    $scope.createProfileTooltip = function (data) {
         data = JSON.parse(data);
         let tt = "";
         tt += "trigger value: " + data.triggerValue + "\n";
@@ -132,7 +142,7 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
         tt += "filter ratio calibration: " + data.filterRatioCalibration;
         return tt;
     };
-    
+
     $scope.loadProfile = function (data, apply) {
         data = JSON.parse(data);
         $scope.deviceData.minimumLapTime = data.minimumLapTime;
@@ -142,7 +152,7 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
         $scope.deviceData.triggerValue = data.triggerValue;
         $scope.deviceData.filterRatio = data.filterRatio;
         $scope.deviceData.filterRatioCalibration = data.filterRatioCalibration;
-        
+
         if (apply !== undefined && apply === true) {
             $scope.saveDeviceData();
         }
@@ -204,13 +214,13 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
                 });
     };
 
-    $scope.skipCalibration = function () {
+    $scope.setState = function (state) {
         $scope.progressbar.start();
         Util.displayOverlay(true);
-        SetupService.skipCalibration($scope.chipid)
+        SetupService.setState($scope.chipid, state)
                 .then(function (response) {
                     if (response.status !== "OK") {
-                        ngDialog.open({template: 'dataFailure', scope: $scope, data: {message: "failed to skip calibration (device error)"}});
+                        ngDialog.open({template: 'dataFailure', scope: $scope, data: {message: "failed to set state (device error)"}});
                     } else {
                         $timeout(function () {
                             $scope.loadDeviceData(true);
@@ -218,7 +228,7 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
                     }
                 })
                 .catch(function (response) {
-                    ngDialog.open({template: 'dataFailure', scope: $scope, data: {message: "failed to skip calibration: " + response}});
+                    ngDialog.open({template: 'dataFailure', scope: $scope, data: {message: "failed to set state: " + response}});
                 })
                 .finally(function () {
                     $scope.progressbar.complete();
@@ -226,28 +236,22 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
                 });
     };
 
-    $scope.backToCalibration = function () {
-        $scope.progressbar.start();
-        Util.displayOverlay(true);
-        SetupService.backToCalibration($scope.chipid)
-                .then(function (response) {
-                    if (response.status !== "OK") {
-                        ngDialog.open({template: 'dataFailure', scope: $scope, data: {message: "failed to go back to calibration (device error)"}});
-                    } else {
-                        $timeout(function () {
-                            $scope.loadDeviceData(true);
-                        }, 500);
-                    }
-                })
-                .catch(function (response) {
-                    ngDialog.open({template: 'dataFailure', scope: $scope, data: {message: "failed to go back to calibration: " + response}});
-                })
-                .finally(function () {
-                    $scope.progressbar.complete();
-                    Util.displayOverlay(false);
-                });
+    $scope.skipCalibration = function () {
+        $scope.setState('CALIBRATION_DONE');
     };
-    
+
+    $scope.backToCalibration = function () {
+        $scope.setState('CALIBRATION');
+    };
+
+    $scope.enableFastRssiUpdate = function () {
+        $scope.setState('RSSI');
+    };
+
+    $scope.restoreOldState = function () {
+        $scope.setState('RESTORE_STATE');
+    };
+
     $scope.loadDeviceData = function (overlay) {
         if (overlay === undefined || overlay === null) {
             overlay = true;
@@ -395,14 +399,8 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
         });
     };
 
-    factory.skipCalibration = function (chipid) {
-        return $http.get("/api/auth/participant/skipcalibration", {params: {chipid: chipid}, timeout: 2000}).then(function (response) {
-            return response.data;
-        });
-    };
-
-    factory.backToCalibration = function (chipid) {
-        return $http.get("/api/auth/participant/backtocalibration", {params: {chipid: chipid}, timeout: 2000}).then(function (response) {
+    factory.setState = function (chipid, state) {
+        return $http.get("/api/auth/participant/setstate", {params: {chipid: chipid, state: state}, timeout: 2000}).then(function (response) {
             return response.data;
         });
     };

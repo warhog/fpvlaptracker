@@ -1,10 +1,13 @@
 package de.warhog.fpvlaptracker.service;
 
+import de.warhog.fpvlaptracker.entities.DeviceStates;
 import de.warhog.fpvlaptracker.entities.Rssi;
 import de.warhog.fpvlaptracker.entities.ParticipantDeviceData;
 import de.warhog.fpvlaptracker.entities.Result;
 import java.net.InetAddress;
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -87,20 +90,22 @@ public class RestService {
         }
     }
 
-    public Result skipCalibration(InetAddress ipAddress) {
+    public Result setState(InetAddress ipAddress, String state) {
         try {
-            return getRestTemplate().getForObject(buildUrl(ipAddress, "skipcalibration"), Result.class);
+            DeviceStates deviceStateFound = null;
+            for (DeviceStates deviceState : DeviceStates.values()) {
+                if (deviceState.name().toUpperCase().equals(state.toUpperCase())) {
+                    deviceStateFound = deviceState;
+                    break;
+                }
+            }
+            if (deviceStateFound == null) {
+                LOG.error("device state not found: " + state);
+                throw new RuntimeException("invalid state given: " + state);
+            }
+            return getRestTemplate().getForObject(buildUrl(ipAddress, "setstate") + "?state={state}", Result.class, state.toUpperCase());
         } catch (Exception ex) {
-            LOG.error("cannot skip calibraion: " + ex.getMessage(), ex);
-            return new Result("NOK");
-        }
-    }
-
-    public Result backToCalibration(InetAddress ipAddress) {
-        try {
-            return getRestTemplate().getForObject(buildUrl(ipAddress, "backtocalibration"), Result.class);
-        } catch (Exception ex) {
-            LOG.error("cannot go back to calibraion: " + ex.getMessage(), ex);
+            LOG.error("cannot set state: " + ex.getMessage(), ex);
             return new Result("NOK");
         }
     }
