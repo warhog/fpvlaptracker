@@ -105,7 +105,7 @@ public class RaceLogicRoundBased implements IRaceLogic {
             Integer laps = lapStorage.getLapData(participant.getChipId()).getTotalLaps();
             Duration duration = lapStorage.getLapData(participant.getChipId()).getTotalDuration();
             ToplistEntry toplistEntry = new ToplistEntry(participant.getName(), duration.toMillis(), laps);
-            if (laps > 0 && duration != Duration.ZERO) {
+            if (laps > 0 && duration != Duration.ZERO && participant.isValid()) {
                 toplist.add(toplistEntry);
             }
         }
@@ -209,6 +209,13 @@ public class RaceLogicRoundBased implements IRaceLogic {
             return;
         }
 
+        if (!participant.isValid()) {
+            webSocketController.sendAlertMessage(WebSocketController.WarningMessageTypes.INFO, "invalid lap", "invalid lap for pilot " + name, false);
+            audioService.speakInvalidLap(name);
+            ledService.countdownColor(Color.RED, 100);
+            return;
+        }
+        
         if (!isRunning()) {
             LOG.info("cannot add lap when race is not running, chipid: " + chipId);
             if (participantsRaceList.hasParticipant(chipId)) {
@@ -258,6 +265,9 @@ public class RaceLogicRoundBased implements IRaceLogic {
 
     public boolean checkEnded() {
         for (Map.Entry<Long, LapTimeList> entry : lapStorage.getLapDataWithChipId().entrySet()) {
+            if (!participantsRaceList.getParticipantByChipId(entry.getKey()).isValid()) {
+                continue;
+            }
             String name = participantsRaceList.getParticipantByChipId(entry.getKey()).getName();
             if (entry.getValue().getCurrentLap() <= numberOfLaps) {
                 LOG.debug("participant has not completed yet: " + name + ", numberOfLaps: " + numberOfLaps + ", currentLap: " + entry.getValue().getCurrentLap());

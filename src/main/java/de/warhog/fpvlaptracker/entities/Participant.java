@@ -14,6 +14,7 @@ public class Participant {
     private Long chipId;
     private InetAddress ip;
     private ParticipantDeviceData participantDeviceData = new ParticipantDeviceData();
+    private boolean valid = true;
 
     public Participant(String name, Long chipId, InetAddress ip) {
         this.name = name;
@@ -23,6 +24,14 @@ public class Participant {
 
     public ParticipantDeviceData getParticipantDeviceData() {
         return participantDeviceData;
+    }
+
+    public boolean isValid() {
+        return valid;
+    }
+
+    public void setValid(boolean valid) {
+        this.valid = valid;
     }
 
     public void setParticipantDeviceData(ParticipantDeviceData participantDeviceData) {

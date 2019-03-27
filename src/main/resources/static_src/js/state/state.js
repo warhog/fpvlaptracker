@@ -52,6 +52,21 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
         return 0;
     };
 
+    $scope.invalidatePilot = function (chipid) {
+        console.log('invalidate pilot ', chipid);
+        StateService.invalidatePilot(chipid)
+                .then(function () {
+                    $scope.loadStateData();
+                })
+                .catch(function (response) {
+                    if (response.data === null) {
+                        response.data = {message: "unable to invalidate pilot"};
+                    }
+                    ngDialog.open({template: "raceFailure", scope: $scope, data: {message: response.data.message}});
+                    $scope.progressbar.complete();
+                });
+    };
+
     $scope.nonEmptyToplist = function () {
         if ($scope.raceData.toplist !== undefined) {
             return Object.keys($scope.raceData.toplist).length > 0;
@@ -291,6 +306,12 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
 
     factory.invalidateLap = function (chipid, lap) {
         return $http.get("/api/auth/race/invalidatelap?chipid=" + chipid + "&lap=" + lap).then(function (response) {
+            return response.data;
+        });
+    };
+
+    factory.invalidatePilot = function (chipid) {
+        return $http.get("/api/auth/race/invalidatepilot?chipid=" + chipid).then(function (response) {
             return response.data;
         });
     };

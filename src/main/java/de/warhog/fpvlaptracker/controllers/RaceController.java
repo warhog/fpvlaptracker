@@ -1,17 +1,14 @@
 package de.warhog.fpvlaptracker.controllers;
 
 import de.warhog.fpvlaptracker.controllers.dtos.ChartResult;
-import de.warhog.fpvlaptracker.controllers.dtos.LapDataResult;
 import de.warhog.fpvlaptracker.controllers.dtos.RaceStateResult;
 import de.warhog.fpvlaptracker.controllers.dtos.StatusResult;
 import de.warhog.fpvlaptracker.entities.Participant;
 import de.warhog.fpvlaptracker.race.LapStorage;
 import de.warhog.fpvlaptracker.race.RaceLogicHandler;
-import de.warhog.fpvlaptracker.service.ConfigService;
 import de.warhog.fpvlaptracker.service.ParticipantsService;
 import de.warhog.fpvlaptracker.race.ParticipantsRaceList;
 import de.warhog.fpvlaptracker.race.RaceType;
-import de.warhog.fpvlaptracker.service.ServiceLayerException;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -95,6 +92,13 @@ public class RaceController {
         Long chipId = Long.parseLong(chipid);
         Integer lap = Integer.parseInt(lapString);
         lapStorage.toggleLapValidity(chipId, lap);
+        return new StatusResult(StatusResult.Status.OK);
+    }
+
+    @RequestMapping(path = "/api/auth/race/invalidatepilot", method = RequestMethod.GET)
+    public StatusResult invalidatePilot(@RequestParam(name = "chipid", required = true) String chipid) {
+        Long chipId = Long.parseLong(chipid);
+        participantsList.invalidatePilot(chipId);
         return new StatusResult(StatusResult.Status.OK);
     }
 

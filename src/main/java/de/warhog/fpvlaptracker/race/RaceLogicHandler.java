@@ -11,7 +11,6 @@ import de.warhog.fpvlaptracker.service.RestService;
 import de.warhog.fpvlaptracker.service.ServiceLayerException;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,6 +85,8 @@ public class RaceLogicHandler {
     }
 
     public void startRace() {
+        raceLogic.init();
+        participantsRaceList.resetValidity();
         LOG.info("starting race");
         lapStorage.repopulate();
         checkParticipantsStillAvailable();

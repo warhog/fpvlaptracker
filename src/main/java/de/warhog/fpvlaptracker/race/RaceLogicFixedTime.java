@@ -93,11 +93,11 @@ public class RaceLogicFixedTime implements IRaceLogic {
             Integer laps = lapStorage.getLapData(participant.getChipId()).getTotalLaps();
             Duration duration = lapStorage.getLapData(participant.getChipId()).getTotalDuration();
             ToplistEntry toplistEntry = new ToplistEntry(participant.getName(), duration.toMillis(), laps);
-            if (laps > 0 && duration != Duration.ZERO) {
+            if (laps > 0 && duration != Duration.ZERO && participant.isValid()) {
                 toplist.add(toplistEntry);
             }
         }
-        
+
         Collections.sort(toplist, new ToplistFixedTimeComparator());
         return toplist;
     }
@@ -145,6 +145,9 @@ public class RaceLogicFixedTime implements IRaceLogic {
         private void testAllFinished() {
             boolean allFinished = true;
             for (Map.Entry<Long, FixedTimeRaceParticipantData> entry : participantData.entrySet()) {
+                if (!participantsRaceList.getParticipantByChipId(entry.getKey()).isValid()) {
+                    continue;
+                }
                 if (!entry.getValue().isStateFinished() && !entry.getValue().isStateInvalid()) {
 //                    LOG.debug("participant " + participantsRaceList.getParticipantByChipId(entry.getKey()).getName() + " not finished yet: " + entry.getValue().getState());
                     allFinished = false;
@@ -284,7 +287,9 @@ public class RaceLogicFixedTime implements IRaceLogic {
                     LOG.debug("thread still alive, interrupting");
                     thread.interrupt();
                     LOG.debug("thread interrupted, trying to join again");
-                    thread.join();
+                    if (thread != null) {
+                        thread.join();
+                    }
                 }
                 LOG.debug("thread joined");
             } catch (InterruptedException ex) {
@@ -339,6 +344,15 @@ public class RaceLogicFixedTime implements IRaceLogic {
             FixedTimeRaceParticipantData data = participantData.get(chipId);
             Participant participant = participantsRaceList.getParticipantByChipId(chipId);
             String name = participant.getName();
+
+            if (!participant.isValid()) {
+                data.setState(FixedTimeRaceParticipantData.ParticipantState.INVALID);
+                webSocketController.sendAlertMessage(WebSocketController.WarningMessageTypes.INFO, "invalid lap", "invalid lap for pilot " + name, false);
+                audioService.speakInvalidLap(name);
+                ledService.countdownColor(Color.RED, 100);
+                return;
+            }
+
             if (null == data.getState()) {
                 LOG.error("invalid state: " + data.getState().toString());
             } else {

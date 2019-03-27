@@ -51,5 +51,19 @@ public class ParticipantsRaceList {
     public List<Participant> getParticipants() {
         return new ArrayList<>(participants);
     }
+    
+    public void resetValidity() {
+        for (Participant participant : participants) {
+            participant.setValid(true);
+        }
+    }
+
+    public void invalidatePilot(Long chipId) {
+        if (!hasParticipant(chipId)) {
+            throw new RuntimeException("participant for chipid not found " + chipId);
+        }
+        Participant participant = getParticipantByChipId(chipId);
+        participant.setValid(false);
+    }
 
 }
