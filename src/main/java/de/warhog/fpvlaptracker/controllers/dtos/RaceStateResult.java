@@ -2,8 +2,10 @@ package de.warhog.fpvlaptracker.controllers.dtos;
 
 import de.warhog.fpvlaptracker.entities.ParticipantExtraData;
 import de.warhog.fpvlaptracker.entities.RaceState;
+import de.warhog.fpvlaptracker.entities.ToplistEntry;
 import de.warhog.fpvlaptracker.race.RaceType;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +20,7 @@ public class RaceStateResult {
     private List<LapDataResult> lapData;
     private LocalDateTime startTime;
     private RaceType raceType;
-    private Map<String, Long> toplist = new HashMap<>();
+    private List<ToplistEntry> toplist = new ArrayList<>();
     private final Map<String, String> typeSpecific = new HashMap<>();
     private Map<Long, ParticipantExtraData> participantExtraData = new HashMap<>();
 
@@ -30,11 +32,11 @@ public class RaceStateResult {
         typeSpecific.put(key, value);
     }
 
-    public Map<String, Long> getToplist() {
+    public List<ToplistEntry> getToplist() {
         return toplist;
     }
 
-    public void setToplist(Map<String, Long> toplist) {
+    public void setToplist(List<ToplistEntry> toplist) {
         this.toplist = toplist;
     }
 

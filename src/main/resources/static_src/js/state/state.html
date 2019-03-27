@@ -21,7 +21,8 @@
         </div>
 
         <div class="floatDivLeft raceStateTopLine" style="width: 120px;">
-            <button class="btn btn-default" ng-disabled="!authenticated || raceData.toplist.length === 0 || checkRunning()" ng-click="startRace();">start</button> 
+            <!--<button class="btn btn-default" ng-disabled="!authenticated || raceData.toplist.length === 0 || checkRunning()" ng-click="startRace();">start</button>--> 
+            <button class="btn btn-default" ng-disabled="!authenticated || checkRunning()" ng-click="startRace();">start</button> 
             <button class="btn btn-default" ng-disabled="!authenticated || !checkRunning()" ng-click="stopRace();">stop</button>
         </div>
 
@@ -62,13 +63,19 @@
                 <thead>
                     <tr>
                         <th style="padding-right: 10px;">name</th>
-                        <th>total duration</th>
+                        <th>duration</th>
+                        <th>laps</th>
                     </tr>
                 </thead>
-                <tr ng-hide="nonEmptyToplist()"><td colspan="2">no pilot completed a lap yet</td></tr>
-                <tr ng-repeat="(key, value) in raceData.toplist">
+                <tr ng-hide="nonEmptyToplist()"><td colspan="3">no pilot completed a lap yet</td></tr>
+<!--                <tr ng-repeat="(key, value) in raceData.toplist">
                     <td style="padding-right: 10px;">{{key}}</td>
                     <td>{{convertDuration(value)}}</td>
+                </tr>-->
+                <tr ng-repeat="entry in raceData.toplist">
+                    <td style="padding-right: 10px;">{{entry.name}}</td>
+                    <td>{{convertDuration(entry.totalLapTime)}}</td>
+                    <td>{{entry.laps}}</td>
                 </tr>
             </table>
         </div>

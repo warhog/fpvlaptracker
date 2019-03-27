@@ -88,6 +88,7 @@ angular.module('state', ['ngDialog', 'ngProgress', 'amChartsDirective']).control
         $scope.progressbar.start();
         StateService.loadData().then(function (ret) {
             $scope.raceData = ret;
+            console.log("raceData", $scope.raceData);
 
             StateService.loadChartData().then(function (ret) {
                 if (!$scope.chartInitialized) {

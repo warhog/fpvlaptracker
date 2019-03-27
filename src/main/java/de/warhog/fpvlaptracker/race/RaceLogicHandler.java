@@ -4,11 +4,13 @@ import de.warhog.fpvlaptracker.entities.RaceState;
 import de.warhog.fpvlaptracker.controllers.WebSocketController;
 import de.warhog.fpvlaptracker.controllers.dtos.RaceStateResult;
 import de.warhog.fpvlaptracker.entities.Participant;
+import de.warhog.fpvlaptracker.entities.ToplistEntry;
 import de.warhog.fpvlaptracker.service.AudioService;
 import de.warhog.fpvlaptracker.service.ConfigService;
 import de.warhog.fpvlaptracker.service.RestService;
 import de.warhog.fpvlaptracker.service.ServiceLayerException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
@@ -91,7 +93,7 @@ public class RaceLogicHandler {
         setStartTime(LocalDateTime.now());
     }
 
-    public Map<String, Long> getToplist() {
+    public List<ToplistEntry> getToplist() {
         return raceLogic.getToplist();
     }
 

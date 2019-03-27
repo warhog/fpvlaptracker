@@ -5,6 +5,7 @@ import de.warhog.fpvlaptracker.entities.Participant;
 import de.warhog.fpvlaptracker.entities.RaceState;
 import de.warhog.fpvlaptracker.entities.LapTimeList;
 import de.warhog.fpvlaptracker.entities.ParticipantExtraData;
+import de.warhog.fpvlaptracker.entities.ToplistEntry;
 import de.warhog.fpvlaptracker.service.AudioService;
 import de.warhog.fpvlaptracker.service.ConfigService;
 import de.warhog.fpvlaptracker.service.LedService;
@@ -12,11 +13,11 @@ import de.warhog.fpvlaptracker.service.ServiceLayerException;
 import java.awt.Color;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import static java.util.stream.Collectors.toMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +42,7 @@ public class RaceLogicRoundBased implements IRaceLogic {
 
     @Autowired
     LapStorage lapStorage;
-    
+
     @Autowired
     LedService ledService;
 
@@ -68,13 +69,13 @@ public class RaceLogicRoundBased implements IRaceLogic {
                 Thread.sleep(preparationDuration * 1000);
                 ledService.countdownColor(Color.RED, 500);
                 audioService.speakNumberThree();
-                Thread.sleep(1000);
+                Thread.sleep(2000);
                 ledService.countdownColor(Color.RED, 500);
                 audioService.speakNumberTwo();
-                Thread.sleep(1000);
+                Thread.sleep(2000);
                 ledService.countdownColor(Color.RED, 500);
                 audioService.speakNumberOne();
-                Thread.sleep(1000);
+                Thread.sleep(2000);
                 ledService.countdownColor(Color.GREEN, 5000);
                 setState(RaceState.GETREADY);
                 audioService.speakGo();
@@ -97,21 +98,19 @@ public class RaceLogicRoundBased implements IRaceLogic {
     }
 
     @Override
-    public Map<String, Long> getToplist() {
+    public List<ToplistEntry> getToplist() {
         HashMap<String, Long> map = new HashMap<>();
+        List<ToplistEntry> toplist = new ArrayList<>();
         for (Participant participant : participantsRaceList.getParticipants()) {
+            Integer laps = lapStorage.getLapData(participant.getChipId()).getTotalLaps();
             Duration duration = lapStorage.getLapData(participant.getChipId()).getTotalDuration();
-            if (duration != Duration.ZERO) {
-                map.put(participant.getName(), duration.toMillis());
+            ToplistEntry toplistEntry = new ToplistEntry(participant.getName(), duration.toMillis(), laps);
+            if (laps > 0 && duration != Duration.ZERO) {
+                toplist.add(toplistEntry);
             }
         }
-        Map<String, Long> sorted = map
-                .entrySet()
-                .stream()
-                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
-                .collect(toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
-
-        return sorted;
+        Collections.sort(toplist, new ToplistRoundBasedComparator());
+        return toplist;
     }
 
     @Override
@@ -191,7 +190,7 @@ public class RaceLogicRoundBased implements IRaceLogic {
 
     @Override
     public void addLap(Long chipId, Long duration, Integer rssi) {
-        LOG.debug("add lap", chipId, duration, rssi);
+        LOG.debug("add lap, " + chipId + ", " + duration + ", " + rssi);
         Participant participant = participantsRaceList.getParticipantByChipId(chipId);
         String name = participant.getName();
 
@@ -234,16 +233,15 @@ public class RaceLogicRoundBased implements IRaceLogic {
             audioService.speakAlreadyDone(name);
             ledService.countdownColor(Color.RED, 100);
         } else {
-            if (currentLap > numberOfLaps) {
+            lapStorage.addLap(chipId, duration, rssi, true);
+            if (currentLap >= numberOfLaps) {
                 LOG.info("participant reached lap limit " + name);
                 oneParticipantReachedEnd = true;
                 participantEndedName = name;
             } else if (!raceStartedInThisLap) {
-                lapStorage.addLap(chipId, duration, rssi);
                 audioService.playLap();
                 ledService.countdownColor(Color.GREEN, 100);
             }
-
         }
 
         // test if all of the participants has reached the lap limit

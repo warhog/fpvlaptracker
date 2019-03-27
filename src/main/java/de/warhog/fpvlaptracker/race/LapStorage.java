@@ -34,10 +34,14 @@ public class LapStorage {
     }
 
     public void addLap(final Long chipid, final Long duration, final Integer rssi) {
+        addLap(chipid, duration, rssi, false);
+    }
+
+    public void addLap(final Long chipid, final Long duration, final Integer rssi, boolean ignoreFirstLap) {
         addParticipant(chipid);
         LapTimeList ltl = lapData.get(chipid);
         LOG.debug("adding lap with duration " + duration + " and rssi " + rssi);
-        ltl.addLap(duration, rssi);
+        ltl.addLap(duration, rssi, ignoreFirstLap);
     }
 
     public void invalidateLap(final Long chipid, final Integer lap, final boolean state) {

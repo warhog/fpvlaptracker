@@ -19,7 +19,7 @@ public class LapTimeList {
     private Integer lastRssi;
 
     public LapTimeList() {
-        currentLap = 1;
+        currentLap = 0;
         lastRssi = 0;
         laps = new HashMap<>();
         lapValidity = new HashMap<>();
@@ -52,12 +52,25 @@ public class LapTimeList {
         return collect.size();
     }
 
+    public void addLap(Long duration, Integer rssi, boolean ignoreFirstLap) {
+        LOG.debug("addLap(" + duration + ", " + rssi + ", " + ignoreFirstLap + ")");
+        if (ignoreFirstLap && currentLap == 0) {
+            LOG.info("first lap, ignore");
+            currentLap = 1;
+        } else {
+            if (!ignoreFirstLap && currentLap == 0) {
+                currentLap = 1;
+            }
+            lastRssi = rssi;
+            LOG.info("add lap with " + duration + " ms (rssi: " + rssi + ")");
+            Duration lap = Duration.of(duration, ChronoUnit.MILLIS);
+            laps.put(currentLap, lap);
+            currentLap++;
+        }
+    }
+
     public void addLap(Long duration, Integer rssi) {
-        lastRssi = rssi;
-        LOG.info("add lap with " + duration + " ms (rssi: " + rssi + ")");
-        Duration lap = Duration.of(duration, ChronoUnit.MILLIS);
-        laps.put(currentLap, lap);
-        currentLap++;
+        addLap(duration, rssi, false);
     }
 
     public Duration getAverageLapDuration() {
@@ -91,6 +104,13 @@ public class LapTimeList {
 
     public Map<Integer, Duration> getLaps() {
         return new HashMap<>(laps);
+    }
+
+    public Integer getTotalLaps() {
+        Map<Integer, Duration> filtered = laps.entrySet().stream()
+                .filter(x -> isLapValid(x.getKey()))
+                .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
+        return filtered.size();
     }
 
     public Integer getCurrentLap() {
@@ -137,5 +157,5 @@ public class LapTimeList {
     public String toString() {
         return "LapTimeList{" + "laps=" + laps + ", lapValidity=" + lapValidity + ", currentLap=" + currentLap + ", lastRssi=" + lastRssi + '}';
     }
-    
+
 }

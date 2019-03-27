@@ -5,6 +5,7 @@ import de.warhog.fpvlaptracker.entities.Participant;
 import de.warhog.fpvlaptracker.entities.RaceState;
 import de.warhog.fpvlaptracker.entities.FixedTimeRaceParticipantData;
 import de.warhog.fpvlaptracker.entities.ParticipantExtraData;
+import de.warhog.fpvlaptracker.entities.ToplistEntry;
 import de.warhog.fpvlaptracker.service.AudioService;
 import de.warhog.fpvlaptracker.service.ConfigService;
 import de.warhog.fpvlaptracker.service.LedService;
@@ -14,11 +15,11 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import static java.util.Map.Entry.comparingByValue;
-import static java.util.stream.Collectors.toMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,20 +87,19 @@ public class RaceLogicFixedTime implements IRaceLogic {
     }
 
     @Override
-    public Map<String, Long> getToplist() {
-        HashMap<String, Long> map = new HashMap<>();
+    public List<ToplistEntry> getToplist() {
+        List<ToplistEntry> toplist = new ArrayList<>();
         for (Participant participant : participantsRaceList.getParticipants()) {
-            Duration duration = lapStorage.getLapData(participant.getChipId()).getFastestLapDuration();
-            if (duration != Duration.ZERO) {
-                map.put(participant.getName(), duration.toMillis());
+            Integer laps = lapStorage.getLapData(participant.getChipId()).getTotalLaps();
+            Duration duration = lapStorage.getLapData(participant.getChipId()).getTotalDuration();
+            ToplistEntry toplistEntry = new ToplistEntry(participant.getName(), duration.toMillis(), laps);
+            if (laps > 0 && duration != Duration.ZERO) {
+                toplist.add(toplistEntry);
             }
         }
-        Map<String, Long> sorted = map
-                .entrySet()
-                .stream()
-                .sorted(comparingByValue())
-                .collect(toMap(e -> e.getKey(), e -> e.getValue(), (e1, e2) -> e2, LinkedHashMap::new));
-        return sorted;
+        
+        Collections.sort(toplist, new ToplistFixedTimeComparator());
+        return toplist;
     }
 
     @Override
@@ -167,6 +167,7 @@ public class RaceLogicFixedTime implements IRaceLogic {
                     entry.getValue().setState(FixedTimeRaceParticipantData.ParticipantState.WAITING_FOR_FIRST_PASS);
                     audioService.speakParticipantStart(name);
                     ledService.countdownColor(Color.GREEN, 1000);
+                    break;
                 }
             }
         }
