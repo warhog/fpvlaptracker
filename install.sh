@@ -25,7 +25,7 @@ if [[ $? -ne 0 ]]; then
     exit 1
 fi
 
-unzip -f fpvlaptracker-${VERSION}.zip
+unzip -o fpvlaptracker-${VERSION}.zip
 if [[ $? -ne 0 ]]; then
     echo "failed to unzip"
     exit 1
