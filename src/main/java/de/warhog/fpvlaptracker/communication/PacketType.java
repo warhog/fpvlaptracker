@@ -8,5 +8,6 @@ public enum PacketType {
     MESSAGE,
     BATTERY_LOW,
     BATTERY_SHUTDOWN,
-    RSSI
+    RSSI,
+    SCAN
 }

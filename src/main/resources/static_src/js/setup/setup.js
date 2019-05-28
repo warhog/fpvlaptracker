@@ -60,6 +60,10 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
     $scope.loadingDeviceData = false;
     $scope.cells = 1;
 
+    $scope.openScan = function () {
+        $location.url("/scan?chipid=" + $scope.chipid);
+    };
+
     let getInitialValue = function (frequency) {
         frequency = parseInt(frequency);
         let ret = null;
@@ -339,12 +343,20 @@ angular.module('setup', ['ngDialog', 'ngProgress', 'ui.bootstrap']).controller('
         console.log("before save", $scope.deviceData);
         SetupService.saveDeviceData($scope.chipid, $scope.deviceData)
                 .then(function (response) {
-                    Alerts.addSuccess("success", "all values successfully saved");
-                    console.log(response);
-                    if (response.status === "OK reboot") {
-                        $scope.rebootDevice();
+                    if (response.status === 'NOK') {
+                        let msg = '';
+                        if (response.message) {
+                            msg = ': ' + response.message;
+                        }
+                        Alerts.addError('error', 'cannot save data' + msg);
                     } else {
-                        $scope.loadDeviceData();
+                        Alerts.addSuccess("success", "all values successfully saved");
+                        console.log(response);
+                        if (response.status === "OK reboot") {
+                            $scope.rebootDevice();
+                        } else {
+                            $scope.loadDeviceData();
+                        }
                     }
                 })
                 .catch(function (response) {

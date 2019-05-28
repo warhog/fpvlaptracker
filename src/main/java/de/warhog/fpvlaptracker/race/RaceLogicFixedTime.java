@@ -10,6 +10,7 @@ import de.warhog.fpvlaptracker.service.AudioService;
 import de.warhog.fpvlaptracker.service.ConfigService;
 import de.warhog.fpvlaptracker.service.LedService;
 import de.warhog.fpvlaptracker.service.ServiceLayerException;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.awt.Color;
 import java.time.Duration;
 import java.time.Instant;
@@ -264,6 +265,7 @@ public class RaceLogicFixedTime implements IRaceLogic {
         }
     }
 
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE", justification = "complains about null check on thread but whyever thread.interrupt() made thread null during testing from time to ")
     @Override
     public void startRace() {
         LOG.info("start race");

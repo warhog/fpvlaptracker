@@ -5,6 +5,7 @@ public enum DeviceStates {
     CALIBRATION,
     CALIBRATION_DONE,
     SCAN,
+    DEEPSCAN,
     RACE,
     RSSI,
     RESTORE_STATE,

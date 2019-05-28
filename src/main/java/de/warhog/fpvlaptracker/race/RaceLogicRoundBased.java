@@ -99,7 +99,6 @@ public class RaceLogicRoundBased implements IRaceLogic {
 
     @Override
     public List<ToplistEntry> getToplist() {
-        HashMap<String, Long> map = new HashMap<>();
         List<ToplistEntry> toplist = new ArrayList<>();
         for (Participant participant : participantsRaceList.getParticipants()) {
             Integer laps = lapStorage.getLapData(participant.getChipId()).getTotalLaps();

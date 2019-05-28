@@ -9,6 +9,7 @@ import de.warhog.fpvlaptracker.communication.entities.UdpPacketLap;
 import de.warhog.fpvlaptracker.communication.entities.UdpPacketMessage;
 import de.warhog.fpvlaptracker.communication.entities.UdpPacketRegister;
 import de.warhog.fpvlaptracker.communication.entities.UdpPacketRssi;
+import de.warhog.fpvlaptracker.communication.entities.UdpPacketScan;
 import de.warhog.fpvlaptracker.controllers.WebSocketController;
 import de.warhog.fpvlaptracker.entities.Participant;
 import de.warhog.fpvlaptracker.race.RaceLogicHandler;
@@ -179,6 +180,11 @@ public class UdpHandler implements Runnable {
                         UdpPacketRssi udpPacketRssi = mapper.readValue(packet.getData(), UdpPacketRssi.class);
                         udpPacketRssi.setPacketType(packetType);
                         processRssi(udpPacketRssi, packet.getAddress());
+                        break;
+                    case SCAN:
+                        UdpPacketScan udpPacketScan = mapper.readValue(packet.getData(), UdpPacketScan.class);
+                        udpPacketScan.setPacketType(packetType);
+                        processScan(udpPacketScan, packet.getAddress());
                         break;
                     case CALIBRATIONDONE:
                         LOG.info("got calibration packet");
@@ -357,8 +363,15 @@ public class UdpHandler implements Runnable {
         } else {
             LOG.debug("update rssi to " + udpPacketRssi.getRssi() + " of " + udpPacketRssi.getChipid());
             webSocketController.sendRssiMessage(udpPacketRssi.getChipid(), udpPacketRssi.getRssi());
-//            Participant participant = participantsService.getParticipant(udpPacketRssi.getChipid());
-//            participant.getParticipantDeviceData().setRssi(udpPacketRssi.getRssi());
+        }
+    }
+    
+    private void processScan(UdpPacketScan udpPacketScan, InetAddress address) {
+        if (!participantsService.hasParticipant(udpPacketScan.getChipid())) {
+            LOG.info("got scan from non registered participant");
+        } else {
+            LOG.debug("update rssi for frequency " + udpPacketScan.getFrequency() + " to " + udpPacketScan.getRssi() + " of " + udpPacketScan.getChipid());
+            webSocketController.sendScanMessage(udpPacketScan.getChipid(), udpPacketScan.getFrequency(), udpPacketScan.getRssi());
         }
     }
 

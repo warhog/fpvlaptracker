@@ -1,5 +1,5 @@
 /* global moment, Stomp, speechSynthesis */
-angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', 'navigation', 'setup', 'login', 'devicedata'])
+angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', 'navigation', 'setup', 'login', 'devicedata', 'scan'])
         .config(function ($routeProvider, $httpProvider, $locationProvider) {
 
             $locationProvider.html5Mode(true);
@@ -16,6 +16,9 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
             }).when('/setup', {
                 templateUrl: 'js/setup/setup.html',
                 controller: 'setup'
+            }).when('/scan', {
+                templateUrl: 'js/scan/scan.html',
+                controller: 'scan'
             }).when('/devicedata', {
                 templateUrl: 'js/devicedata/devicedata.html',
                 controller: 'devicedata'
@@ -61,7 +64,8 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
                 newParticipant: 'NEW_PARTICIPANT',
                 raceStateChanged: 'RACE_STATE_CHANGED',
                 alert: 'ALERT',
-                rssi: 'RSSI'
+                rssi: 'RSSI',
+                scan: 'SCAN'
             }
         })
         .factory('UAUtil', function ($window) {
@@ -412,6 +416,11 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
                     subscriptions.push(stomp.subscribe("/topic/rssi", function (data) {
                         console.log("got new rssi websocket message", data);
                         NotificationService.send(Constants.MESSAGES["rssi"], data);
+                    }));
+                    console.log("subscribe to scan");
+                    subscriptions.push(stomp.subscribe("/topic/scan", function (data) {
+                        console.log("got new scan websocket message", data);
+                        NotificationService.send(Constants.MESSAGES["scan"], data);
                     }));
                 } else {
                     console.log("not connected, scheduling");

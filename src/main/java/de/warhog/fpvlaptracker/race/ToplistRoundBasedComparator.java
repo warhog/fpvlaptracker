@@ -1,10 +1,11 @@
 package de.warhog.fpvlaptracker.race;
 
 import de.warhog.fpvlaptracker.entities.ToplistEntry;
+import java.io.Serializable;
 import java.util.Comparator;
 import org.apache.commons.lang3.builder.CompareToBuilder;
 
-public class ToplistRoundBasedComparator implements Comparator<ToplistEntry> {
+public class ToplistRoundBasedComparator implements Comparator<ToplistEntry>, Serializable {
 
     @Override
     public int compare(ToplistEntry o1, ToplistEntry o2) {

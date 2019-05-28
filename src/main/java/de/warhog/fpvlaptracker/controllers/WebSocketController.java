@@ -81,6 +81,15 @@ public class WebSocketController {
         this.template.convertAndSend("/topic/rssi", node.toString());
     }
 
+    public void sendScanMessage(Long chipid, Integer frequency, Integer rssi) {
+        LOG.debug("sending new scan message");
+        ObjectNode node = JsonNodeFactory.instance.objectNode();
+        node.put("rssi", rssi);
+        node.put("frequency", frequency);
+        node.put("chipid", chipid);
+        this.template.convertAndSend("/topic/scan", node.toString());
+    }
+
     public enum WarningMessageTypes {
         DANGER("danger"),
         WARNING("warning"),

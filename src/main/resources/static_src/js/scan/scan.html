@@ -1,0 +1,57 @@
+<h1>scan</h1>
+<script type="text/ng-template" id="dataFailure">
+    <div>
+    <h2>data failure</h2>
+    {{ngDialogData.message}}
+    </div>
+</script>
+<script type="text/ng-template" id="rssiMeasureResult">
+    <div>
+    <h2>rssi channel overview</h2>
+    <table>
+    <thead>
+    <tr>
+    <th style="padding-right: 10px;">frequency</th>
+    <th>signal strength</th>
+    <th></th>
+    </tr>
+    </thead>
+    <tr ng-repeat="x in ngDialogData.response.channels">
+    <td style="padding-right: 10px;">{{x.band}}</td>
+    <td>{{x.rssi}}</td>
+    <td><span style="color: red;" ng-show="x.freq == ngDialogData.response.maxFreq && x.rssi == ngDialogData.response.maxRssi">maximum</span></td>
+    </tr>
+    </table>
+
+    </div>
+</script>
+
+<div>
+    <div class="float-left">
+        <!--<button class="btn btn-info" ng-disabled="promise !== null || loading === true" ng-click="loadDeviceData();">reload device data</button>-->
+        <!--<br /><br />-->
+
+        unique chip id: {{chipid}}<br />
+        state: {{state}}<br /><br />
+        maximum: {{maxRssi}} @ {{maxFreq}}<br /><br />
+        
+        stop the scan to analyze the chart<br /><br />
+        
+        <input type="button" value="start scan" ng-click="scan();" ng-hide="state === 'Deepscan' || state === 'Scan'" class="btn btn-primary btn-sm" />
+        <input type="button" value="start deep scan" ng-click="deepscan();" ng-hide="state === 'Deep scan' || state === 'Scan'" class="btn btn-primary btn-sm" />
+        <input type="button" value="stop scan" ng-click="restoreOldState();" ng-hide="state !== 'Scan' && state !== 'Deep scan'" class="btn btn-primary btn-sm" />
+    </div>
+    
+    <div style="height: 600px; width: 100%;">
+        <am-chart id="rssiChart" options="amChartOptions"></am-chart>
+    </div>
+
+</div>
+
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />

@@ -17,4 +17,7 @@
     <Match>
         <Class name="de.warhog.fpvlaptracker.jooq.tables.Races" />
     </Match>
+    <Match>
+        <Class name="de.warhog.fpvlaptracker.jooq.tables.Profiles" />
+    </Match>
 </FindBugsFilter>

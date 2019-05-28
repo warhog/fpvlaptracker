@@ -52,7 +52,11 @@
         looptime: {{deviceData.loopTime}} µs<br />
         <hr size="1" />
         <input type="button" value="skip calibration" ng-click="skipCalibration();" ng-hide="deviceData.state !== 'Calibration'" class="btn btn-primary btn-sm" />
-        <input type="button" value="restart calibration" ng-click="backToCalibration();" ng-hide="deviceData.state === 'Calibration'" class="btn btn-primary btn-sm" />
+        <input type="button" value="restart calibration" ng-click="backToCalibration();" ng-hide="deviceData.state === 'Calibration'" class="btn btn-primary btn-sm" /><br />
+
+        <br /><b>band scanner</b><br />
+        <button class="btn btn-primary btn-sm" ng-click="openScan();">open scanner</button><br />
+
         <br /><b>fast RSSI update:</b><br />
         disables all other functionality of the tracker node while running!<br />
         <span ng-hide="deviceData.state !== 'RSSI'">RSSI: {{fastRssi}} (gate enter trigger is {{upperRssi}}, lap detection end trigger is {{lowerRssi}})<br /></span>

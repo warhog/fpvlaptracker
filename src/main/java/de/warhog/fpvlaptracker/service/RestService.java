@@ -85,7 +85,7 @@ public class RestService {
             }
             return ret;
         } catch (Exception ex) {
-            LOG.error("cannot post device data", ex);
+            LOG.error("cannot post device data: " + ex.getMessage(), ex);
             return "NOK";
         }
     }
