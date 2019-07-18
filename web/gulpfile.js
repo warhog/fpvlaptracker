@@ -8,7 +8,7 @@ var changed = require('gulp-changed'),
         clean = require('gulp-clean'),
         htmlmin = require('gulp-htmlmin'),
         autoprefixer = require('gulp-autoprefixer'),
-        minifyCSS = require('gulp-minify-css'),
+        cleanCSS = require('gulp-clean-css'),
         babel = require('gulp-babel'),
         ngAnnotate = require('gulp-ng-annotate'),
         sourcemaps = require('gulp-sourcemaps'),
@@ -44,7 +44,7 @@ gulp.task('css-flt', function () {
     ])
             .pipe(changed(destPath + '/css/'))
             .pipe(concat('concat.css'))
-            .pipe(minifyCSS())
+            .pipe(cleanCSS())
             .pipe(rename('fpvlaptracker.min.css'))
             .pipe(gulp.dest(destPath + '/css/'));
 });
