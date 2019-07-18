@@ -1,0 +1,7 @@
+{
+  "name": "fpvlaptracker-app",
+  "integrations": {
+    "cordova": {}
+  },
+  "type": "ionic-angular"
+}

@@ -1,0 +1,39 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"atomic": "cpp",
+			"chrono": "cpp",
+			"limits": "cpp",
+			"valarray": "cpp",
+			"ratio": "cpp",
+			"array": "cpp",
+			"functional": "cpp",
+			"tuple": "cpp",
+			"type_traits": "cpp",
+			"utility": "cpp",
+			"rope": "cpp",
+			"*.tcc": "cpp",
+			"system_error": "cpp",
+			"condition_variable": "cpp",
+			"future": "cpp",
+			"istream": "cpp",
+			"typeindex": "cpp",
+			"typeinfo": "cpp",
+			"deque": "cpp",
+			"forward_list": "cpp",
+			"list": "cpp",
+			"unordered_map": "cpp",
+			"unordered_set": "cpp",
+			"vector": "cpp",
+			"slist": "cpp",
+			"initializer_list": "cpp",
+			"bitset": "cpp",
+			"complex": "cpp"
+		}
+	}
+}

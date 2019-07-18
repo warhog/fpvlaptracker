@@ -1,0 +1,73 @@
+<ion-header>
+  <ion-navbar>
+    <ion-title>Help</ion-title>
+  </ion-navbar>
+</ion-header>
+
+<ion-content padding>
+	<h2>Description</h2>
+	<p>
+		<img src="assets/image/description.png" />
+	</p>
+	<br />
+	<p>
+		The tracker node has a built in automatic calibration feature.<br />
+		On startup it measures the noise on the currently selected channel and subtracts this from future readings.<br />
+		<br />
+		<b>Please do turn of your video transmitter during startup to avoid false readings!</b>.<br />
+		<br />
+		The tracker then enters calibration mode.<br /><br />
+		On the first pass after startup the unit is measuring the peak RSSI value and subtracts the <i>calibration offset</i> and stores this as the <i>trigger value</i>.<br />
+		The RSSI must fall below trigger value minus the calibration threshold to end the calibration mode.
+
+		For the following laps the tracker is waiting for the RSSI to be equal or higher than the trigger value. The timestamp during the highest RSSI value is stored.<br />
+		As soon as the RSSI value is falling below the trigger value minus the trigger threshold the lap detection is ended. The laptime is calculated based on the difference between the current and the previous timestamp (aka peak-to-peak time).<br />
+		<br /><br />
+		<u>Example:</u><br />
+		Quad is passing the gate for the first time and RSSI is 240. If the calibration offset is 10 then the trigger value will be 230.<br />
+		Calibration is left if RSSI is below 110 (if <i>calibration threshold</i> is 120).<br />
+		Timestamp is saved if the quad is passing the gate and the RSSI is higher than 230. The next timestamp is saved as soon as RSSI is below 190 (<i>trigger value</i> - <i>trigger threshold</i>).<br />
+		<br />
+
+	</p>
+
+	<h2>Lap detection settings</h2>
+	<ion-list>
+		<ion-item text-wrap>
+			<h3 style="padding-top: 5px;">Minimum lap time</h3>
+			<p>The minimum allowed lap time. Lap times that are below the defined value are not taken into account and therefore not counted.</p>
+		</ion-item>
+
+		<ion-item text-wrap>
+			<h3 style="padding-top: 5px;">Current trigger value</h3>
+			<p>The RSSI value that triggers a new lap detection. If the measured RSSI value is equal or above this value a new lap detection is started.</p>
+		</ion-item>
+
+		<ion-item text-wrap>
+			<h3 style="padding-top: 5px;">RSSI trigger threshold</h3>
+			<p>The trigger threshold defines the RSSI window in which the lap detection is active. The lap detection ends if RSSI is below trigger value minus trigger threshold.</p>
+		</ion-item>
+
+		<ion-item text-wrap>
+			<h3 style="padding-top: 5px;">RSSI trigger <b>calibration</b> threshold</h3>
+			<p>The RSSI trigger threshold during calibration state. The calibration ends if RSSI is below trigger value (see below) minus calibration trigger threshold.</p>
+		</ion-item>
+
+		<ion-item text-wrap>
+			<h3 style="padding-top: 5px;">RSSI calibration offset</h3>
+			<p>The RSSI offset that is substracted from found peek during calibration. Improves lap detection but can add jitter to lap times. This should compensate for a slightly different flying path (e.g. flying a bit higher than during calibration).</p>
+		</ion-item>
+
+		<ion-item text-wrap>
+			<h3 style="padding-top: 5px;">Filter ratio</h3>
+			<p>The <u>filter ratio</u> is the smoothing factor for the RSSI signal. The ratio is allowed to be in the range from 0 to 1. Values more near zero mean more smoothing while values near 1 mean less smoothing but more jitter. When set to zero no new values are considered. A value of one disables smoothing.</p>
+		</ion-item>
+
+		<ion-item text-wrap>
+			<h3 style="padding-top: 5px;">Filter ratio <b>calibration</b></h3>
+			<p>The <u>filter ratio calibration</u> is the smoothing factor for the RSSI signal during calibration. The ratio is allowed to be in the range from 0 to 1. Values more near zero mean more smoothing while values near 1 mean less smoothing but more jitter. When set to zero no new values are considered. A value of one disables smoothing. This can come in handy if your VTX sends multiple bursts during startup, you can set a very low value (e.g. 0.001) here to add extreme smoothing (please keep in mind that the calibration run should be done very slow then!)</p>
+		</ion-item>
+
+	</ion-list>
+
+</ion-content>

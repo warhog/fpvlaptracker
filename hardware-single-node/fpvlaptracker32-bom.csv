@@ -1,0 +1,21 @@
+Id,Designator,Package,Quantity,Designation,Supplier and ref
+1,SW2,SW_SPST_KMR2,1,Prog,https://www.reichelt.de/smd-kurzhubtaster-4-2-x-2-8-mm-hoehe-1-9-mm-kmr-231-g-lfs-p148478.html?&trstct=pos_0
+2,SW3,SW_SPST_KMR2,1,Reset,https://www.reichelt.de/smd-kurzhubtaster-4-2-x-2-8-mm-hoehe-1-9-mm-kmr-231-g-lfs-p148478.html?&trstct=pos_0
+3,SW1,SW_SPST_KMR2,1,Webupdate,https://www.reichelt.de/smd-kurzhubtaster-4-2-x-2-8-mm-hoehe-1-9-mm-kmr-231-g-lfs-p148478.html?&trstct=pos_0
+4,J1,"TerminalBlock_Phoenix_MKDS-1,5-3-5.08_1x03_P5.08mm_Horizontal",1,Screw_Terminal_01x03,https://www.reichelt.de/loetbare-schraubklemme-3-pol-rm-5-08-mm-90-rnd-205-00233-p170278.html?
+5,U2,SOT-223,1,LM1117-3.3,https://www.reichelt.de/ldo-spannungsregler-3-3-v-sot-223-lm-1117-mp-3-3-p187605.html?
+6,D4,D_SOD-323_HandSoldering,1,DIODE,https://www.reichelt.de/gleichrichterdiode-75-v-0-15-a-sod-323f-1n-4148-ws-p95197.html?
+7,U1,RX5808,1,RX5808,https://www.banggood.com/FPV-Wireless-Audio-Video-Receiving-Module-RX5808-Receiver-p-84775.html?rmmds=search
+8,"C6,C1,C2",C_1206_3216Metric_Pad1.42x1.75mm_HandSolder,3,100nF,https://www.reichelt.de/smd-kerko-1206-100-nf-25-v-10-mlcc-rnd-150sh31b1043-p225567.html?
+9,"R1,R9",R_1206_3216Metric_Pad1.42x1.75mm_HandSolder,2,1k,https://www.reichelt.de/smd-widerstand-1206-1-0-kohm-250-mw-1-rnd-1206-1-1-0k-p183379.html?
+10,R4,R_1206_3216Metric_Pad1.42x1.75mm_HandSolder,1,5k,https://www.reichelt.de/smd-widerstand-1206-5-1-kohm-250-mw-1-rnd-1206-1-5-1k-p183390.html?
+11,"R6,R7,R8,R12,R2",R_1206_3216Metric_Pad1.42x1.75mm_HandSolder,5,10k,https://www.reichelt.de/smd-widerstand-1206-10-kohm-250-mw-1-rnd-1206-1-10k-p183394.html?
+12,R13,R_1206_3216Metric_Pad1.42x1.75mm_HandSolder,1,470,https://www.reichelt.de/smd-widerstand-1206-470-ohm-250-mw-1-rnd-1206-1-470-p183358.html?
+13,U3,ESP32-WROOM,1,ESP-32_WROOM32,"ebay, elecrow"
+14,"D1,D5",LED_1206_3216Metric_Pad1.42x1.75mm_HandSolder,2,LED,https://www.reichelt.de/led-smd-1206-gruen-350-mcd-50-kbt-kptd-3216mg-p231716.html?
+,,,,,https://www.reichelt.de/led-smd-1206-rot-80-mcd-120-kbt-kp-3216src-p231712.html?
+15,"C7,C9",CP_Elec_5x4.4,2,10µF,https://www.reichelt.de/smd-chip-elko-10-f-16volt-smd-elko-10-16-p31906.html?
+16,C8,CP_Elec_6.3x5.4,1,100µF,https://www.reichelt.de/smd-chip-elko-100-f-16volt-smd-elko-100-16-p31912.html?
+17,R5,R_1206_3216Metric_Pad1.42x1.75mm_HandSolder,1,100,https://www.reichelt.de/smd-widerstand-1206-100-ohm-250-mw-1-rnd-1206-1-100-p183349.html?
+18,J2,PinHeader_1x03_P2.54mm_Vertical,1,Serial,https://www.reichelt.de/20pol-buchsenleiste-gerade-rm-2-54-h-8-5mm-bl-1x20g8-2-54-p51827.html?&trstct=pol_19
+19,J3,PinHeader_1x01_P2.54mm_Vertical,1,Conn_01x01_Female,https://www.reichelt.de/20pol-buchsenleiste-gerade-rm-2-54-h-8-5mm-bl-1x20g8-2-54-p51827.html?&trstct=pol_19
