@@ -91,6 +91,10 @@ comm::WifiAp wifiAp;
 unsigned long fastRssiTimeout = 0L;
 unsigned long lowVoltageTimeout = 0L;
 
+void wifiConnect();
+void bluetoothConnect();
+void blinkError(unsigned int errorCode);
+
 /*---------------------------------------------------
  * application setup
  *-------------------------------------------------*/
