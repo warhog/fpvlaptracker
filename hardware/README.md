@@ -6,19 +6,19 @@ for firmware building and flashing [read this](../docs/firmware.md)
 
 ## pictures
 
-![3d printed case](https://raw.githubusercontent.com/warhog/fpvlaptracker/master/hardware-single-node/bottom.png)
-![3d printed case opened](https://raw.githubusercontent.com/warhog/fpvlaptracker/master/hardware-single-node/top.png)
-![3d printed case](https://raw.githubusercontent.com/warhog/fpvlaptracker/master/hardware-single-node/fpvlaptrackerunit.jpg)
-![3d printed case opened](https://raw.githubusercontent.com/warhog/fpvlaptracker/master/hardware-single-node/fpvlaptrackerunit_open.jpg)
+![3d printed case](https://raw.githubusercontent.com/warhog/fpvlaptracker/master/hardware/bottom.png)
+![3d printed case opened](https://raw.githubusercontent.com/warhog/fpvlaptracker/master/hardware/top.png)
+![3d printed case](https://raw.githubusercontent.com/warhog/fpvlaptracker/master/hardware/fpvlaptrackerunit.jpg)
+![3d printed case opened](https://raw.githubusercontent.com/warhog/fpvlaptracker/master/hardware/fpvlaptrackerunit_open.jpg)
 
 ## schematics
 the schematics and pcb are drawn using KiCAD5 (see schematics folder).
 
-[pdf schematics](https://raw.githubusercontent.com/warhog/fpvlaptracker-hardware/master/fpvlaptracker32/schematics/schematic.pdf)
+[pdf schematics](https://raw.githubusercontent.com/warhog/fpvlaptracker/master/hardware/schematics/schematic.pdf)
 
 ## bom (bill of material)
 
-most of the pcb parts are found in the [bom csv file](https://github.com/warhog/fpvlaptracker-hardware/blob/master/fpvlaptracker32/fpvlaptracker32-bom.csv).
+most of the pcb parts are found in the [bom csv file](https://github.com/warhog/fpvlaptracker/blob/master/hardware/fpvlaptracker32-bom.csv).
 
 some additional parts are needed optionally:
 * heatsink with 20x20 mm and heatsink glue for the rx5808
