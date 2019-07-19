@@ -1,3 +1,3 @@
 # fpvlaptracker firmware
 
-see [../docs/firmware.md] for more information
+see [../docs/firmware.md](here) for more information
