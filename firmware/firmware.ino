@@ -12,7 +12,7 @@
  * 
  * The MIT License (MIT)
  * 
- * Copyright (c) 2017-2018 warhog
+ * Copyright (c) 2017-2019 warhog
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,8 +33,8 @@
  * 
  * 
  * blink codes:
- * slow blinking - standalone mode
- * fast blinking - connected mode
+ * fast blinking - standalone mode
+ * no blinking - connected mode
  * blinking 2 times - BT init failed
  * blinking 3 times - mdns not started
  * blinking 9 times - shutdown voltage
