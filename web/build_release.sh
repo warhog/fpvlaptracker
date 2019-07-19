@@ -7,13 +7,11 @@ if [ $# -eq 0 ]; then
 fi
 
 VERSION=$1
-START_BRANCH=`git branch | grep \* | cut -d ' ' -f2`
 START_PATH=`pwd`
 
-git checkout release/${VERSION} >/dev/null 2>&1
+git checkout ${VERSION} >/dev/null
 if [[ $? -gt 0 ]]; then
-    echo "git branch release/${VERSION} not found"
-    git checkout ${CURRENT_BRANCH}
+    echo "cannot checkout tag ${VERSION}"
     exit
 fi
 echo "build release version ${VERSION}"
@@ -32,4 +30,4 @@ zip -9 -r fpvlaptracker-${VERSION}.zip *
 cp fpvlaptracker-${VERSION}.zip ${START_PATH}/fpvlaptracker-${VERSION}.zip
 cd ${START_PATH}
 
-git checkout ${START_BRANCH}
+git checkout master

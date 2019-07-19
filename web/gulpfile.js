@@ -13,7 +13,7 @@ var changed = require('gulp-changed'),
         ngAnnotate = require('gulp-ng-annotate'),
         sourcemaps = require('gulp-sourcemaps'),
         del = require('del'),
-        injectVersion = require('gulp-inject-version');
+        injectVersion = require('gulp-inject-version2');
 
 var srcPath = './src/main/resources/static_src';
 var destPath = './src/main/resources/static';
