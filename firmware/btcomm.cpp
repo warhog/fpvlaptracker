@@ -264,9 +264,10 @@ void BtComm::prepareJson() {
     this->_jsonDocument.clear();
 }
 
-void BtComm::sendVoltageAlarm() {
+void BtComm::sendVoltageAlarm(double voltage) {
     this->prepareJson();
     this->_jsonDocument["type"] = "alarm";
+    this->_jsonDocument["voltage"] = voltage;
     this->_jsonDocument["msg"] = "Battery voltage low!";
     this->sendJson();
 }

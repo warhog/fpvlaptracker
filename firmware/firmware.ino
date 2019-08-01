@@ -63,7 +63,7 @@
 //#define DEBUG
 //#define MEASURE
 
-#define VERSION "FLT32-R1.4"
+#define VERSION "FLT32-R1.5"
 
 // pin configurations
 const unsigned int PIN_SPI_SLAVE_SELECT = 16;
@@ -222,13 +222,13 @@ void loop() {
 #ifdef DEBUG
 			Serial.println(F("bt voltage sendAlarm"));
 #endif
-			btComm.sendVoltageAlarm();
+			btComm.sendVoltageAlarm(batteryMgr.getVoltage());
 		}
 		if (wifiComm.isConnected()) {
 #ifdef DEBUG
 			Serial.println(F("wifi voltage sendAlarm"));
 #endif
-			wifiComm.sendVoltageAlarm();
+			wifiComm.sendVoltageAlarm(batteryMgr.getVoltage());
 		}
 	}
 

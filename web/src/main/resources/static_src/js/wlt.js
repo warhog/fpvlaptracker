@@ -444,7 +444,15 @@ angular.module('wlt', ['ngRoute', 'home', 'state', 'settings', 'participants', '
                         var status = JSON.parse(data.body);
                         if (status.udp !== undefined) {
                             var statusUdpDiv = angular.element(document.querySelector("#statusUdp"));
-                            statusUdpDiv.html(status.udp);
+                            if (status.udp == "down") {
+                                statusUdpDiv.html(status.udp);
+                                statusUdpDiv.addClass("blink bold");
+                            } else {
+                                statusUdpDiv.html(status.udp);
+                                statusUdpDiv.removeClass("blink bold");
+                            }
+                        } else {
+                            statusUdpDiv.html("unavailable");
                         }
                     });
                 }, function () {

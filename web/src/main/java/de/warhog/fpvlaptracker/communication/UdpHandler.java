@@ -1,15 +1,20 @@
 package de.warhog.fpvlaptracker.communication;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.warhog.fpvlaptracker.communication.entities.UdpPacket;
 import de.warhog.fpvlaptracker.communication.entities.UdpPacketBatteryLow;
 import de.warhog.fpvlaptracker.communication.entities.UdpPacketBatteryShutdown;
 import de.warhog.fpvlaptracker.communication.entities.UdpPacketCalibrationDone;
 import de.warhog.fpvlaptracker.communication.entities.UdpPacketLap;
 import de.warhog.fpvlaptracker.communication.entities.UdpPacketMessage;
 import de.warhog.fpvlaptracker.communication.entities.UdpPacketRegister;
+import de.warhog.fpvlaptracker.communication.entities.UdpPacketRegisterRequest;
+import de.warhog.fpvlaptracker.communication.entities.UdpPacketRegisterResponse;
 import de.warhog.fpvlaptracker.communication.entities.UdpPacketRssi;
 import de.warhog.fpvlaptracker.communication.entities.UdpPacketScan;
+import de.warhog.fpvlaptracker.configuration.ApplicationConfig;
 import de.warhog.fpvlaptracker.controllers.WebSocketController;
 import de.warhog.fpvlaptracker.entities.Participant;
 import de.warhog.fpvlaptracker.race.RaceLogicHandler;
@@ -40,10 +45,14 @@ public class UdpHandler implements Runnable {
 
     private static final Logger LOG = LoggerFactory.getLogger(UdpHandler.class);
 
-    private DatagramSocket socket;
     private Boolean run = true;
     private Thread thr;
+    private Thread broadcastThread;
+    private Thread unicastThread;
     private Long lastPacketReceived = 0L;
+
+    @Autowired
+    private ApplicationConfig applicationConfig;
 
     @Autowired
     private RaceLogicHandler race;
@@ -64,33 +73,19 @@ public class UdpHandler implements Runnable {
     private LedService ledService;
 
     public void setup() {
-        try {
-            LOG.info("setting up udp receiver");
-            socket = new DatagramSocket(31337, InetAddress.getByName("0.0.0.0"));
-            thr = new Thread(this);
-            thr.start();
-        } catch (UnknownHostException | SocketException ex) {
-            LOG.error(ex.getMessage(), ex);
-            throw new RuntimeException(ex.getMessage());
-        }
+        thr = new Thread(this, "UdphandlerMain");
+        thr.start();
     }
 
     public void stop() {
         LOG.info("stopping udp receiver");
         run = false;
         thr.interrupt();
+        unicastThread.interrupt();
+        broadcastThread.interrupt();
     }
 
-    private void processRegister(UdpPacketRegister udpPacketRegister) {
-        String ipStr = getIpFromLong(udpPacketRegister.getIp());
-        InetAddress inetAddress;
-        try {
-            inetAddress = InetAddress.getByName(ipStr);
-        } catch (UnknownHostException ex) {
-            LOG.error("invalid ip address given: " + ipStr, ex);
-            throw new RuntimeException("invalid ip");
-        }
-
+    private void processRegister(UdpPacketRegister udpPacketRegister, InetAddress sourceInetAddress) {
         try {
             String name = udpPacketRegister.getChipid().toString();
             try {
@@ -98,7 +93,7 @@ public class UdpHandler implements Runnable {
             } catch (ServiceLayerException ex) {
                 LOG.debug("no name for chipid " + udpPacketRegister.getChipid());
             }
-            Participant participant = new Participant(name, udpPacketRegister.getChipid(), inetAddress);
+            Participant participant = new Participant(name, udpPacketRegister.getChipid(), sourceInetAddress);
             if (participantsService.hasParticipant(participant)) {
                 LOG.error("participant already existing: " + udpPacketRegister.getChipid(), participant);
                 return;
@@ -107,6 +102,12 @@ public class UdpHandler implements Runnable {
             webSocketController.sendNewParticipantMessage(udpPacketRegister.getChipid());
             audioService.speakRegistered(participant.getName());
             LOG.info("registered participant: " + participant.toString());
+
+            // reply with UdpPacketRegisterResponse
+            UdpPacketRegisterResponse udpPacketRegisterResponse = new UdpPacketRegisterResponse(udpPacketRegister.getChipid(), InetAddress.getByName(applicationConfig.getNetworkServerIp()));
+            LOG.debug("send registration response: " + udpPacketRegisterResponse.toString());
+            sendDataUnicast(sourceInetAddress, udpPacketRegisterResponse);
+
         } catch (Exception ex) {
             LOG.error(ex.getMessage(), ex);
         }
@@ -135,92 +136,174 @@ public class UdpHandler implements Runnable {
         }
     }
 
+    private class UdpHandlerBroadcast implements Runnable {
+
+        @Override
+        public void run() {
+            LOG.info("udp broadcast receiver thread running");
+
+            DatagramSocket socket = null;
+            try {
+                LOG.info("setting up udp receiver on broadcast ip: " + applicationConfig.getNetworkServerBroadcast());
+                socket = new DatagramSocket(31337, InetAddress.getByName(applicationConfig.getNetworkServerBroadcast()));
+            } catch (UnknownHostException | SocketException ex) {
+                LOG.error("cannot setup broadcast udp receiver: " + ex.getMessage(), ex);
+                throw new RuntimeException(ex.getMessage());
+            }
+
+            LOG.info("send out request registration broadcast");
+            requestRegistrationBroadcast();
+
+            while (run) {
+                try {
+                    byte data[] = new byte[4096];
+                    DatagramPacket packet = new DatagramPacket(data, data.length);
+                    LOG.debug("waiting for broadcast packet");
+                    socket.receive(packet);
+                    LOG.debug("got broadcast packet: " + new String(packet.getData(), Charset.defaultCharset()).trim());
+
+                    processIncomingPacket(socket, packet);
+                } catch (Exception ex) {
+                    LOG.error("error during broadcast handler run: " + ex.getMessage(), ex);
+                }
+            }
+        }
+    }
+
+    private class UdpHandlerUnicast implements Runnable {
+
+        @Override
+        public void run() {
+            LOG.info("udp unicast receiver thread running");
+
+            DatagramSocket socket = null;
+            try {
+                LOG.info("setting up udp receiver on unicast ip: " + applicationConfig.getNetworkServerIp());
+                socket = new DatagramSocket(31337, InetAddress.getByName(applicationConfig.getNetworkServerIp()));
+            } catch (UnknownHostException | SocketException ex) {
+                LOG.error("cannot setup unicast udp receiver: " + ex.getMessage(), ex);
+                throw new RuntimeException(ex.getMessage());
+            }
+
+            while (run) {
+                try {
+                    byte data[] = new byte[4096];
+                    DatagramPacket packet = new DatagramPacket(data, data.length);
+                    LOG.debug("waiting for unicast packet");
+                    socket.receive(packet);
+                    LOG.debug("got unicast packet: " + new String(packet.getData(), Charset.defaultCharset()).trim());
+
+                    processIncomingPacket(socket, packet);
+                } catch (Exception ex) {
+                    LOG.error("error during unicast handler run: " + ex.getMessage(), ex);
+                }
+            }
+        }
+    }
+
     @SuppressFBWarnings(value = "REC_CATCH_EXCEPTION", justification = "catch exception to make sure all types of exceptions are catched and the loop is not ended in this cases")
+    public void processIncomingPacket(DatagramSocket socket, DatagramPacket packet) {
+        LOG.debug("processing incoming packet");
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            // test if address is from any local address, if so skip this as we sent it out
+            if (testLocalAddress(((InetSocketAddress) packet.getSocketAddress()).getAddress())) {
+                LOG.debug("packet from any local address, skipping");
+                return;
+            }
+
+            lastPacketReceived = System.currentTimeMillis();
+
+            String packetString = new String(packet.getData(), Charset.defaultCharset()).trim();
+            if (!isValidJson(packetString)) {
+                LOG.debug("invalid json string, skipping");
+                return;
+            }
+            JsonNode rootNode = mapper.readValue(packetString, JsonNode.class);
+            PacketType packetType;
+            try {
+                packetType = PacketType.valueOf(rootNode.path("type").asText().toUpperCase());
+            } catch (IllegalArgumentException ex) {
+                LOG.debug("cannot get packettype, skipping");
+                return;
+            }
+            LOG.debug("packet type is " + packetType);
+
+            switch (packetType) {
+                case REGISTER32:
+                    UdpPacketRegister udpPacketRegister = mapper.readValue(packet.getData(), UdpPacketRegister.class);
+                    udpPacketRegister.setPacketType(packetType);
+                    processRegister(udpPacketRegister, packet.getAddress());
+                    break;
+                case REGISTERLED:
+                    UdpPacketRegister udpPacketRegisterLed = mapper.readValue(packet.getData(), UdpPacketRegister.class);
+                    udpPacketRegisterLed.setPacketType(packetType);
+                    processRegisterLed(udpPacketRegisterLed, packet.getAddress());
+                    break;
+                case LAP:
+                    UdpPacketLap udpPacketLap = mapper.readValue(packet.getData(), UdpPacketLap.class);
+                    udpPacketLap.setPacketType(packetType);
+                    processLap(udpPacketLap, packet.getAddress());
+                    break;
+                case RSSI:
+                    UdpPacketRssi udpPacketRssi = mapper.readValue(packet.getData(), UdpPacketRssi.class);
+                    udpPacketRssi.setPacketType(packetType);
+                    processRssi(udpPacketRssi, packet.getAddress());
+                    break;
+                case SCAN:
+                    UdpPacketScan udpPacketScan = mapper.readValue(packet.getData(), UdpPacketScan.class);
+                    udpPacketScan.setPacketType(packetType);
+                    processScan(udpPacketScan, packet.getAddress());
+                    break;
+                case CALIBRATIONDONE:
+                    LOG.info("got calibration packet");
+                    UdpPacketCalibrationDone udpPacketCalibrationDone = mapper.readValue(packet.getData(), UdpPacketCalibrationDone.class);
+                    udpPacketCalibrationDone.setPacketType(packetType);
+                    processCalibrationDone(udpPacketCalibrationDone);
+                    break;
+                case MESSAGE:
+                    LOG.info("got message packet");
+                    UdpPacketMessage udpPacketMessage = mapper.readValue(packet.getData(), UdpPacketMessage.class);
+                    udpPacketMessage.setPacketType(packetType);
+                    processMessage(udpPacketMessage);
+                    break;
+                case BATTERY_LOW:
+                    LOG.info("got battery low packet");
+                    UdpPacketBatteryLow udpPacketBatteryLow = mapper.readValue(packet.getData(), UdpPacketBatteryLow.class);
+                    udpPacketBatteryLow.setPacketType(packetType);
+                    processBatteryLow(udpPacketBatteryLow);
+                    break;
+                case BATTERY_SHUTDOWN:
+                    LOG.info("got battery shutdown packet");
+                    UdpPacketBatteryShutdown udpPacketBatteryShutdown = mapper.readValue(packet.getData(), UdpPacketBatteryShutdown.class);
+                    udpPacketBatteryShutdown.setPacketType(packetType);
+                    processBatteryShutdown(udpPacketBatteryShutdown);
+                    break;
+                default:
+                    LOG.error("unknown packet type: " + packetType);
+                    break;
+            }
+
+        } catch (Exception ex) {
+            LOG.error("error during handler run: " + ex.getMessage(), ex);
+        }
+    }
+
     @Override
     public void run() {
-        LOG.info("udp receiver running");
-        requestRegistrationBroadcast();
-        ObjectMapper mapper = new ObjectMapper();
+        LOG.debug("udphandler thread running, starting subthreads");
+
+        broadcastThread = new Thread(new UdpHandlerBroadcast(), "BroadcastUdpHandler");
+        unicastThread = new Thread(new UdpHandlerUnicast(), "UnicastUdpHandler");
+        broadcastThread.start();
+        unicastThread.start();
+
         while (run) {
             try {
-                byte data[] = new byte[1024];
-                DatagramPacket packet = new DatagramPacket(data, data.length);
-                LOG.debug("waiting for packet");
-                socket.receive(packet);
-                LOG.debug("got packet: " + new String(packet.getData(), Charset.defaultCharset()).trim());
+                Thread.sleep(100);
+            } catch (InterruptedException ex) {
+                LOG.debug("interrupted udp handler thread");
 
-                lastPacketReceived = System.currentTimeMillis();
-
-                String packetString = new String(packet.getData(), Charset.defaultCharset()).trim();
-                if (!isValidJson(packetString)) {
-                    LOG.debug("invalid json string, skipping");
-                    continue;
-                }
-                JsonNode rootNode = mapper.readValue(packetString, JsonNode.class);
-                PacketType packetType = PacketType.valueOf(rootNode.path("type").asText().toUpperCase());
-                LOG.debug("packet type is " + packetType);
-
-                switch (packetType) {
-                    case REGISTER32:
-                        UdpPacketRegister udpPacketRegister = mapper.readValue(packet.getData(), UdpPacketRegister.class);
-                        udpPacketRegister.setPacketType(packetType);
-                        processRegister(udpPacketRegister);
-                        break;
-                    case REGISTERLED:
-                        UdpPacketRegister udpPacketRegisterLed = mapper.readValue(packet.getData(), UdpPacketRegister.class);
-                        udpPacketRegisterLed.setPacketType(packetType);
-                        processRegisterLed(udpPacketRegisterLed);
-                        break;
-                    case LAP:
-                        UdpPacketLap udpPacketLap = mapper.readValue(packet.getData(), UdpPacketLap.class);
-                        udpPacketLap.setPacketType(packetType);
-                        processLap(udpPacketLap, packet.getAddress());
-                        break;
-                    case RSSI:
-                        UdpPacketRssi udpPacketRssi = mapper.readValue(packet.getData(), UdpPacketRssi.class);
-                        udpPacketRssi.setPacketType(packetType);
-                        processRssi(udpPacketRssi, packet.getAddress());
-                        break;
-                    case SCAN:
-                        UdpPacketScan udpPacketScan = mapper.readValue(packet.getData(), UdpPacketScan.class);
-                        udpPacketScan.setPacketType(packetType);
-                        processScan(udpPacketScan, packet.getAddress());
-                        break;
-                    case CALIBRATIONDONE:
-                        LOG.info("got calibration packet");
-                        UdpPacketCalibrationDone udpPacketCalibrationDone = mapper.readValue(packet.getData(), UdpPacketCalibrationDone.class);
-                        udpPacketCalibrationDone.setPacketType(packetType);
-                        processCalibrationDone(udpPacketCalibrationDone);
-                        break;
-                    case MESSAGE:
-                        LOG.info("got message packet");
-                        UdpPacketMessage udpPacketMessage = mapper.readValue(packet.getData(), UdpPacketMessage.class);
-                        udpPacketMessage.setPacketType(packetType);
-                        processMessage(udpPacketMessage);
-                        break;
-                    case BATTERY_LOW:
-                        LOG.info("got battery low packet");
-                        UdpPacketBatteryLow udpPacketBatteryLow = mapper.readValue(packet.getData(), UdpPacketBatteryLow.class);
-                        udpPacketBatteryLow.setPacketType(packetType);
-                        processBatteryLow(udpPacketBatteryLow);
-                        break;
-                    case BATTERY_SHUTDOWN:
-                        LOG.info("got battery shutdown packet");
-                        UdpPacketBatteryShutdown udpPacketBatteryShutdown = mapper.readValue(packet.getData(), UdpPacketBatteryShutdown.class);
-                        udpPacketBatteryShutdown.setPacketType(packetType);
-                        processBatteryShutdown(udpPacketBatteryShutdown);
-                        break;
-                    default:
-                        if (testLocalAddress(((InetSocketAddress) packet.getSocketAddress()).getAddress())) {
-                            LOG.info("packet from same ip");
-                            continue;
-                        }
-                        LOG.error("unknown packet type: " + packetType);
-                        break;
-                }
-
-            } catch (Exception ex) {
-                LOG.error("error during handler run: " + ex.getMessage(), ex);
             }
         }
     }
@@ -238,7 +321,9 @@ public class UdpHandler implements Runnable {
     @Scheduled(fixedDelay = 10000L)
     public void sendUdpStatus() {
         String status = "down";
-        if (this.run && this.thr != null && this.thr.isAlive()) {
+        if (this.run && this.thr != null && this.thr.isAlive()
+                && this.broadcastThread != null && this.broadcastThread.isAlive()
+                && this.unicastThread != null && this.unicastThread.isAlive()) {
             status = "up";
             if (System.currentTimeMillis() > (this.lastPacketReceived + 10 * 60 * 1000)) {
                 status += " (no msg)";
@@ -248,41 +333,58 @@ public class UdpHandler implements Runnable {
     }
 
     private void requestRegistration(InetAddress address) {
-        byte data[] = new byte[1024];
-        DatagramPacket packet = new DatagramPacket(data, data.length, address, 31337);
-        String request = "requestRegistration";
-        packet.setData(request.getBytes(Charset.defaultCharset()));
-        try {
-            socket.send(packet);
-        } catch (IOException ex) {
-            LOG.error("cannot send registration request");
-        }
+        LOG.info("sending request registration unicast to " + address.toString());
+        sendDataBroadcast(new UdpPacketRegisterRequest());
     }
 
     private void requestRegistrationBroadcast() {
         LOG.info("sending request registration broadcast");
-        sendDataBroadcast("requestRegistration");
+        sendDataBroadcast(new UdpPacketRegisterRequest());
+    }
+
+    public void sendDataBroadcast(UdpPacket data) {
+        LOG.debug("send data broadcast: " + data.toString());
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            sendDataBroadcast(objectMapper.writeValueAsString(data));
+        } catch (JsonProcessingException ex) {
+            LOG.error("cannot stringify data: " + ex.getMessage(), ex);
+            throw new RuntimeException("cannot stringify data: " + ex.getMessage());
+        }
     }
 
     public void sendDataBroadcast(String data) {
-        LOG.info("sending broadcast: " + data);
+        LOG.debug("sending broadcast: " + data);
         byte dataBuf[] = new byte[1024];
         try {
-            DatagramPacket packet = new DatagramPacket(dataBuf, dataBuf.length, InetAddress.getByName("255.255.255.255"), 31337);
+            DatagramPacket packet = new DatagramPacket(dataBuf, dataBuf.length, InetAddress.getByName(applicationConfig.getNetworkServerBroadcast()), 31337);
             packet.setData(data.getBytes(Charset.defaultCharset()));
-            socket.send(packet);
+            DatagramSocket datagramSocket = new DatagramSocket();
+            datagramSocket.send(packet);
         } catch (IOException ex) {
             LOG.error("cannot send data broadcast: " + ex.getMessage(), ex);
         }
     }
 
+    public void sendDataUnicast(InetAddress inetAddress, UdpPacket data) {
+        LOG.debug("send data unicast to " + inetAddress.toString() + ": " + data.toString());
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            sendDataUnicast(inetAddress, objectMapper.writeValueAsString(data));
+        } catch (JsonProcessingException ex) {
+            LOG.error("cannot stringify data: " + ex.getMessage(), ex);
+            throw new RuntimeException("cannot stringify data: " + ex.getMessage());
+        }
+    }
+
     public void sendDataUnicast(InetAddress inetAddress, String data) {
-        LOG.info("sending unicast to " + inetAddress.toString() + ": " + data);
+        LOG.debug("sending unicast to " + inetAddress.toString() + ": " + data);
         byte dataBuf[] = new byte[1024];
         try {
             DatagramPacket packet = new DatagramPacket(dataBuf, dataBuf.length, inetAddress, 31337);
             packet.setData(data.getBytes(Charset.defaultCharset()));
-            socket.send(packet);
+            DatagramSocket datagramSocket = new DatagramSocket();
+            datagramSocket.send(packet);
         } catch (IOException ex) {
             LOG.error("cannot send data unicast: " + ex.getMessage(), ex);
         }
@@ -312,7 +414,7 @@ public class UdpHandler implements Runnable {
         } else {
             String participantName = participantsService.getParticipant(udpPacketBatteryLow.getChipid()).getName();
             audioService.speakBatteryLow(participantName);
-            webSocketController.sendAlertMessage(WebSocketController.WarningMessageTypes.WARNING, "battery low", "battery of participant " + participantName + " is almost empty");
+            webSocketController.sendAlertMessage(WebSocketController.WarningMessageTypes.WARNING, "battery low", "battery of participant " + participantName + " is almost empty (" + String.format("%.1f", udpPacketBatteryLow.getVoltage()) + " Volt)");
         }
     }
 
@@ -326,30 +428,13 @@ public class UdpHandler implements Runnable {
         }
     }
 
-    private String getIpFromLong(Long ip) {
-        String ipStr = String.format("%d.%d.%d.%d",
-                (ip & 0xff),
-                (ip >> 8 & 0xff),
-                (ip >> 16 & 0xff),
-                (ip >> 24 & 0xff));
-        return ipStr;
-    }
+    private void processRegisterLed(UdpPacketRegister udpPacketRegisterLed, InetAddress sourceInetAddress) {
 
-    private void processRegisterLed(UdpPacketRegister udpPacketRegisterLed) {
-        String ipStr = getIpFromLong(udpPacketRegisterLed.getIp());
-        InetAddress inetAddress;
-        try {
-            inetAddress = InetAddress.getByName(ipStr);
-        } catch (UnknownHostException ex) {
-            LOG.error("invalid ip address given: " + ipStr, ex);
-            throw new RuntimeException("invalid ip");
-        }
-
-        ledService.addInetAddress(inetAddress);
+        ledService.addInetAddress(sourceInetAddress);
 
         try {
-            audioService.speakRegistered("LED");
-            LOG.info("registered led board: " + inetAddress.toString());
+            audioService.speakRegistered("LED board");
+            LOG.info("registered led board: " + sourceInetAddress.toString());
         } catch (Exception ex) {
             LOG.error(ex.getMessage(), ex);
         }
@@ -365,7 +450,7 @@ public class UdpHandler implements Runnable {
             webSocketController.sendRssiMessage(udpPacketRssi.getChipid(), udpPacketRssi.getRssi());
         }
     }
-    
+
     private void processScan(UdpPacketScan udpPacketScan, InetAddress address) {
         if (!participantsService.hasParticipant(udpPacketScan.getChipid())) {
             LOG.info("got scan from non registered participant");

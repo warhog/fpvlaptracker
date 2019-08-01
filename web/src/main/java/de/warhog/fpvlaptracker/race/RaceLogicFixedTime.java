@@ -301,7 +301,7 @@ public class RaceLogicFixedTime implements IRaceLogic {
             thread = null;
         }
         raceRunnable = new RaceRunnable();
-        thread = new Thread(raceRunnable);
+        thread = new Thread(raceRunnable, "RaceLogicFixedTimeRunnable");
         thread.start();
         ledService.expandColor(Color.BLUE, 150);
         audioService.speakPleasePrepareForRace();

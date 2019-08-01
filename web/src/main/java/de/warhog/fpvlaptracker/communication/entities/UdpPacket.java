@@ -17,7 +17,7 @@ public class UdpPacket {
         return packetType;
     }
 
-    public void setPacketType(PacketType packetType) {
+    public final void setPacketType(PacketType packetType) {
         this.packetType = packetType;
     }
     
@@ -25,13 +25,13 @@ public class UdpPacket {
         return type;
     }
 
-    public void setType(String type) {
+    public final void setType(String type) {
         this.type = type;
     }
 
     @Override
     public String toString() {
-        return "UdpPacket{" + "type=" + type + '}';
+        return "UdpPacket{" + "type=" + type + ", packetType=" + packetType + '}';
     }
 
 }

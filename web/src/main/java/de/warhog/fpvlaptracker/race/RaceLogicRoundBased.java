@@ -160,7 +160,7 @@ public class RaceLogicRoundBased implements IRaceLogic {
 
         stopCountdownThread();
         countdownRunnable = new Countdown();
-        countdownThread = new Thread(countdownRunnable);
+        countdownThread = new Thread(countdownRunnable, "RaceLogicRoundBasedCountdown");
         countdownThread.start();
     }
 

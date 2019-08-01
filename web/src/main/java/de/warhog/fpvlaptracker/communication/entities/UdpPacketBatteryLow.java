@@ -10,6 +10,7 @@ public class UdpPacketBatteryLow extends UdpPacket {
     private static final Logger LOG = LoggerFactory.getLogger(UdpPacketBatteryLow.class);
 
     private Long chipid;
+    private Double voltage;
 
     public Long getChipid() {
         return chipid;
@@ -19,9 +20,17 @@ public class UdpPacketBatteryLow extends UdpPacket {
         this.chipid = chipid;
     }
 
+    public Double getVoltage() {
+        return voltage;
+    }
+
+    public void setVoltage(Double voltage) {
+        this.voltage = voltage;
+    }
+
     @Override
     public String toString() {
-        return "UdpPacketBatteryLow{" + "chipid=" + chipid + '}';
+        return "UdpPacketBatteryLow{" + "chipid=" + chipid + ", voltage=" + voltage + '}';
     }
 
 }
