@@ -8,7 +8,7 @@ const unsigned int UDP_PORT = 31337;
 WifiComm::WifiComm(util::Storage *storage, lap::Rssi *rssi, radio::Rx5808 *rx5808, lap::LapDetector *lapDetector,
     battery::BatteryMgr *batteryMgr, const char *version, statemanagement::StateManager *stateManager,
     unsigned long *loopTime) :
-    Comm(storage, rssi, rx5808, lapDetector, batteryMgr, version, stateManager, loopTime), _wifiSsidFound(false), _jsonDocument(1024) {
+    Comm(storage, rssi, rx5808, lapDetector, batteryMgr, version, stateManager, loopTime), _wifiSsidFound(false), _jsonDocument(1024), _serverIp("") {
         this->_version = version;
 }
 
@@ -94,12 +94,28 @@ String WifiComm::generateJsonString() {
     return result;
 }
 
-void WifiComm::sendUdpMessage(String msg) {
+void WifiComm::sendUdpBroadcastMessage(String msg) {
 #ifdef DEBUG
-    Serial.print(F("sending udp message: "));
+    Serial.print(F("sending udp broadcast message: "));
     Serial.println(msg);
 #endif
     this->_udp.beginPacket(this->getBroadcastIP().c_str(), UDP_PORT);
+    this->_udp.print(msg.c_str());
+    this->_udp.endPacket();
+}
+
+void WifiComm::sendUdpUnicastToServerMessage(String msg) {
+    if (this->_serverIp.length() == 0) {
+#ifdef DEBUG
+        Serial.println(F("serverIP is empty"));
+#endif
+        return;
+    }
+#ifdef DEBUG
+    Serial.print(F("sending udp unicast message: "));
+    Serial.println(msg);
+#endif
+    this->_udp.beginPacket(this->_serverIp.c_str(), UDP_PORT);
     this->_udp.print(msg.c_str());
     this->_udp.endPacket();
 }
@@ -110,7 +126,7 @@ void WifiComm::sendScanData(unsigned int frequency, unsigned int rssi) {
     this->_jsonDocument["chipid"] = comm::CommTools::getChipIdAsString();
     this->_jsonDocument["frequency"] = frequency;
     this->_jsonDocument["rssi"] = rssi;
-    this->sendUdpMessage(this->generateJsonString());
+    this->sendUdpUnicastToServerMessage(this->generateJsonString());
     this->_udp.flush();
 }
 
@@ -119,7 +135,7 @@ void WifiComm::sendFastRssiData(unsigned int rssi) {
     this->_jsonDocument["type"] = "rssi";
     this->_jsonDocument["chipid"] = comm::CommTools::getChipIdAsString();
     this->_jsonDocument["rssi"] = rssi;
-    this->sendUdpMessage(this->generateJsonString());
+    this->sendUdpUnicastToServerMessage(this->generateJsonString());
 }
 
 void WifiComm::lap(unsigned long duration, unsigned int rssi) {
@@ -131,30 +147,50 @@ void WifiComm::lap(unsigned long duration, unsigned int rssi) {
     this->_jsonDocument["chipid"] = comm::CommTools::getChipIdAsString();
     this->_jsonDocument["duration"] = duration;
     this->_jsonDocument["rssi"] = rssi;
-    this->sendUdpMessage(this->generateJsonString());
+    this->sendUdpUnicastToServerMessage(this->generateJsonString());
 }
 
 void WifiComm::processIncomingMessage() {
     int packetSize = this->_udp.parsePacket();
     if (packetSize) {
-        char incomingPacket[255];
-        int len = this->_udp.read(incomingPacket, 255);
+        char incomingPacket[1024];
+        int len = this->_udp.read(incomingPacket, 1024);
         if (len > 0) {
             incomingPacket[len] = 0;
         }
 #ifdef DEBUG
         Serial.printf("incoming packet: %s\n", incomingPacket);
 #endif
-        if (strncmp(incomingPacket, "requestRegistration", 19) == 0) {
+        this->_jsonDocument.clear();
+        DeserializationError error = deserializeJson(this->_jsonDocument, incomingPacket);
+        if (error) {
 #ifdef DEBUG
-            Serial.println(F("got request registration packet"));
+            Serial.print(F("deserializeJson() failed: "));
+            Serial.println(error.c_str());
+#endif
+            String errorMsg = "json deserialize error: ";
+            errorMsg += error.c_str();
+            this->sendUdpBroadcastMessage(errorMsg);
+            return;
+        }
+
+        if (strncmp(this->_jsonDocument["type"], "registerrequest", 15) == 0) {
+#ifdef DEBUG
+            Serial.println(F("got register request packet"));
 #endif
             this->reg();
-        } else if (strncmp(incomingPacket, "requestData", 11) == 0) {
+        } else if (strncmp(this->_jsonDocument["type"], "requestdata", 11) == 0) {
 #ifdef DEBUG
             Serial.println(F("got request data packet"));
 #endif
             this->sendData();
+        } else if (strncmp(this->_jsonDocument["type"], "registerresponse", 16) == 0) {
+#ifdef DEBUG
+            Serial.println(F("got register response data packet"));
+#endif
+            // TODO check if chipid is equal to the board chipid
+            String hostIp = this->_jsonDocument["hostIp"];
+            this->_serverIp = hostIp;
         }
     }
 }
@@ -166,8 +202,7 @@ void WifiComm::reg() {
     this->_jsonDocument.clear();
     this->_jsonDocument["type"] = "register32";
     this->_jsonDocument["chipid"] = comm::CommTools::getChipIdAsString();
-    this->_jsonDocument["ip"] = WiFi.localIP();
-    this->sendUdpMessage(this->generateJsonString());
+    this->sendUdpBroadcastMessage(this->generateJsonString());
 }
 
 /*---------------------------------------------------
@@ -188,24 +223,25 @@ void WifiComm::sendCalibrationDone() {
     this->_jsonDocument.clear();
     this->_jsonDocument["type"] = "calibrationdone";
     this->_jsonDocument["chipid"] = comm::CommTools::getChipIdAsString();
-    this->sendUdpMessage(this->generateJsonString());
+    this->sendUdpUnicastToServerMessage(this->generateJsonString());
 }
 
-void WifiComm::sendVoltageAlarm() {
+void WifiComm::sendVoltageAlarm(double voltage) {
 #ifdef DEBUG 
     Serial.println(F("sending voltage alarm message"));
 #endif
     this->_jsonDocument.clear();
     this->_jsonDocument["type"] = "battery_low";
+    this->_jsonDocument["voltage"] = voltage;
     this->_jsonDocument["chipid"] = comm::CommTools::getChipIdAsString();
-    this->sendUdpMessage(this->generateJsonString());
+    this->sendUdpUnicastToServerMessage(this->generateJsonString());
 }
 
 void WifiComm::sendData() {
 #ifdef DEBUG 
     Serial.println(F("sending data message"));
 #endif
-    this->sendUdpMessage(comm::CommTools::getDeviceDataAsJsonStringFromStorage(this->_storage, this->_stateManager, this->_lapDetector, this->_batteryMgr, *this->_loopTime, this->_rssi));
+    this->sendUdpUnicastToServerMessage(comm::CommTools::getDeviceDataAsJsonStringFromStorage(this->_storage, this->_stateManager, this->_lapDetector, this->_batteryMgr, *this->_loopTime, this->_rssi));
 }
 
 void WifiComm::disconnect() {

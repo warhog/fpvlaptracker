@@ -23,11 +23,12 @@ namespace comm {
         void lap(unsigned long duration, unsigned int rssi);
         int connect();
         void processIncomingMessage();
-        void sendUdpMessage(String msg);
+        void sendUdpUnicastToServerMessage(String msg);
+        void sendUdpBroadcastMessage(String msg);
         void sendCalibrationDone();
         void sendData();
         void disconnect();
-        void sendVoltageAlarm();
+        void sendVoltageAlarm(double voltage);
         void sendFastRssiData(unsigned int rssi);
         void sendScanData(unsigned int frequency, unsigned int rssi);
 
@@ -37,6 +38,7 @@ namespace comm {
         WiFiUDP _udp;
         bool _wifiSsidFound;
         DynamicJsonDocument _jsonDocument;
+        String _serverIp;
     };
 
 }
