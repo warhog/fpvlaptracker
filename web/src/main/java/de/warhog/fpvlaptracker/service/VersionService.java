@@ -1,6 +1,7 @@
 package de.warhog.fpvlaptracker.service;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,10 +15,20 @@ public class VersionService {
     private Properties versionProperties = new Properties();
 
     public VersionService() {
+        InputStream is = null;
         try {
-            versionProperties.load(this.getClass().getResourceAsStream("/version.properties"));
+            is = this.getClass().getResourceAsStream("/version.properties");
+            versionProperties.load(is);
         } catch (IOException ex) {
             LOG.error("cannot open version properties: " + ex.getMessage(), ex);
+        } finally {
+            try {
+                if (is != null) {
+                    is.close();
+                }
+            } catch (IOException ex) {
+                LOG.error("cannot close inputstream: " + ex.getMessage(), ex);
+            }
         }
     }
     

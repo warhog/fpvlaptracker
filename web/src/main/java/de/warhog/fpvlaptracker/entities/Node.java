@@ -3,6 +3,7 @@ package de.warhog.fpvlaptracker.entities;
 import de.warhog.fpvlaptracker.dtos.Rssi;
 import de.warhog.fpvlaptracker.dtos.StringResult;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.net.InetAddress;
 import java.time.Duration;
 import java.util.Objects;
@@ -243,6 +244,10 @@ public class Node {
     }
     
    private String buildUrl(InetAddress inetAddress, String uri) {
+       if (inetAddress == null) {
+           LOG.warn("call to buildUrl with inetAddress being null");
+           return "";
+       }
         return "http://" + inetAddress.getHostAddress() + "/" + uri;
     }
 
@@ -257,6 +262,7 @@ public class Node {
         return restTemplate;
     }
 
+    @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "null pointer dereferencing is intended")
     public Rssi loadRssi() {
         try {
             Rssi rssi = getRestTemplate().getForObject(buildUrl(getInetAddress(), "rssi"), Rssi.class);
@@ -268,10 +274,13 @@ public class Node {
         }
     }
 
+    @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH", justification = "null pointer dereferencing is intended")
     public void loadNodeDeviceData() {
         try {
             Node node = getRestTemplate().getForObject(buildUrl(getInetAddress(), "devicedata"), Node.class);
-            LOG.debug("loaded from node: " + node.toString());
+            if (node != null) {
+                LOG.debug("loaded from node: " + node.toString());
+            }
             node.setInetAddress(this.getInetAddress());
             node.setChipId(this.getChipId());
             copyFromNode(node);

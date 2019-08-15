@@ -20,4 +20,13 @@
     <Match>
         <Class name="de.warhog.fpvlaptracker.jooq.tables.Profiles" />
     </Match>
+    <Match>
+        <Class name="de.warhog.fpvlaptracker.jooq.tables.PersistentLogins" />
+    </Match>
+    <Match>
+        <Class name="de.warhog.fpvlaptracker.jooq.tables.pojos.PersistentLogins" />
+    </Match>
+    <Match>
+        <Class name="de.warhog.fpvlaptracker.jooq.tables.Pilots" />
+    </Match>
 </FindBugsFilter>

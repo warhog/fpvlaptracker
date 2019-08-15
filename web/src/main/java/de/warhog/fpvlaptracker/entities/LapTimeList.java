@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +31,7 @@ public class LapTimeList {
     public LapTimeListLap getLap(Integer lap) {
         LapTimeListLap result = null;
         for (LapTimeListLap lapTimeListLap : laps) {
-            if (lapTimeListLap.getLap() == lap) {
+            if (Objects.equals(lapTimeListLap.getLap(), lap)) {
                 result = lapTimeListLap;
             }
         }

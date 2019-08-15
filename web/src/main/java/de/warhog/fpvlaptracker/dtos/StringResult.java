@@ -11,8 +11,8 @@ public class StringResult {
 
     private String result;
 
-    public static String OK = "OK";
-    public static String NOK = "NOK";
+    public final static String OK = "OK";
+    public final static String NOK = "NOK";
     
     public StringResult() {
     }
