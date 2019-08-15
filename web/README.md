@@ -15,3 +15,4 @@ issue a `npm install` command in the project folder to install all node modules.
 
 ## build
 run the gradle build task to build the project (`gradle build`). the build/libs folder contains the final jar file including everything needed to run.
+

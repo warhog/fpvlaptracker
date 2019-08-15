@@ -39,7 +39,7 @@ running in the connected mode the tracker connects to a host software using wifi
     
 ## which hardware and software is used?
 the hardware consists of a esp32 board with a boscam rx5808 receiver module connected. the esp32 runs the tracker firmware (written using Arduino software platform).
-the backend of the race software for connected mode was written in java using spring boot. the frontend was developed using angularjs. the race software can be run on almost every platform that supports java se.
+the backend of the race software for connected mode was written in java using spring boot 2. the frontend was developed using angular 8. the race software can be run on almost every platform that supports java se.
 due to the low price, simplicity and size a raspberry pi (>= 2) powered by a power bank is the optimum solution for mobile usage.
 
 # repository information
