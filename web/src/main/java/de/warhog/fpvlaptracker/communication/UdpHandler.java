@@ -16,13 +16,11 @@ import de.warhog.fpvlaptracker.communication.entities.UdpPacketRssi;
 import de.warhog.fpvlaptracker.communication.entities.UdpPacketScan;
 import de.warhog.fpvlaptracker.configuration.ApplicationConfig;
 import de.warhog.fpvlaptracker.controllers.WebSocketController;
-import de.warhog.fpvlaptracker.entities.Participant;
+import de.warhog.fpvlaptracker.entities.Node;
 import de.warhog.fpvlaptracker.race.RaceLogicHandler;
 import de.warhog.fpvlaptracker.service.AudioService;
 import de.warhog.fpvlaptracker.service.LedService;
-import de.warhog.fpvlaptracker.service.ParticipantsDbService;
-import de.warhog.fpvlaptracker.service.ParticipantsService;
-import de.warhog.fpvlaptracker.service.ServiceLayerException;
+import de.warhog.fpvlaptracker.service.NodesService;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.awt.Color;
 import java.io.IOException;
@@ -55,15 +53,6 @@ public class UdpHandler implements Runnable {
     private ApplicationConfig applicationConfig;
 
     @Autowired
-    private RaceLogicHandler race;
-
-    @Autowired
-    private ParticipantsService participantsService;
-
-    @Autowired
-    private ParticipantsDbService participantsDbService;
-
-    @Autowired
     private WebSocketController webSocketController;
 
     @Autowired
@@ -71,6 +60,12 @@ public class UdpHandler implements Runnable {
 
     @Autowired
     private LedService ledService;
+    
+    @Autowired
+    private NodesService nodeService;
+    
+    @Autowired
+    private RaceLogicHandler raceLogicHandler;
 
     public void setup() {
         thr = new Thread(this, "UdphandlerMain");
@@ -87,21 +82,13 @@ public class UdpHandler implements Runnable {
 
     private void processRegister(UdpPacketRegister udpPacketRegister, InetAddress sourceInetAddress) {
         try {
-            String name = udpPacketRegister.getChipid().toString();
-            try {
-                name = participantsDbService.getNameForChipId(udpPacketRegister.getChipid());
-            } catch (ServiceLayerException ex) {
-                LOG.debug("no name for chipid " + udpPacketRegister.getChipid());
-            }
-            Participant participant = new Participant(name, udpPacketRegister.getChipid(), sourceInetAddress);
-            if (participantsService.hasParticipant(participant)) {
-                LOG.error("participant already existing: " + udpPacketRegister.getChipid(), participant);
+            Node node = new Node(udpPacketRegister.getChipid(), sourceInetAddress);
+            if (nodeService.hasNode(node)) {
+                LOG.error("node already existing: " + udpPacketRegister.getChipid(), node);
                 return;
             }
-            participantsService.addParticipant(participant);
-            webSocketController.sendNewParticipantMessage(udpPacketRegister.getChipid());
-            audioService.speakRegistered(participant.getName());
-            LOG.info("registered participant: " + participant.toString());
+            nodeService.addNode(node);
+            LOG.info("registered node: " + node.toString());
 
             // reply with UdpPacketRegisterResponse
             UdpPacketRegisterResponse udpPacketRegisterResponse = new UdpPacketRegisterResponse(udpPacketRegister.getChipid(), InetAddress.getByName(applicationConfig.getNetworkServerIp()));
@@ -162,7 +149,7 @@ public class UdpHandler implements Runnable {
                     socket.receive(packet);
                     LOG.debug("got broadcast packet: " + new String(packet.getData(), Charset.defaultCharset()).trim());
 
-                    processIncomingPacket(socket, packet);
+                    processIncomingPacket(socket, packet, true);
                 } catch (Exception ex) {
                     LOG.error("error during broadcast handler run: " + ex.getMessage(), ex);
                 }
@@ -193,7 +180,7 @@ public class UdpHandler implements Runnable {
                     socket.receive(packet);
                     LOG.debug("got unicast packet: " + new String(packet.getData(), Charset.defaultCharset()).trim());
 
-                    processIncomingPacket(socket, packet);
+                    processIncomingPacket(socket, packet, false);
                 } catch (Exception ex) {
                     LOG.error("error during unicast handler run: " + ex.getMessage(), ex);
                 }
@@ -202,12 +189,12 @@ public class UdpHandler implements Runnable {
     }
 
     @SuppressFBWarnings(value = "REC_CATCH_EXCEPTION", justification = "catch exception to make sure all types of exceptions are catched and the loop is not ended in this cases")
-    public void processIncomingPacket(DatagramSocket socket, DatagramPacket packet) {
+    public void processIncomingPacket(DatagramSocket socket, DatagramPacket packet, boolean ignoreLocalPackets) {
         LOG.debug("processing incoming packet");
         ObjectMapper mapper = new ObjectMapper();
         try {
             // test if address is from any local address, if so skip this as we sent it out
-            if (testLocalAddress(((InetSocketAddress) packet.getSocketAddress()).getAddress())) {
+            if (ignoreLocalPackets && testLocalAddress(((InetSocketAddress) packet.getSocketAddress()).getAddress())) {
                 LOG.debug("packet from any local address, skipping");
                 return;
             }
@@ -259,25 +246,25 @@ public class UdpHandler implements Runnable {
                     LOG.info("got calibration packet");
                     UdpPacketCalibrationDone udpPacketCalibrationDone = mapper.readValue(packet.getData(), UdpPacketCalibrationDone.class);
                     udpPacketCalibrationDone.setPacketType(packetType);
-                    processCalibrationDone(udpPacketCalibrationDone);
+                    processCalibrationDone(udpPacketCalibrationDone, packet.getAddress());
                     break;
                 case MESSAGE:
                     LOG.info("got message packet");
                     UdpPacketMessage udpPacketMessage = mapper.readValue(packet.getData(), UdpPacketMessage.class);
                     udpPacketMessage.setPacketType(packetType);
-                    processMessage(udpPacketMessage);
+                    processMessage(udpPacketMessage, packet.getAddress());
                     break;
                 case BATTERY_LOW:
                     LOG.info("got battery low packet");
                     UdpPacketBatteryLow udpPacketBatteryLow = mapper.readValue(packet.getData(), UdpPacketBatteryLow.class);
                     udpPacketBatteryLow.setPacketType(packetType);
-                    processBatteryLow(udpPacketBatteryLow);
+                    processBatteryLow(udpPacketBatteryLow, packet.getAddress());
                     break;
                 case BATTERY_SHUTDOWN:
                     LOG.info("got battery shutdown packet");
                     UdpPacketBatteryShutdown udpPacketBatteryShutdown = mapper.readValue(packet.getData(), UdpPacketBatteryShutdown.class);
                     udpPacketBatteryShutdown.setPacketType(packetType);
-                    processBatteryShutdown(udpPacketBatteryShutdown);
+                    processBatteryShutdown(udpPacketBatteryShutdown, packet.getAddress());
                     break;
                 default:
                     LOG.error("unknown packet type: " + packetType);
@@ -309,12 +296,12 @@ public class UdpHandler implements Runnable {
     }
 
     private void processLap(UdpPacketLap udpPacketLap, InetAddress address) {
-        if (!participantsService.hasParticipant(udpPacketLap.getChipid())) {
-            LOG.info("got lap from non registered participant, try to get registration");
+        if (!nodeService.hasNode(udpPacketLap.getChipid())) {
+            LOG.info("got lap from non registered node, try to get node registration");
             requestRegistration(address);
         } else {
-            race.addLap(udpPacketLap.getChipid(), udpPacketLap.getDuration(), udpPacketLap.getRssi());
-            webSocketController.sendNewLapMessage(udpPacketLap.getChipid());
+            LOG.debug("got lap: " + udpPacketLap.toString());
+            raceLogicHandler.addLap(udpPacketLap.getChipid(), udpPacketLap.getDuration(), udpPacketLap.getRssi());
         }
     }
 
@@ -366,22 +353,22 @@ public class UdpHandler implements Runnable {
         }
     }
 
-    public void sendDataUnicast(InetAddress inetAddress, UdpPacket data) {
-        LOG.debug("send data unicast to " + inetAddress.toString() + ": " + data.toString());
+    public void sendDataUnicast(InetAddress address, UdpPacket data) {
+        LOG.debug("send data unicast to " + address.toString() + ": " + data.toString());
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            sendDataUnicast(inetAddress, objectMapper.writeValueAsString(data));
+            sendDataUnicast(address, objectMapper.writeValueAsString(data));
         } catch (JsonProcessingException ex) {
             LOG.error("cannot stringify data: " + ex.getMessage(), ex);
             throw new RuntimeException("cannot stringify data: " + ex.getMessage());
         }
     }
 
-    public void sendDataUnicast(InetAddress inetAddress, String data) {
-        LOG.debug("sending unicast to " + inetAddress.toString() + ": " + data);
+    public void sendDataUnicast(InetAddress address, String data) {
+        LOG.debug("sending unicast to " + address.toString() + ": " + data);
         byte dataBuf[] = new byte[1024];
         try {
-            DatagramPacket packet = new DatagramPacket(dataBuf, dataBuf.length, inetAddress, 31337);
+            DatagramPacket packet = new DatagramPacket(dataBuf, dataBuf.length, address, 31337);
             packet.setData(data.getBytes(Charset.defaultCharset()));
             DatagramSocket datagramSocket = new DatagramSocket();
             datagramSocket.send(packet);
@@ -390,51 +377,52 @@ public class UdpHandler implements Runnable {
         }
     }
 
-    private void processCalibrationDone(UdpPacketCalibrationDone udpPacketCalibrationDone) {
-        if (!participantsService.hasParticipant(udpPacketCalibrationDone.getChipid())) {
-            LOG.info("got calibration done from non registered participant");
+    private void processCalibrationDone(UdpPacketCalibrationDone udpPacketCalibrationDone, InetAddress address) {
+        if (!nodeService.hasNode(udpPacketCalibrationDone.getChipid())) {
+            LOG.info("got calibration done from non registered node");
+            requestRegistration(address);
         } else {
-            String name = participantsService.getParticipant(udpPacketCalibrationDone.getChipid()).getName();
-            audioService.speakCalibrationDone(name);
-            webSocketController.sendAlertMessage(WebSocketController.WarningMessageTypes.INFO, "calibration done", "calibration done for pilot " + name);
+            audioService.speakCalibrationDone(udpPacketCalibrationDone.getChipid().toString());
+            webSocketController.sendAlertMessage(WebSocketController.WarningMessageTypes.INFO, "calibration done", "calibration done for node " + udpPacketCalibrationDone.getChipid().toString());
         }
     }
 
-    private void processMessage(UdpPacketMessage udpPacketMessage) {
-        if (!participantsService.hasParticipant(udpPacketMessage.getChipid())) {
-            LOG.info("got message from non registered participant");
+    private void processMessage(UdpPacketMessage udpPacketMessage,  InetAddress address) {
+        if (!nodeService.hasNode(udpPacketMessage.getChipid())) {
+            LOG.info("got message from non registered node");
+            requestRegistration(address);
         } else {
             audioService.speak(udpPacketMessage.getMessage());
         }
     }
 
-    private void processBatteryLow(UdpPacketBatteryLow udpPacketBatteryLow) {
-        if (!participantsService.hasParticipant(udpPacketBatteryLow.getChipid())) {
-            LOG.info("got battery low from non registered participant");
+    private void processBatteryLow(UdpPacketBatteryLow udpPacketBatteryLow, InetAddress address) {
+        if (!nodeService.hasNode(udpPacketBatteryLow.getChipid())) {
+            LOG.info("got battery low from non registered node");
+            requestRegistration(address);
         } else {
-            String participantName = participantsService.getParticipant(udpPacketBatteryLow.getChipid()).getName();
-            audioService.speakBatteryLow(participantName);
-            webSocketController.sendAlertMessage(WebSocketController.WarningMessageTypes.WARNING, "battery low", "battery of participant " + participantName + " is almost empty (" + String.format("%.1f", udpPacketBatteryLow.getVoltage()) + " Volt)");
+            audioService.speakBatteryLow();
+            webSocketController.sendAlertMessage(WebSocketController.WarningMessageTypes.WARNING, "battery low", "battery of node " + udpPacketBatteryLow.getChipid().toString() + " is almost empty (" + String.format("%.1f", udpPacketBatteryLow.getVoltage()) + " Volt)");
         }
     }
 
-    private void processBatteryShutdown(UdpPacketBatteryShutdown udpPacketBatteryShutdown) {
-        if (!participantsService.hasParticipant(udpPacketBatteryShutdown.getChipid())) {
-            LOG.info("got battery shutdown from non registered participant");
+    private void processBatteryShutdown(UdpPacketBatteryShutdown udpPacketBatteryShutdown, InetAddress address) {
+        if (!nodeService.hasNode(udpPacketBatteryShutdown.getChipid())) {
+            LOG.info("got battery shutdown from non registered node");
+            requestRegistration(address);
         } else {
-            String participantName = participantsService.getParticipant(udpPacketBatteryShutdown.getChipid()).getName();
-            audioService.speakBatteryShutdown(participantName);
-            webSocketController.sendAlertMessage(WebSocketController.WarningMessageTypes.DANGER, "battery shutdown voltage reached", "battery of participant " + participantName + " is empty, shutting down tracker node", true);
+            audioService.speakBatteryShutdown();
+            webSocketController.sendAlertMessage(WebSocketController.WarningMessageTypes.DANGER, "battery shutdown voltage reached", "battery of node " + udpPacketBatteryShutdown.getChipid().toString() + " is empty, shutting down tracker node", true);
         }
     }
 
-    private void processRegisterLed(UdpPacketRegister udpPacketRegisterLed, InetAddress sourceInetAddress) {
+    private void processRegisterLed(UdpPacketRegister udpPacketRegisterLed, InetAddress address) {
 
-        ledService.addInetAddress(sourceInetAddress);
+        ledService.addInetAddress(address);
 
         try {
-            audioService.speakRegistered("LED board");
-            LOG.info("registered led board: " + sourceInetAddress.toString());
+            webSocketController.sendAlertMessage(WebSocketController.WarningMessageTypes.INFO, "led board", "led board successfully registered");
+            LOG.info("registered led board: " + address.toString());
         } catch (Exception ex) {
             LOG.error(ex.getMessage(), ex);
         }
@@ -443,8 +431,9 @@ public class UdpHandler implements Runnable {
     }
 
     private void processRssi(UdpPacketRssi udpPacketRssi, InetAddress address) {
-        if (!participantsService.hasParticipant(udpPacketRssi.getChipid())) {
-            LOG.info("got rssi from non registered participant");
+        if (!nodeService.hasNode(udpPacketRssi.getChipid())) {
+            LOG.info("got rssi from non registered node");
+            requestRegistration(address);
         } else {
             LOG.debug("update rssi to " + udpPacketRssi.getRssi() + " of " + udpPacketRssi.getChipid());
             webSocketController.sendRssiMessage(udpPacketRssi.getChipid(), udpPacketRssi.getRssi());
@@ -452,8 +441,9 @@ public class UdpHandler implements Runnable {
     }
 
     private void processScan(UdpPacketScan udpPacketScan, InetAddress address) {
-        if (!participantsService.hasParticipant(udpPacketScan.getChipid())) {
-            LOG.info("got scan from non registered participant");
+        if (!nodeService.hasNode(udpPacketScan.getChipid())) {
+            LOG.info("got scan from non registered node");
+            requestRegistration(address);
         } else {
             LOG.debug("update rssi for frequency " + udpPacketScan.getFrequency() + " to " + udpPacketScan.getRssi() + " of " + udpPacketScan.getChipid());
             webSocketController.sendScanMessage(udpPacketScan.getChipid(), udpPacketScan.getFrequency(), udpPacketScan.getRssi());

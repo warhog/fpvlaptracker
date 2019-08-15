@@ -1,6 +1,6 @@
 package de.warhog.fpvlaptracker.service;
 
-import de.warhog.fpvlaptracker.db.ConfigLayer;
+import de.warhog.fpvlaptracker.db.ConfigDbLayer;
 import de.warhog.fpvlaptracker.db.DbLayerException;
 import de.warhog.fpvlaptracker.jooq.tables.records.ConfigRecord;
 import java.time.ZoneId;
@@ -16,7 +16,7 @@ public class ConfigService {
     private static final Logger LOG = LoggerFactory.getLogger(ConfigService.class);
 
     @Autowired
-    private ConfigLayer dbLayer;
+    private ConfigDbLayer dbLayer;
 
     public void createOrUpdateKey(String key, String value) throws ServiceLayerException {
         try {

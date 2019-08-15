@@ -121,12 +121,14 @@ void WifiWebServer::begin() {
         this->_server.send(200, "text/html", "OK");
         this->_server.client().flush();
         this->_server.client().stop();
+        this->_server.stop();
+        delay(100);
         ESP.restart();
     });
 
     this->_server.on("/devicedata", HTTP_GET, [&]() {
         this->_server.sendHeader("Connection", "close");
-        this->_server.send(200, "application/json", comm::CommTools::getDeviceDataAsJsonStringFromStorage(this->_storage, this->_stateManager, this->_lapDetector, this->_batteryMgr, *this->_loopTime, this->_rssi));
+        this->_server.send(200, "application/json", comm::CommTools::getDeviceDataAsJsonStringFromStorage(this->_storage, this->_stateManager, this->_lapDetector, this->_batteryMgr, *this->_loopTime, this->_rssi, this->_version));
     });
 
     this->_server.on("/setstate", HTTP_GET, [&]() {

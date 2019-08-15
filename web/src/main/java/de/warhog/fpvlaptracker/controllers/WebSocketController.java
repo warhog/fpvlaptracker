@@ -3,7 +3,7 @@ package de.warhog.fpvlaptracker.controllers;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import de.warhog.fpvlaptracker.configuration.ApplicationConfig;
-import de.warhog.fpvlaptracker.entities.RaceState;
+import de.warhog.fpvlaptracker.util.RaceState;
 import de.warhog.fpvlaptracker.util.AudioFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,20 +30,24 @@ public class WebSocketController {
         return message;
     }
     
-    
     public void sendRaceStateChangedMessage(RaceState raceState) {
         LOG.debug("sending race state changed message: " + raceState.toString());
         this.template.convertAndSend("/topic/race/state", raceState);
     }
     
-    public void sendNewLapMessage(Long chipId) {
-        LOG.debug("sending lap message for chipid " + chipId);
-        this.template.convertAndSend("/topic/lap", chipId);
+    public void sendReloadRaceData() {
+        LOG.debug("sending new lap message");
+        this.template.convertAndSend("/topic/lap", "");
     }
 
-    public void sendNewParticipantMessage(Long chipId) {
-        LOG.debug("sending new participant message for chipid " + chipId);
-        this.template.convertAndSend("/topic/participant", chipId);
+    public void sendPilotCountMessage(Integer pilotCount) {
+        LOG.debug("sending new pilot count message " + pilotCount);
+        this.template.convertAndSend("/topic/pilots/count", pilotCount);
+    }
+    
+    public void sendNodeCountMessage(Integer nodeCount) {
+        LOG.debug("sending new node count message " + nodeCount);
+        this.template.convertAndSend("/topic/nodes/count", nodeCount);
     }
 
     public void sendAudioMessage(AudioFile file) {

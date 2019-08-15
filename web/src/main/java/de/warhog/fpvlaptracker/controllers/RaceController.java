@@ -1,17 +1,13 @@
 package de.warhog.fpvlaptracker.controllers;
 
-import de.warhog.fpvlaptracker.controllers.dtos.ChartResult;
-import de.warhog.fpvlaptracker.controllers.dtos.RaceStateResult;
-import de.warhog.fpvlaptracker.controllers.dtos.StatusResult;
-import de.warhog.fpvlaptracker.entities.Participant;
-import de.warhog.fpvlaptracker.race.LapStorage;
+import de.warhog.fpvlaptracker.dtos.ChartResult;
+import de.warhog.fpvlaptracker.dtos.RaceDataResult;
+import de.warhog.fpvlaptracker.dtos.StatusResult;
+import de.warhog.fpvlaptracker.entities.LapTimeListLap;
+import de.warhog.fpvlaptracker.entities.Pilot;
 import de.warhog.fpvlaptracker.race.RaceLogicHandler;
-import de.warhog.fpvlaptracker.service.ParticipantsService;
-import de.warhog.fpvlaptracker.race.ParticipantsRaceList;
-import de.warhog.fpvlaptracker.race.RaceType;
-import java.time.Duration;
-import java.util.List;
-import java.util.Map;
+import de.warhog.fpvlaptracker.service.PilotsService;
+import de.warhog.fpvlaptracker.util.RaceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,13 +25,7 @@ public class RaceController {
     private RaceLogicHandler raceLogic;
 
     @Autowired
-    private ParticipantsService participantsDbService;
-
-    @Autowired
-    private ParticipantsRaceList participantsList;
-
-    @Autowired
-    private LapStorage lapStorage;
+    private PilotsService pilotsService;
 
     @RequestMapping(path = "/api/auth/race/type", method = RequestMethod.GET)
     public StatusResult type(@RequestParam(name = "type", defaultValue = "ROUND_BASED") RaceType raceType) {
@@ -54,12 +44,10 @@ public class RaceController {
     @RequestMapping(path = "/api/race/chartdata", method = RequestMethod.GET)
     public ChartResult chartdata() {
         ChartResult chartResult = new ChartResult();
-        for (Participant participant : participantsList.getParticipants()) {
-            chartResult.addParticipant(participant.getChipId(), participant.getName());
-            if (participantsList.hasParticipant(participant.getChipId())) {
-                for (Map.Entry<Integer, Duration> entry : lapStorage.getLapData(participant.getChipId()).getLapsFilterInvalid().entrySet()) {
-                    chartResult.addLapTimes(entry.getKey(), participant.getChipId(), entry.getValue());
-                }
+        for (Pilot pilot : pilotsService.getPilotsWithNodes()) {
+            chartResult.addPilot(pilot.getName());
+            for (LapTimeListLap lap : pilot.getLapTimeList().getLaps()) {
+                chartResult.addLapTimes(pilot.getName(), lap.getLap(), lap.getDuration());
             }
         }
         return chartResult;
@@ -71,44 +59,30 @@ public class RaceController {
         return new StatusResult(StatusResult.Status.OK);
     }
 
-    @RequestMapping(path = "/api/auth/race/participants/add", method = RequestMethod.GET)
-    public StatusResult addParticipant(@RequestParam(name = "chipid", required = true) String chipid) {
-        Long chipId = Long.parseLong(chipid);
-        Participant participant = participantsDbService.getParticipant(chipId);
-        raceLogic.addParticipant(participant);
-        return new StatusResult(StatusResult.Status.OK);
-    }
-
-    @RequestMapping(path = "/api/auth/race/participants/remove", method = RequestMethod.GET)
-    public StatusResult removeParticipant(@RequestParam(name = "chipid", required = true) String chipid) {
-        Long chipId = Long.parseLong(chipid);
-        Participant participant = participantsDbService.getParticipant(chipId);
-        raceLogic.removeParticipant(participant);
-        return new StatusResult(StatusResult.Status.OK);
-    }
-
-    @RequestMapping(path = "/api/auth/race/invalidatelap", method = RequestMethod.GET)
-    public StatusResult invalidateLap(@RequestParam(name = "chipid", required = true) String chipid, @RequestParam(name = "lap", required = true) String lapString) {
-        Long chipId = Long.parseLong(chipid);
+    @RequestMapping(path = "/api/auth/race/lap/valid", method = RequestMethod.GET)
+    public StatusResult setLapValid(@RequestParam(name = "name", required = true) String name, @RequestParam(name = "lap", required = true) String lapString, @RequestParam(name = "valid", defaultValue = "true") String validRaw) {
+        boolean valid = true;
+        if (validRaw.equals("false")) {
+            valid = false;
+        }
         Integer lap = Integer.parseInt(lapString);
-        lapStorage.toggleLapValidity(chipId, lap);
+        Pilot pilot = pilotsService.getPilot(name);
+        pilot.setLapValid(lap, valid);
         return new StatusResult(StatusResult.Status.OK);
     }
 
-    @RequestMapping(path = "/api/auth/race/invalidatepilot", method = RequestMethod.GET)
-    public StatusResult invalidatePilot(@RequestParam(name = "chipid", required = true) String chipid) {
-        Long chipId = Long.parseLong(chipid);
-        participantsList.invalidatePilot(chipId);
+    @RequestMapping(path = "/api/auth/race/pilot/valid", method = RequestMethod.GET)
+    public StatusResult setPilotValid(@RequestParam(name = "name", required = true) String name, @RequestParam(name = "valid", defaultValue = "true") String validRaw) {
+        boolean valid = true;
+        if (validRaw.equals("false")) {
+            valid = false;
+        }
+        pilotsService.setPilotValid(name, valid);
         return new StatusResult(StatusResult.Status.OK);
-    }
-
-    @RequestMapping(path = "/api/race/participants", method = RequestMethod.GET)
-    public List<Participant> getParticipants() {
-        return participantsList.getParticipants();
     }
 
     @RequestMapping(path = "/api/race/data", method = RequestMethod.GET)
-    public RaceStateResult getData() {
+    public RaceDataResult getData() {
         return raceLogic.getRaceData();
     }
 

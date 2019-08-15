@@ -1,0 +1,19 @@
+{
+  "/api": {
+    "target": "http://localhost:8080",
+    "secure": false
+  },
+  "/user": {
+    "target": "http://localhost:8080",
+    "secure": false
+  },
+  "/logout": {
+    "target": "http://localhost:8080",
+    "secure": false
+  },
+  "/websocketEndpoint": {
+    "target": "http://localhost:8080",
+    "secure": false,
+    "ws": true
+  }
+}

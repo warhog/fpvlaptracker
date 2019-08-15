@@ -1,0 +1,45 @@
+<h3>
+    <span [ngClass]="isPilotValidClass(pilot)">{{pilot.name}}</span>&nbsp;
+    <button [disabled]="!isAuthenticated()" [hidden]="!isPilotValid(pilot)" (click)="setPilotValid(pilot, false);"
+        class="btn btn-outline-secondary btn-sm mr-1">&otimes;</button>
+    <button [disabled]="!isAuthenticated()" [hidden]="isPilotValid(pilot)" value="" (click)="setPilotValid(pilot, true);"
+        class="btn btn-outline-secondary btn-sm mr-1">&oplus;</button>
+</h3>
+<span>
+    state: <span [innerHtml]="pilot.state | pilotState"> </span>
+    <br />
+</span>
+<span [hidden]="pilotDuration == 'PT0S'">duration: <span
+        class="duration">{{pilotDuration | duration}}</span><br /></span>
+current lap: {{pilot.lapTimeList.currentLap}}<br />
+fastest lap: {{pilot.lapTimeList.fastestLapDuration | duration}} in lap {{pilot.lapTimeList.fastestLap}}<br />
+average lap: {{pilot.lapTimeList.averageLapDuration | duration}}<br />
+total duration: {{pilot.lapTimeList.totalDuration | duration}}<br />
+last rssi: {{pilot.lapTimeList.lastRssi}}<br />
+<br />
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th style="padding-right: 10px;">lap</th>
+            <th>duration</th>
+            <th>rssi</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr [hidden]="pilot.lapTimeList.currentLap > 1">
+            <td colspan="4">not finished a lap yet</td>
+        </tr>
+        <tr *ngFor="let lap of pilot.lapTimeList.laps">
+            <td [ngClass]="isInvalidLapClass(lap)" style="padding-right: 10px;">{{lap.lap}}</td>
+            <td [ngClass]="isInvalidLapClass(lap)"> {{lap.duration | duration}}</td>
+            <td [ngClass]="isInvalidLapClass(lap)"> {{lap.rssi}} </td>
+            <td>
+                <button [disabled]="!isAuthenticated()" [hidden]="lap.invalid" (click)="setLapValid(pilot, lap, true);"
+                    class="btn btn-outline-secondary btn-sm">&otimes;</button>
+                <button [disabled]="!isAuthenticated()" [hidden]="!lap.invalid" (click)="setLapValid(pilot, lap, false);"
+                    class="btn btn-outline-secondary btn-sm">&oplus;</button>
+            </td>
+        </tr>
+    </tbody>
+</table>

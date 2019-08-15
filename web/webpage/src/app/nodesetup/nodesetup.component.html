@@ -1,0 +1,223 @@
+<div class="card">
+    <div class="card-header">
+        <b>general &amp; information</b>
+    </div>
+    <div class="card-body">
+        <div class="float-left">
+            <button class="btn btn-info" [disabled]="loadingDeviceData == true" (click)="loadNode();">reload device
+                data</button>
+            <br /><br />
+
+            unique chip id: {{node.chipId}}<br />
+            ip address: <a href="http://{{node.inetAddress}}" target="_blank">{{node.inetAddress}}</a><br />
+            version: {{node.version}}<br />
+            state: {{node.state}}<br />
+            voltage: {{node.voltage| number: '1.1-2'}} V (cells: {{(node.voltage / cells) | number: '1.1-2'}} V)<br />
+            uptime: {{node.uptime}} seconds<br />
+            looptime: {{node.loopTime}} µs<br />
+            <br />
+            <b>mode switches</b><br />
+            <input type="button" value="skip calibration" (click)="skipCalibration();"
+                [disabled]="node.state === 'RSSI'" [hidden]="node.state !== 'Calibration'"
+                class="btn btn-primary btn-sm" />
+            <input type="button" value="restart calibration" (click)="backToCalibration();"
+                [disabled]="node.state === 'RSSI'" [hidden]="node.state === 'Calibration'"
+                class="btn btn-primary btn-sm" /><br />
+
+            <br /><b>band scanner</b><br />
+            <button [disabled]="node.state === 'RSSI'" class="btn btn-primary btn-sm" (click)="openScan();">open
+                scanner</button><br />
+
+            <br /><b>fast RSSI update:</b><br />
+            disables all other functionality of the tracker node while running!<br />
+            <span [hidden]="node.state !== 'RSSI'">RSSI: {{fastRssi}} (gate enter trigger is {{upperRssi}}, lap
+                detection end trigger is {{lowerRssi}})<br /></span>
+            <input type="button" value="fast RSSI update" (click)="enableFastRssiUpdate();"
+                [hidden]="node.state === 'RSSI'" class="btn btn-primary btn-sm" />
+            <input type="button" value="return to normal mode" (click)="restoreOldState();"
+                [hidden]="node.state !== 'RSSI'" class="btn btn-primary btn-sm" />
+        </div>
+        <div class="float-right" [hidden]="node.state === 'RSSI'">
+            <u>Profiles:</u><br />
+            <div [hidden]="profiles.length > 0">no profile yet</div>
+            <div *ngFor="let profile of profiles">
+                <span title="{{createProfileTooltip(profile)}}">{{profile.name}}</span>
+                <span style="width: 50px;">&nbsp;</span>
+                <input class="btn btn-outline-info btn-sm mr-1" type="button" value="update"
+                    (click)="createOrUpdateProfile(profile.name)" />
+                <input class="btn btn-outline-info btn-sm mr-1" type="button" value="load"
+                    (click)="loadProfile(profile)" />
+                <input class="btn btn-outline-info btn-sm mr-1" type="button" value="apply"
+                    (click)="loadProfile(profile, true)" />
+                <input class="btn btn-outline-info btn-sm" type="button" value="&otimes;"
+                    (click)="deleteProfile(profile.name)" />
+            </div>
+            <br />
+            <div class="form-group">
+                Create profile
+                <input type="text" class="form-control" id="profileName" [(ngModel)]="newProfileName"
+                    aria-describedby="profileNameHelp" placeholder="Enter profile name">
+                <small id="profileNameHelp" class="form-text text-muted">give the new profile a name</small>
+            </div>
+            <input type="button" value="create profile" class="btn btn-outline-info btn-sm"
+                (click)="createOrUpdateProfile();" />
+        </div>
+        <div style="clear: both;"></div>
+    </div>
+</div>
+<br />
+<div class="card" [hidden]="node.state == 'RSSI'">
+    <div class="card-header">
+        <b>received signal strength indication (rssi)</b>
+    </div>
+    <div class="card-body">
+        <div id="settings">
+            <div class="card bg-light">
+                <div class="card-header">current rssi: <b>{{node.rssi}}</b></div>
+                <div class="card-body">
+                    with the current settings the <b>lap detection is started</b> as soon as the <b>rssi is equal or
+                        above
+                        {{upperRssi}}</b>.<br />
+                    lap detection is <b>ended</b> when the rssi is <b>below
+                        {{lowerRssi}}</b>.<br />
+                    <br />
+                </div>
+            </div>
+            <br />
+            <form>
+                <div class="form-group">
+                    <label for="triggerValue">trigger value</label>
+                    <input type="number" min="1" max="1024" step="1" name="triggerValue" class="form-control col-lg-2"
+                        [(ngModel)]="node.triggerValue" (change)="calculateRssiLimits()" required
+                        aria-describedby="triggerValueHelp" />
+                    <small id="triggerValueHelp" class="form-text text-muted">the rssi value that triggers a new lap
+                        detection.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="triggerThreshold">rssi trigger threshold</label>
+                    <input type="number" min="1" max="1024" step="1" name="triggerThreshold"
+                        class="form-control col-lg-2" [(ngModel)]="node.triggerThreshold"
+                        (change)="calculateRssiLimits()" required aria-describedby="triggerThresholdHelp" />
+                    <small id="triggerThresholdHelp" class="form-text text-muted">the trigger threshold defines the rssi
+                        window in which the lap detection is active. the lap detection ends if rssi is below trigger
+                        value minus trigger threshold.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="triggerThresholdCalibration">rssi trigger threshold <u>calibration</u></label>
+                    <input type="number" min="1" max="1024" step="1" name="triggerThresholdCalibration"
+                        class="form-control col-lg-2" [(ngModel)]="node.triggerThresholdCalibration" required
+                        aria-describedby="triggerThresholdCalibrationHelp" />
+                    <small id="triggerThresholdCalibrationHelp" class="form-text text-muted">the rssi trigger threshold
+                        during calibration state. the calibration ends if rssi is below trigger value (see below) minus
+                        calibration trigger threshold.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="calibrationOffset">rssi calibration offset</label>
+                    <input type="number" min="1" max="1024" step="1" name="calibrationOffset"
+                        class="form-control col-lg-2" [(ngModel)]="node.calibrationOffset" required
+                        aria-describedby="calibrationOffsetHelp" />
+                    <small id="calibrationOffsetHelp" class="form-text text-muted">the rssi offset that is substracted
+                        from found peek during calibration. improves lap detection but
+                        can add jitter to lap times.</small>
+                </div>
+
+                <button (click)="saveDeviceData()" class="btn btn-outline-secondary">save device settings</button>
+            </form>
+        </div>
+    </div>
+</div>
+<br />
+<div class="card" [hidden]="node.state == 'RSSI'">
+    <div class="card-header">
+        <b>frequency</b>
+    </div>
+    <div class="card-body">
+        <form>
+            <div class="form-group">
+                <label for="freqSel">frequency</label>
+                <select aria-describedby="frequencyHelp" name="freqSel" [(ngModel)]="node.frequencyObj"
+                    class="form-control col-lg-5" (change)="updateFrequency();">
+                    <option [ngValue]="frequency" *ngFor="let frequency of utilService.frequencyObjects">
+                        {{frequency.name}}
+                    </option>
+                </select>
+                <small id="frequencyHelp" class="form-text text-muted"> the fpv frequency the pilots tracker is
+                    listening
+                    to.</small>
+            </div>
+
+            <button (click)="saveDeviceData()" class="btn btn-outline-secondary">save device settings</button>
+        </form>
+    </div>
+</div>
+<br />
+<div class="card" [hidden]="node.state == 'RSSI'">
+    <div class="card-header">
+        <b>misc</b>
+    </div>
+    <div class="card-body">
+        <form>
+            <div class="form-group">
+                <label for="minimumLapTime">minimum lap time</label>
+                <div class="input-group">
+                    <input type="number" min="1" max="600" step="1" name="minimumLapTime" class="form-control col-lg-2"
+                        [(ngModel)]="node.minimumLapTime" required aria-describedby="minimumLapTimeHelp" />
+                    <div class="input-group-append">
+                        <span class="input-group-text">s</span>
+                    </div>
+                </div>
+                <small id="minimumLapTimeHelp" class="form-text text-muted">the minimum lap time of the pilots tracker
+                    is used to prevent double lap detections.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="filterRatio">filter ratio</label>
+                <div class="input-group">
+                    <input type="number" min="0" max="" step=".001" name="filterRatio" class="form-control col-lg-2"
+                        [(ngModel)]="node.filterRatio" required aria-describedby="filterRatioHelp" />
+                </div>
+                <small id="filterRatioHelp" class="form-text text-muted">the filter ratio for smoothing the rssi signal.
+                    0 = only old values, 1 = only new values.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="filterRatioCalibration">filter ratio <u>calibration</u></label>
+                <div class="input-group">
+                    <input type="number" min="0" max="" step=".001" name="filterRatioCalibration"
+                        class="form-control col-lg-2" [(ngModel)]="node.filterRatioCalibration" required
+                        aria-describedby="filterRatioCalibrationHelp" />
+                </div>
+                <small id="filterRatioCalibrationHelp" class="form-text text-muted">the filter ratio for smoothing the
+                    rssi signal during calibration. 0 = only old values, 1 = only new values.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="defaultVref">voltage calibration</label>
+                <div class="input-group">
+                    <input type="number" min="1000" max="1200" step="1" name="defaultVref" class="form-control col-lg-2"
+                        [(ngModel)]="node.defaultVref" required aria-describedby="defaultVrefHelp" />
+                    <div class="input-group-append">
+                        <span class="input-group-text">mV</span>
+                    </div>
+                </div>
+                <small id="defaultVrefHelp" class="form-text text-muted">calibration value for the default reference
+                    voltage in mV.</small>
+            </div>
+
+
+            <br />
+            <button (click)="saveDeviceData()" class="btn btn-outline-secondary">save device settings</button>
+            <br /><br />
+            <div class="form-group">
+                <label for="rebootButton">reboot</label><br />
+                <small id="rebootButtonHelp" class="form-text text-muted">reboot the tracker unit</small>
+                <button name="reboot" name="rebootButton" class="btn btn-danger" (click)="rebootDevice();"
+                    aria-describedby="rebootButtonHelp">reboot</button>
+            </div>
+
+        </form>
+    </div>
+</div>

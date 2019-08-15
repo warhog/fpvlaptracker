@@ -1,15 +1,16 @@
 package de.warhog.fpvlaptracker.race;
 
+import de.warhog.fpvlaptracker.util.RaceState;
 import de.warhog.fpvlaptracker.controllers.WebSocketController;
-import de.warhog.fpvlaptracker.entities.Participant;
-import de.warhog.fpvlaptracker.entities.RaceState;
+import de.warhog.fpvlaptracker.entities.Pilot;
 import de.warhog.fpvlaptracker.entities.LapTimeList;
-import de.warhog.fpvlaptracker.entities.ParticipantExtraData;
-import de.warhog.fpvlaptracker.entities.ToplistEntry;
+import de.warhog.fpvlaptracker.dtos.ToplistEntry;
 import de.warhog.fpvlaptracker.service.AudioService;
 import de.warhog.fpvlaptracker.service.ConfigService;
 import de.warhog.fpvlaptracker.service.LedService;
+import de.warhog.fpvlaptracker.service.PilotsService;
 import de.warhog.fpvlaptracker.service.ServiceLayerException;
+import de.warhog.fpvlaptracker.util.PilotState;
 import java.awt.Color;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -32,16 +33,13 @@ public class RaceLogicRoundBased implements IRaceLogic {
     AudioService audioService;
 
     @Autowired
-    ParticipantsRaceList participantsRaceList;
+    PilotsService pilotsService;
 
     @Autowired
     WebSocketController webSocketController;
 
     @Autowired
     ConfigService configService;
-
-    @Autowired
-    LapStorage lapStorage;
 
     @Autowired
     LedService ledService;
@@ -54,8 +52,8 @@ public class RaceLogicRoundBased implements IRaceLogic {
     private Thread countdownThread = null;
 
     @Override
-    public Map<Long, ParticipantExtraData> getParticipantExtraData() {
-        return new HashMap<>();
+    public Map<String, Long> getDurations() {
+        return new HashMap<String, Long>();
     }
 
     class Countdown implements Runnable {
@@ -96,16 +94,26 @@ public class RaceLogicRoundBased implements IRaceLogic {
             LOG.error("cannot get settings, init with default value: " + ex.getMessage(), ex);
         }
     }
+    
+    @Override
+    public Map<String, String> getRaceTypeSpecificData() {
+        Map<String, String> result = new HashMap<>();
+        result.put("preparationDuration", this.preparationDuration.toString());
+        result.put("numberOfLaps", this.numberOfLaps.toString());
+        return result;
+    }
 
     @Override
     public List<ToplistEntry> getToplist() {
         List<ToplistEntry> toplist = new ArrayList<>();
-        for (Participant participant : participantsRaceList.getParticipants()) {
-            Integer laps = lapStorage.getLapData(participant.getChipId()).getTotalLaps();
-            Duration duration = lapStorage.getLapData(participant.getChipId()).getTotalDuration();
-            ToplistEntry toplistEntry = new ToplistEntry(participant.getName(), duration.toMillis(), laps);
-            if (laps > 0 && duration != Duration.ZERO && participant.isValid()) {
-                toplist.add(toplistEntry);
+        for (Pilot pilot : pilotsService.getPilotsWithNodes()) {
+            if (pilot.isReady()) {
+                Integer laps = pilot.getLapTimeList().getTotalLaps();
+                Duration duration = pilot.getLapTimeList().getTotalDuration();
+                ToplistEntry toplistEntry = new ToplistEntry(pilot.getName(), duration.toMillis(), laps);
+                if (laps > 0 && duration != Duration.ZERO && pilot.isReady()) {
+                    toplist.add(toplistEntry);
+                }
             }
         }
         Collections.sort(toplist, new ToplistRoundBasedComparator());
@@ -151,8 +159,8 @@ public class RaceLogicRoundBased implements IRaceLogic {
         if (isRunning()) {
             stopRace();
         }
-        if (!participantsRaceList.hasParticipants()) {
-            throw new IllegalStateException("no participants");
+        if (!pilotsService.hasValidPilots()) {
+            throw new IllegalStateException("no pilots");
         }
         LOG.info("initialize new race");
         setState(RaceState.PREPARE);
@@ -190,38 +198,37 @@ public class RaceLogicRoundBased implements IRaceLogic {
     @Override
     public void addLap(Long chipId, Long duration, Integer rssi) {
         LOG.debug("add lap, " + chipId + ", " + duration + ", " + rssi);
-        Participant participant = participantsRaceList.getParticipantByChipId(chipId);
-        String name = participant.getName();
+        Pilot pilot = pilotsService.getPilot(chipId);
+        String name = pilot.getName();
 
         boolean raceStartedInThisLap = false;
-        boolean oneParticipantReachedEnd = false;
-        String participantEndedName = "";
+        boolean onePilotReachedEnd = false;
+        String pilotEndedName = "";
 
         if (getState() == RaceState.PREPARE) {
             LOG.info("false start chipid: " + chipId);
-            audioService.speakFalseStartParticipant(name);
+            audioService.speakFalseStartPilot(name);
             audioService.speakRaceAborted();
             webSocketController.sendAlertMessage(WebSocketController.WarningMessageTypes.WARNING, "early start", name + " was starting too early!", true);
             setState(RaceState.FAULT);
             stopCountdownThread();
             ledService.blinkColor(Color.RED, 250);
+            pilot.setValid(false);
             return;
         }
 
-        if (!participant.isValid()) {
+        if (!pilot.isReady()) {
             webSocketController.sendAlertMessage(WebSocketController.WarningMessageTypes.INFO, "invalid lap", "invalid lap for pilot " + name, false);
             audioService.speakInvalidLap(name);
             ledService.countdownColor(Color.RED, 100);
             return;
         }
-        
+
         if (!isRunning()) {
-            LOG.info("cannot add lap when race is not running, chipid: " + chipId);
-            if (participantsRaceList.hasParticipant(chipId)) {
-                webSocketController.sendAlertMessage(WebSocketController.WarningMessageTypes.INFO, "invalid lap", "invalid lap for pilot " + name, false);
-                audioService.speakInvalidLap(name);
-                ledService.countdownColor(Color.RED, 100);
-            }
+            LOG.info("cannot add lap when race is not running, pilot: " + pilot.getName());
+            webSocketController.sendAlertMessage(WebSocketController.WarningMessageTypes.INFO, "invalid lap", "invalid lap for pilot " + name, false);
+            audioService.speakInvalidLap(name);
+            ledService.countdownColor(Color.RED, 100);
             return;
         }
 
@@ -231,45 +238,50 @@ public class RaceLogicRoundBased implements IRaceLogic {
             audioService.playStart();
             raceStartedInThisLap = true;
             ledService.countdownColor(Color.GREEN, 100);
+            pilot.setState(PilotState.WAITING_FOR_FIRST_PASS);
         }
 
-        Integer currentLap = lapStorage.getLapData(chipId).getCurrentLap();
+        LapTimeList lapTimeList = pilot.getLapTimeList();
+        Integer currentLap = lapTimeList.getCurrentLap();
         if (currentLap > numberOfLaps) {
-            LOG.info("participant already ended race " + name);
+            LOG.info("pilot already ended race " + name);
             audioService.speakAlreadyDone(name);
             ledService.countdownColor(Color.RED, 100);
         } else {
-            lapStorage.addLap(chipId, duration, rssi, true);
+            lapTimeList.addLap(duration, rssi, true);
             if (currentLap >= numberOfLaps) {
-                LOG.info("participant reached lap limit " + name);
-                oneParticipantReachedEnd = true;
-                participantEndedName = name;
+                LOG.info("pilot reached lap limit " + name);
+                onePilotReachedEnd = true;
+                pilotEndedName = name;
+                pilot.setState(PilotState.FINISHED);
             } else if (!raceStartedInThisLap) {
                 audioService.playLap();
                 ledService.countdownColor(Color.GREEN, 100);
+                pilot.setState(PilotState.STARTED);
             }
         }
 
-        // test if all of the participants has reached the lap limit
+        // test if all of the pilots has reached the lap limit
         if (checkEnded()) {
             LOG.info("race ended");
             audioService.speakFinished();
             stopRace();
         } else {
-            if (oneParticipantReachedEnd) {
-                audioService.speakParticipantEnded(participantEndedName);
+            if (onePilotReachedEnd) {
+                audioService.speakPilotEnded(pilotEndedName);
             }
         }
     }
 
     public boolean checkEnded() {
-        for (Map.Entry<Long, LapTimeList> entry : lapStorage.getLapDataWithChipId().entrySet()) {
-            if (!participantsRaceList.getParticipantByChipId(entry.getKey()).isValid()) {
+        for (Pilot pilot : pilotsService.getPilotsWithNodes()) {
+            if (!pilot.isReady()) {
                 continue;
             }
-            String name = participantsRaceList.getParticipantByChipId(entry.getKey()).getName();
-            if (entry.getValue().getCurrentLap() <= numberOfLaps) {
-                LOG.debug("participant has not completed yet: " + name + ", numberOfLaps: " + numberOfLaps + ", currentLap: " + entry.getValue().getCurrentLap());
+            String name = pilot.getName();
+            LapTimeList lapTimeList = pilot.getLapTimeList();
+            if (lapTimeList.getCurrentLap() <= numberOfLaps) {
+                LOG.debug("pilot has not completed yet: " + name + ", numberOfLaps: " + numberOfLaps + ", currentLap: " + lapTimeList.getCurrentLap());
                 return false;
             }
         }

@@ -1,0 +1,14 @@
+<div class="container">
+    <span style="font-style: italic; font-size: 28pt;">fpvlaptracker</span>
+</div>
+<div class="container">
+    <ul class="nav nav-tabs">
+        <li class="nav-item"><a routerLinkActive="active" class="nav-link" routerLink="/home">home</a></li>
+        <li class="nav-item"><a routerLinkActive="active" class="nav-link" routerLink="/race">race <span class="badge badge-pill badge-success">{{raceState}}</span></a></li>
+        <li class="nav-item"><a routerLinkActive="active" class="nav-link" routerLink="/settings">settings</a></li>
+        <li class="nav-item"><a routerLinkActive="active" class="nav-link" routerLink="/pilots">pilots <span class="badge badge-pill badge-info">{{pilotCount}}</span></a></li>
+        <li class="nav-item"><a routerLinkActive="active" class="nav-link" routerLink="/nodes">nodes <span class="badge badge-pill badge-info">{{nodeCount}}</span></a></li>
+        <li class="nav-item" [hidden]="isAuthenticated()"><a routerLinkActive="active" class="nav-link" routerLink="/login/#">login</a></li>
+        <li class="nav-item" [hidden]="!isAuthenticated()"><a class="nav-link" (click)="logout()" href="javascript: return false;">logout</a></li>
+    </ul>
+</div>

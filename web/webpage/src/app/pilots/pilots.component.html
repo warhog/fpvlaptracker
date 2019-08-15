@@ -1,0 +1,41 @@
+<div [hidden]="pilots.length != 0 || addPilot == true">
+    no pilots registered yet.<br /><br />
+</div>
+
+<button [disabled]="!authenticated" class="btn btn-success" [hidden]="addPilot == true" (click)="addPilot = true">add pilot</button>
+<button class="btn btn-success" [hidden]="!addPilot" (click)="addPilot = false">cancel</button>
+<br /><br />
+
+<div class="card" [hidden]="!addPilot">
+    <div class="card-header">
+        <b>add new pilot</b>
+    </div>
+    <div class="card-body">
+        <form>
+            <div class="form-group">
+                <label for="pilotName">pilots name</label>
+                <input type="text" name="pilotName" class="form-control col-lg-2" [(ngModel)]="newPilot.name" required
+                    aria-describedby="pilotNameHelp" />
+                <small id="pilotNameHelp" class="form-text text-muted">the name of the new pilot.</small>
+            </div>
+
+            <button (click)="createNewPilot()" class="btn btn-outline-secondary">create new pilot</button>
+        </form>
+    </div>
+</div>
+
+<div *ngFor="let pilot of pilots; let i = index" [hidden]="addPilot">
+    <div class="card">
+        <div class="card-header">
+            <b>pilot: {{pilot.name}}</b>
+        </div>
+        <div class="card-body">
+            used node:
+            <span [hidden]="pilot.chipId == null">{{pilot.chipId}} - {{getFrequencyForChipId(pilot.chipId)}}</span>
+            <span [hidden]="pilot.chipId != null" style='font-weight: bold;'>none</span>
+            <br />
+            <button [disabled]="!authenticated" (click)="pilotSetup(pilot.name)" class="btn btn-primary mr-1">pilot setup</button>
+        </div>
+    </div>
+    <br />
+</div>

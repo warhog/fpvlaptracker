@@ -1,0 +1,96 @@
+<div>
+    <div class="card">
+        <div class="card-header">
+            <b>overall race settings</b>
+        </div>
+        <div class="card-body">
+            <form>
+                <div class="form-group">
+                    <label for="preparationDuration">preparation duration</label>
+                    <input class="form-control" type="number" min="1" max="255" step="1" name="preparationDuration"
+                        [(ngModel)]="data.preparationDuration" required aria-describedby="preparationDurationHelp" />
+                    <small id="preparationDurationHelp" class="form-text text-muted">time in seconds for the pilots to
+                        prepare.</small>
+                </div>
+                <button [disabled]="storing" (click)="storeSettings()" class="btn btn-outline-secondary">save</button>
+            </form>
+        </div>
+    </div>
+    <br />
+
+    <div class="card">
+        <div class="card-header">
+            <b>round based race specific settings</b>
+        </div>
+        <div class="card-body">
+            <form>
+                <div class="form-group">
+                    <label for="maxLaps">lap limit</label>
+                    <input class="form-control" type="number" min="1" max="255" step="1" name="maxLaps"
+                        [(ngModel)]="data.numberOfLaps" required aria-describedby="maxLapsHelp" />
+                    <small id="maxLapsHelp" class="form-text text-muted">sets the maximum lap limit for a race.</small>
+                </div>
+                <button [disabled]="storing" (click)="storeSettings()" class="btn btn-outline-secondary">save</button>
+            </form>
+        </div>
+    </div>
+    <br />
+
+    <div class="card">
+        <div class="card-header">
+            <b>fixed time race specific settings</b>
+        </div>
+        <div class="card-body">
+            <form>
+                <div class="form-group">
+                    <label for="raceDuration">race duration</label>
+                    <input class="form-control" type="number" min="1" max="255" step="1" name="raceDuration"
+                        [(ngModel)]="data.raceDuration" required aria-describedby="raceDurationHelp" />
+                    <small id="raceDurationHelp" class="form-text text-muted">time in seconds for a race.</small>
+                </div>
+                <div class="form-group">
+                    <label for="overtimeDuration">overtime duration</label>
+                    <input class="form-control" type="number" min="1" max="255" step="1" name="overtimeDuration"
+                        [(ngModel)]="data.overtimeDuration" required aria-describedby="overtimeDurationHelp" />
+                    <small id="overtimeDurationHelp" class="form-text text-muted">time in seconds a pilot can over. the
+                        pilot needs to end the race within the race duration plus the overtime duration.</small>
+                </div>
+                <div class="form-group">
+                    <label for="startInterval">start interval</label>
+                    <input class="form-control" type="number" min="1" max="255" step="1" name="startInterval"
+                        [(ngModel)]="data.startInterval" required aria-describedby="startIntervalHelp" />
+                    <small id="startIntervalHelp" class="form-text text-muted">time in seconds that is between the start
+                        of each pilot.</small>
+                </div>
+                <button [disabled]="storing" (click)="storeSettings()" class="btn btn-outline-secondary">save</button>
+            </form>
+        </div>
+    </div>
+    <br />
+
+    <div class="card">
+        <div class="card-header">
+            <b>misc settings</b>
+        </div>
+        <div class="card-body">
+            <form>
+                <div class="form-group">
+                    <label for="timezone">timezone</label>
+                    <input class="form-control" type="text" name="timezone" [(ngModel)]="data.timezone" required
+                        aria-describedby="timezoneHelp" />
+                    <small id="timezoneHelp" class="form-text text-muted">sets the timezone (see <a target="_blank"
+                            href="https://garygregory.wordpress.com/2013/06/18/what-are-the-java-timezone-ids/">timezone
+                            list</a>).</small>
+                </div>
+                <button [disabled]="storing" (click)="storeSettings()" class="btn btn-outline-secondary">save</button>
+                <br /><br />
+                <div class="form-group">
+                    <label for="shutdown">shutdown</label><br />
+                    <small id="shutdownHelp" class="form-text text-muted">shutdown the system.</small>
+                    <button name="shutdown" class="btn btn-danger" (click)="shutdown();">shutdown</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <br />
+</div>

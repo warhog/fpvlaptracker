@@ -1,0 +1,42 @@
+<div class="float-left">
+    unique chip id: {{nodeDeviceData.chipId}}<br />
+    state: {{nodeDeviceData.state}}<br /><br />
+    maximum: {{maxRssi}} @ {{maxFreq}}<br />
+    last scanned frequency: {{lastFrequency}}<br />
+    <br />
+    stop the scan to analyze the chart<br /><br />
+
+    <input type="button" value="start scan" (click)="scan();" [hidden]="nodeDeviceData.state == 'Deep scan' || nodeDeviceData.state == 'Scan'"
+        class="btn btn-primary btn-sm mr-1" />
+    <input type="button" value="start deep scan" (click)="deepscan();"
+        [hidden]="nodeDeviceData.state == 'Deep scan' || nodeDeviceData.state === 'Scan'" class="btn btn-primary btn-sm mr-1" />
+    <input type="button" value="stop scan" (click)="restoreOldState();"
+        [hidden]="nodeDeviceData.state != 'Scan' && nodeDeviceData.state !== 'Deep scan'" class="btn btn-primary btn-sm" />
+</div>
+
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+
+<div id="chartdiv" style="height: 600px; width: 100%;"></div>
+
+
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />

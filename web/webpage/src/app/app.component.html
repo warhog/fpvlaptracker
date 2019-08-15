@@ -1,0 +1,9 @@
+<div [hidden]="!getOverlay()" class="loading">Loading&#8230;</div>
+<app-header></app-header>
+<br />
+<div class="container">
+    <alert></alert>
+    <app-confirm-dialog></app-confirm-dialog>
+    <router-outlet></router-outlet>
+</div>
+<app-footer></app-footer>

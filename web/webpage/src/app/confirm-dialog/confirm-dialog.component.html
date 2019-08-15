@@ -1,0 +1,32 @@
+<div *ngIf="message" class="modal" tabindex="-1" role="dialog" style="display:block!important">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div *ngIf="message?.title" class="modal-body">
+                <b>{{message.title}}</b>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        {{message.text}}
+                    </div>
+                </div>
+            </div>
+            <br />
+            <div *ngIf="message?.type == 'confirmyesno'" class="modal-body">
+                <div class="row">
+                    <div class="col-md-12 text-right">
+                        <button (click)="message.yesFn()" class="btn btn-primary mr-1">yes</button>
+                        <button (click)="message.noFn()" class="btn btn-secondary">no</button>
+                    </div>
+                </div>
+            </div>
+            <div *ngIf="message?.type == 'confirmok'" class="modal-body">
+                <div class="row">
+                    <div class="col-md-12 text-right">
+                        <button (click)="message.yesFn()" class="btn btn-primary">ok</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

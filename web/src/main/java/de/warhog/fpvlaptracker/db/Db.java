@@ -83,13 +83,25 @@ public class Db {
                     )
                     .execute();
 
-            LOG.info("create table participants if not existing");
-            dslContext.createTableIfNotExists(Tables.PARTICIPANTS)
-                    .column(Tables.PARTICIPANTS.CHIPID, SQLDataType.BIGINT.nullable(false))
-                    .column(Tables.PARTICIPANTS.NAME, SQLDataType.VARCHAR(255).nullable(false))
+            LOG.info("create table pilots if not existing");
+            dslContext.createTableIfNotExists(Tables.PILOTS)
+                    .column(Tables.PILOTS.NAME, SQLDataType.VARCHAR(255).nullable(false))
+                    .column(Tables.PILOTS.CHIPID, SQLDataType.BIGINT.nullable(true))
                     .constraints(
-                            DSL.constraint("pk_participants").primaryKey(Tables.PARTICIPANTS.CHIPID),
-                            DSL.constraint("uq_participants").unique(Tables.PARTICIPANTS.CHIPID)
+                            DSL.constraint("pk_pilots").primaryKey(Tables.PILOTS.NAME),
+                            DSL.constraint("uq_pilots").unique(Tables.PILOTS.NAME)
+                    )
+                    .execute();
+
+            LOG.info("create table persistent logins if not existing");
+            dslContext.createTableIfNotExists(Tables.PERSISTENT_LOGINS)
+                    .column(Tables.PERSISTENT_LOGINS.USERNAME, SQLDataType.VARCHAR(255).nullable(false))
+                    .column(Tables.PERSISTENT_LOGINS.SERIES, SQLDataType.VARCHAR(64).nullable(false))
+                    .column(Tables.PERSISTENT_LOGINS.TOKEN, SQLDataType.VARCHAR(64).nullable(false))
+                    .column(Tables.PERSISTENT_LOGINS.LAST_USED, SQLDataType.TIMESTAMP.nullable(false))
+                    .constraints(
+                            DSL.constraint("pk_series").primaryKey(Tables.PERSISTENT_LOGINS.SERIES),
+                            DSL.constraint("uq_series").unique(Tables.PERSISTENT_LOGINS.SERIES)
                     )
                     .execute();
 

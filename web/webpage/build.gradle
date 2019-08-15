@@ -1,0 +1,42 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+plugins {
+    id "com.moowork.node" version "1.3.1"
+}
+
+apply plugin: 'java'
+
+// the default value for version is stored in gradle.properties file
+project.version = project.findProperty('version')
+println 'project.version=' + project.version
+
+node {
+  download = true
+  workDir = file("${project.buildDir}/node")
+  nodeModulesDir = file("${project.projectDir}")
+}
+
+import groovy.json.*
+task injectVersion() {
+    mkdir project.buildDir
+    println 'creating package_version.json and injecting version ' + project.version
+    def inputFile = new File("${project.projectDir}/package.json")
+    def outputFile = new File("${project.projectDir}/build/package_version.json")
+    def json = new JsonSlurper().parseText(inputFile.text)
+    json.version = project.version
+    def builder = new JsonBuilder(json)
+    //println builder.toPrettyString()
+    outputFile.withWriter {
+        builder.writeTo(it)
+    }
+    println 'package_version.json created'
+}
+
+jar {
+  from 'dist/webpage' into 'static'
+}
+jar.dependsOn 'npm_run_build'
+jar.dependsOn injectVersion

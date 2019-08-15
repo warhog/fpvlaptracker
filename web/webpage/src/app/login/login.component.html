@@ -1,0 +1,22 @@
+<h2>login</h2>
+<form role="form" (submit)="login()">
+	<div class="input-group mb-3">
+		<div class="input-group-prepend">
+			<span class="input-group-text" id="basic-addon1">username</span>
+		</div>
+		<input type="text" class="form-control" id="username" name="username" aria-label="username"
+			aria-describedby="basic-addon1" [(ngModel)]="credentials.username" />
+	</div>
+	<div class="input-group mb-3">
+		<div class="input-group-prepend">
+			<span class="input-group-text" id="basic-addon2">password</span>
+		</div>
+		<input type="password" class="form-control" id="password" name="password" aria-label="password"
+			aria-describedby="basic-addon2" [(ngModel)]="credentials.password" />
+	</div>
+	<div class="form-group form-check">
+		<input type="checkbox" class="form-check-input" id="remember-me" name="remember-me" [(ngModel)]="rememberMe" />
+		<label class="form-check-label" for="exampleCheck1">remember me</label>
+	</div>
+	<button [disabled]="loading" type="submit" class="btn btn-primary">Submit</button>
+</form>

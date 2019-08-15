@@ -1,0 +1,73 @@
+<div>
+    race type: {{raceData.raceType | raceType }}
+    <button class="btn btn-outline-primary mr-1" [disabled]="!isAuthenticated() || isRunning() || !hasValidPilots()"
+        [hidden]="raceData.raceType == 'FIXED_TIME'" (click)="switchToType('FIXED_TIME')">switch to fixed time</button>
+    <button class="btn btn-outline-primary mr-1" [disabled]="!isAuthenticated() || isRunning()"
+        [hidden]="raceData.raceType == 'ROUND_BASED'" (click)="switchToType('ROUND_BASED')">switch to round
+        based</button>
+</div>
+
+<div class='floatDivLeft raceStateTopLine'>
+    <button class="btn btn-primary mr-1" [disabled]="!isAuthenticated()" [hidden]="isRunning()" (click)="startRace();">start
+        race</button>
+    <button class="btn btn-primary mr-1" [disabled]="!isAuthenticated()" [hidden]="!isRunning()" (click)="stopRace();">stop
+        race</button>
+</div>
+
+<div class="floatDivLeft raceStateTopLine">
+    state: {{raceData.state | raceState}}
+</div>
+<div class="floatDivLeft raceStateTopLine" style="width: 5px;">
+    |
+</div>
+<div class="floatDivLeft raceStateTopLine">
+    starting time: {{raceData.startTime == null ? '-' : convertTime(raceData.startTime)}}
+</div>
+<div [hidden]="!isMobile()" class="floatDivLeft raceStateTopLine" style="width: 250px;">
+    <button class="btn btn-outline-secondary" [hidden]="sleepDisabled" (click)="sleepDisable()">disable
+        sleepmode</button>
+    <button class="btn btn-outline-secondary" [hidden]="!sleepDisabled" (click)="sleepEnable()">enable
+        sleepmode</button>
+</div>
+
+<div style="clear: both;"></div>
+
+<app-race-fixed-time [hidden]="raceData.raceType != 'FIXED_TIME'" [typeSpecific]="raceData.typeSpecific">
+</app-race-fixed-time>
+<app-race-round-based [hidden]="raceData.raceType != 'ROUND_BASED'" [typeSpecific]="raceData.typeSpecific">
+</app-race-round-based>
+
+<div>
+    <div class="floatDivLeft" style="width: 250px;">
+        <h3>toplist</h3>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th style="padding-right: 10px;">name</th>
+                    <th>duration</th>
+                    <th>laps</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr [hidden]="nonEmptyToplist()">
+                    <td colspan="3">no pilot completed a lap yet</td>
+                </tr>
+                <tr *ngFor="let entry of raceData.toplist">
+                    <td style="padding-right: 10px;">{{entry.name}}</td>
+                    <td>{{entry.totalLapTime | duration}}</td>
+                    <td>{{entry.laps}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="floatDivLeft" style="width: 250px;" *ngFor="let pilot of raceData.pilots">
+        <app-pilot-stats [pilot]="pilot" [pilotDuration]="getPilotDuration(pilot.name)"
+            (reloadEvent)="onReloadEvent($event)"></app-pilot-stats>
+    </div>
+</div>
+
+<div style="clear: both;"></div>
+
+<div style="height: 600px; width: 100%;">
+    <div id="chartdiv" style="height: 600px;"></div>
+</div>

@@ -1,0 +1,31 @@
+<div [hidden]="nodes.length != 0">
+    no nodes registered yet.
+</div>
+<div *ngFor="let node of nodes; let i = index">
+    <div class="card">
+        <div class="card-header">
+            <b>node chipid: {{node.chipId}}</b>
+        </div>
+        <div class="card-body">
+            <table class="table table-borderless">
+                <tbody>
+                    <tr>
+                        <th scope="row">frequency:</th>
+                        <td>{{node.frequency}}</td>
+                        <th scope="row">state:</th>
+                        <td>{{node.state}}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">ip:</th>
+                        <td>{{node.inetAddress}}</td>
+                        <th scope="row">version:</th>
+                        <td>{{node.version}}</td>
+                    </tr>
+
+                </tbody>
+            </table>
+            <button [disabled]="!authenticated" (click)="nodeSetup(node.chipId)" class="btn btn-primary">node setup</button>
+        </div>
+    </div>
+    <br />
+</div>

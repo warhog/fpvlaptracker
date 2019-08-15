@@ -1,6 +1,6 @@
 package de.warhog.fpvlaptracker.race;
 
-import de.warhog.fpvlaptracker.entities.ToplistEntry;
+import de.warhog.fpvlaptracker.dtos.ToplistEntry;
 import java.io.Serializable;
 import java.util.Comparator;
 import org.apache.commons.lang3.builder.CompareToBuilder;

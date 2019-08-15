@@ -2,9 +2,8 @@ package de.warhog.fpvlaptracker.entities;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,44 +11,57 @@ public class LapTimeList {
 
     private static final Logger LOG = LoggerFactory.getLogger(LapTimeList.class);
 
-    private final Map<Integer, Duration> laps;
-    private final Map<Integer, Boolean> lapValidity;
-
+    private final List<LapTimeListLap> laps;
     private Integer currentLap;
     private Integer lastRssi;
 
     public LapTimeList() {
         currentLap = 0;
         lastRssi = 0;
-        laps = new HashMap<>();
-        lapValidity = new HashMap<>();
+        laps = new ArrayList<>();
     }
 
-    public void invalidateLap(Integer lap, boolean validity) {
-        lapValidity.put(lap, validity);
+    public void reset() {
+        this.laps.clear();
+        this.lastRssi = 0;
+        this.currentLap = 0;
+    }
+    
+    public LapTimeListLap getLap(Integer lap) {
+        LapTimeListLap result = null;
+        for (LapTimeListLap lapTimeListLap : laps) {
+            if (lapTimeListLap.getLap() == lap) {
+                result = lapTimeListLap;
+            }
+        }
+        if (result == null) {
+            throw new IllegalArgumentException("lap not found: " + lap);
+        }
+        return result;
+    }
+    
+    public void invalidateLap(Integer lap, boolean invalid) {
+        LapTimeListLap lapTimeListLap = getLap(lap);
+        lapTimeListLap.setInvalid(invalid);
     }
 
     public boolean isLapValid(Integer lap) {
-        if (lapValidity.containsKey(lap)) {
-            return !lapValidity.get(lap);
-        }
-        return true;
+        LapTimeListLap lapTimeListLap = getLap(lap);
+        return !lapTimeListLap.getInvalid();
     }
 
-    public Map<Integer, Boolean> getInvalidLaps() {
-        return new HashMap<>(lapValidity);
-    }
-
-    public boolean noValidLapAvailable() {
+    public boolean isNoValidLapAvailable() {
         return numberOfInvalidLaps() == laps.size();
     }
 
     public Integer numberOfInvalidLaps() {
-        // filter only laps that are invalid
-        Map<Integer, Boolean> collect = lapValidity.entrySet().stream()
-                .filter(x -> x.getValue() == true)
-                .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
-        return collect.size();
+        Integer result = 0;
+        for (LapTimeListLap lapTimeListLap : laps) {
+            if (lapTimeListLap.getInvalid()) {
+                result++;
+            }
+        }
+        return result;
     }
 
     public void addLap(Long duration, Integer rssi, boolean ignoreFirstLap) {
@@ -63,8 +75,8 @@ public class LapTimeList {
             }
             lastRssi = rssi;
             LOG.info("add lap with " + duration + " ms (rssi: " + rssi + ")");
-            Duration lap = Duration.of(duration, ChronoUnit.MILLIS);
-            laps.put(currentLap, lap);
+            Duration lapDuration = Duration.of(duration, ChronoUnit.MILLIS);
+            laps.add(new LapTimeListLap(currentLap, lapDuration, false, rssi));
             currentLap++;
         }
     }
@@ -74,7 +86,7 @@ public class LapTimeList {
     }
 
     public Duration getAverageLapDuration() {
-        if (laps.isEmpty() || noValidLapAvailable()) {
+        if (laps.isEmpty() || isNoValidLapAvailable()) {
             return Duration.ZERO;
         }
         Duration avg = getTotalDuration();
@@ -83,34 +95,26 @@ public class LapTimeList {
     }
 
     public Duration getTotalDuration() {
-        if (laps.isEmpty() || noValidLapAvailable()) {
+        if (laps.isEmpty() || isNoValidLapAvailable()) {
             return Duration.ZERO;
         }
         Duration total = Duration.ZERO;
-        for (Map.Entry<Integer, Duration> entry : laps.entrySet()) {
-            if (isLapValid(entry.getKey())) {
-                total = total.plus(entry.getValue());
+        for (LapTimeListLap lapTimeListLap : laps) {
+            if (lapTimeListLap.isValid()) {
+                total = total.plus(lapTimeListLap.getDuration());
             }
         }
         return total;
     }
 
-    public Map<Integer, Duration> getLapsFilterInvalid() {
-        Map<Integer, Duration> filtered = laps.entrySet().stream()
-                .filter(x -> isLapValid(x.getKey()))
-                .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
-        return filtered;
-    }
-
-    public Map<Integer, Duration> getLaps() {
-        return new HashMap<>(laps);
+    public List<LapTimeListLap> getLaps() {
+        return new ArrayList<>(laps);
     }
 
     public Integer getTotalLaps() {
-        Map<Integer, Duration> filtered = laps.entrySet().stream()
-                .filter(x -> isLapValid(x.getKey()))
-                .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
-        return filtered.size();
+        Integer totalLaps = 0;
+        totalLaps = laps.stream().filter((lapTimeListLap) -> (lapTimeListLap.isValid())).map((_item) -> 1).reduce(totalLaps, Integer::sum);
+        return totalLaps;
     }
 
     public Integer getCurrentLap() {
@@ -122,14 +126,14 @@ public class LapTimeList {
     }
 
     public Duration getFastestLapDuration() {
-        if (laps.isEmpty() || noValidLapAvailable()) {
+        if (laps.isEmpty() || isNoValidLapAvailable()) {
             return Duration.ZERO;
         }
         Duration fastest = Duration.of(1, ChronoUnit.HOURS);
-        for (Map.Entry<Integer, Duration> entry : laps.entrySet()) {
-            if (isLapValid(entry.getKey())) {
-                if (entry.getValue().compareTo(fastest) < 0) {
-                    fastest = entry.getValue();
+        for (LapTimeListLap lapTimeListLap : laps) {
+            if (lapTimeListLap.isValid()) {
+                if (lapTimeListLap.getDuration().compareTo(fastest) < 0) {
+                    fastest = lapTimeListLap.getDuration();
                 }
             }
         }
@@ -137,16 +141,17 @@ public class LapTimeList {
     }
 
     public Integer getFastestLap() {
-        if (laps.isEmpty() || noValidLapAvailable()) {
+        if (laps.isEmpty() || isNoValidLapAvailable()) {
             return 1;
         }
         Integer fastestLap = 1;
         Duration fastest = Duration.of(1, ChronoUnit.HOURS);
-        for (Map.Entry<Integer, Duration> entry : laps.entrySet()) {
-            if (isLapValid(entry.getKey())) {
-                if (entry.getValue().compareTo(fastest) < 0) {
-                    fastest = entry.getValue();
-                    fastestLap = entry.getKey();
+
+        for (LapTimeListLap lapTimeListLap : laps) {
+            if (lapTimeListLap.isValid()) {
+                if (lapTimeListLap.getDuration().compareTo(fastest) < 0) {
+                    fastest = lapTimeListLap.getDuration();
+                    fastestLap = lapTimeListLap.getLap();
                 }
             }
         }
@@ -155,7 +160,7 @@ public class LapTimeList {
 
     @Override
     public String toString() {
-        return "LapTimeList{" + "laps=" + laps + ", lapValidity=" + lapValidity + ", currentLap=" + currentLap + ", lastRssi=" + lastRssi + '}';
+        return "LapTimeList{" + "laps=" + laps + ", currentLap=" + currentLap + ", lastRssi=" + lastRssi + '}';
     }
 
 }

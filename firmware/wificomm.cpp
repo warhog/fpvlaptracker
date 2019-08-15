@@ -241,7 +241,7 @@ void WifiComm::sendData() {
 #ifdef DEBUG 
     Serial.println(F("sending data message"));
 #endif
-    this->sendUdpUnicastToServerMessage(comm::CommTools::getDeviceDataAsJsonStringFromStorage(this->_storage, this->_stateManager, this->_lapDetector, this->_batteryMgr, *this->_loopTime, this->_rssi));
+    this->sendUdpUnicastToServerMessage(comm::CommTools::getDeviceDataAsJsonStringFromStorage(this->_storage, this->_stateManager, this->_lapDetector, this->_batteryMgr, *this->_loopTime, this->_rssi, this->_version));
 }
 
 void WifiComm::disconnect() {

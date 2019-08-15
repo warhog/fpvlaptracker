@@ -2,7 +2,7 @@
 
 using namespace comm;
 
-String CommTools::getDeviceDataAsJsonStringFromStorage(util::Storage *storage, statemanagement::StateManager *stateManager, lap::LapDetector *lapDetector, battery::BatteryMgr *batteryMgr, unsigned long loopTime, lap::Rssi *rssi) {
+String CommTools::getDeviceDataAsJsonStringFromStorage(util::Storage *storage, statemanagement::StateManager *stateManager, lap::LapDetector *lapDetector, battery::BatteryMgr *batteryMgr, unsigned long loopTime, lap::Rssi *rssi, const char *version) {
     DynamicJsonDocument jsonDocument(1024);
     unsigned long chipId = static_cast<unsigned long>(ESP.getEfuseMac());
     jsonDocument["type"] = "devicedata";
@@ -21,6 +21,7 @@ String CommTools::getDeviceDataAsJsonStringFromStorage(util::Storage *storage, s
     jsonDocument["loopTime"] = loopTime;
     jsonDocument["filterRatio"] = storage->getFilterRatio();
     jsonDocument["filterRatioCalibration"] = storage->getFilterRatioCalibration();
+    jsonDocument["version"] = version;
     String result("");
     serializeJson(jsonDocument, result);
     return result;

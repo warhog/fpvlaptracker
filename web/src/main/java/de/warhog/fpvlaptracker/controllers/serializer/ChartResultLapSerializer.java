@@ -3,7 +3,7 @@ package de.warhog.fpvlaptracker.controllers.serializer;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import de.warhog.fpvlaptracker.controllers.dtos.ChartResultLap;
+import de.warhog.fpvlaptracker.dtos.ChartResultLap;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Map;
@@ -26,9 +26,9 @@ public class ChartResultLapSerializer extends StdSerializer<ChartResultLap> {
     public void serialize(ChartResultLap value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();
         gen.writeNumberField("lap", value.getLap());
-        Map<Long, Duration> times = value.getTimes();
-        for (Map.Entry<Long, Duration> entry : times.entrySet()) {
-            gen.writeNumberField(entry.getKey().toString(), entry.getValue().toMillis());
+        Map<String, Duration> times = value.getTimes();
+        for (Map.Entry<String, Duration> entry : times.entrySet()) {
+            gen.writeNumberField(entry.getKey(), entry.getValue().toMillis() / 1000.0);
         }
         gen.writeEndObject();
     }

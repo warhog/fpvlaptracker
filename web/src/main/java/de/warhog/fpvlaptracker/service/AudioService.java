@@ -45,19 +45,19 @@ public class AudioService {
         play(AudioFile.LAP);
     }
 
-    public void speakRegistered(String name) {
+    public void speakRegistered(Integer nodes) {
         try {
-            speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.REGISTERED), name));
+            speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.REGISTERED), nodes));
         } catch (NoSuchFieldException ex) {
-            LOG.error("cannot speak register for " + name, ex);
+            LOG.error("cannot speak register: " + ex.getMessage(), ex);
         }
     }
 
-    public void speakUnregistered(String name) {
+    public void speakUnregistered(Integer nodes) {
         try {
-            speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.UNREGISTERED), name));
+            speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.UNREGISTERED), nodes));
         } catch (NoSuchFieldException ex) {
-            LOG.error("cannot speak unregister for " + name, ex);
+            LOG.error("cannot speak unregister: " + ex.getMessage(), ex);
         }
     }
 
@@ -65,7 +65,7 @@ public class AudioService {
         try {
             speak(speechTexts.getText(SpeechTexts.TextsEnum.FINISHED));
         } catch (NoSuchFieldException ex) {
-            LOG.error("cannot speak finished", ex);
+            LOG.error("cannot speak finished: " + ex.getMessage(), ex);
         }
     }
 
@@ -73,39 +73,39 @@ public class AudioService {
         try {
             speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.INVALID_LAP), name));
         } catch (NoSuchFieldException ex) {
-            LOG.error("cannot speak invalid lap for " + name, ex);
+            LOG.error("cannot speak invalid lap for " + name + ": " + ex.getMessage(), ex);
         }
     }
 
-    public void speakParticipantEnded(String name) {
+    public void speakPilotEnded(String name) {
         try {
-            speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.PARTICIPANT_ENDED), name));
+            speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.PILOT_ENDED), name));
         } catch (NoSuchFieldException ex) {
-            LOG.error("cannot speak participant ended for " + name, ex);
+            LOG.error("cannot speak pilot ended for " + name + ": " + ex.getMessage(), ex);
         }
     }
 
     public void speakCalibrationDone(String name) {
         try {
-            speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.CALIBRATION_DONE), name));
+            speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.CALIBRATION_DONE)));
         } catch (NoSuchFieldException ex) {
-            LOG.error("cannot speak calibration done for " + name, ex);
+            LOG.error("cannot speak calibration done for " + name + ": " + ex.getMessage(), ex);
         }
     }
 
-    public void speakBatteryLow(String name) {
+    public void speakBatteryLow() {
         try {
-            speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.BATTERY_LOW), name));
+            speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.BATTERY_LOW)));
         } catch (NoSuchFieldException ex) {
-            LOG.error("cannot speak battery low for " + name, ex);
+            LOG.error("cannot speak battery low: " + ex.getMessage(), ex);
         }
     }
 
-    public void speakBatteryShutdown(String name) {
+    public void speakBatteryShutdown() {
         try {
-            speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.BATTERY_SHUTDOWN), name));
+            speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.BATTERY_SHUTDOWN)));
         } catch (NoSuchFieldException ex) {
-            LOG.error("cannot speak battery shutdown for " + name, ex);
+            LOG.error("cannot speak battery shutdown: " + ex.getMessage(), ex);
         }
     }
 
@@ -113,39 +113,39 @@ public class AudioService {
         try {
             speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.ALREADY_DONE), name));
         } catch (NoSuchFieldException ex) {
-            LOG.error("cannot speak already done for " + name, ex);
+            LOG.error("cannot speak already done for " + name + ": " + ex.getMessage(), ex);
         }
     }
 
-    public void speakParticipantStart(String name) {
+    public void speakPilotStart(String name) {
         try {
-            speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.PARTICIPANT_START), name));
+            speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.PILOT_START), name));
         } catch (NoSuchFieldException ex) {
-            LOG.error("cannot speak participant start for " + name, ex);
+            LOG.error("cannot speak pilot start for " + name + ": " + ex.getMessage(), ex);
         }
     }
 
-    public void speakFalseStartParticipant(String name) {
+    public void speakFalseStartPilot(String name) {
         try {
-            speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.FALSE_START_PARTICIPANT), name));
+            speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.FALSE_START_PILOT), name));
         } catch (NoSuchFieldException ex) {
-            LOG.error("cannot speak false start for " + name, ex);
+            LOG.error("cannot speak false start for " + name + ": " + ex.getMessage(), ex);
         }
     }
 
-    public void speakLastLapParticipant(String name) {
+    public void speakLastLapPilot(String name) {
         try {
-            speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.LAST_LAP_PARTICIPANT), name));
+            speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.LAST_LAP_PILOT), name));
         } catch (NoSuchFieldException ex) {
-            LOG.error("cannot speak last lap for " + name, ex);
+            LOG.error("cannot speak last lap for " + name + ": " + ex.getMessage(), ex);
         }
     }
 
-    public void speakTimeOverParticipant(String name) {
+    public void speakTimeOverPilot(String name) {
         try {
-            speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.TIME_OVER_PARTICIPANT), name));
+            speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.TIME_OVER_PILOT), name));
         } catch (NoSuchFieldException ex) {
-            LOG.error("cannot speak time over for " + name, ex);
+            LOG.error("cannot speak time over for " + name + ": " + ex.getMessage(), ex);
         }
     }
 
@@ -153,7 +153,7 @@ public class AudioService {
         try {
             speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.PREPARE_FOR_RACE)));
         } catch (NoSuchFieldException ex) {
-            LOG.error("cannot speak prepare for race", ex);
+            LOG.error("cannot speak prepare for race: " + ex.getMessage(), ex);
         }
     }
 
@@ -161,7 +161,7 @@ public class AudioService {
         try {
             speak(String.format(speechTexts.getText(SpeechTexts.TextsEnum.RACE_ABORTED)));
         } catch (NoSuchFieldException ex) {
-            LOG.error("cannot speak race aborted", ex);
+            LOG.error("cannot speak race aborted: " + ex.getMessage(), ex);
         }
     }
 

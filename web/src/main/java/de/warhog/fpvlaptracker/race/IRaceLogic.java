@@ -1,8 +1,8 @@
 package de.warhog.fpvlaptracker.race;
 
-import de.warhog.fpvlaptracker.entities.ParticipantExtraData;
-import de.warhog.fpvlaptracker.entities.RaceState;
-import de.warhog.fpvlaptracker.entities.ToplistEntry;
+import de.warhog.fpvlaptracker.util.RaceState;
+import de.warhog.fpvlaptracker.dtos.ToplistEntry;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +28,9 @@ public interface IRaceLogic {
     void setStartTime(LocalDateTime startTime);
 
     List<ToplistEntry> getToplist();
+    
+    Map<String, String> getRaceTypeSpecificData();
 
-    Map<Long, ParticipantExtraData> getParticipantExtraData();
-
+    Map<String, Long> getDurations();
+    
 }

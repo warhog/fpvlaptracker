@@ -12,7 +12,7 @@ namespace comm {
 
     class CommTools {
         public:
-            static String getDeviceDataAsJsonStringFromStorage(util::Storage *storage, statemanagement::StateManager *stateManager, lap::LapDetector *lapDetector, battery::BatteryMgr *batteryMgr, unsigned long loopTime, lap::Rssi *rssi);
+            static String getDeviceDataAsJsonStringFromStorage(util::Storage *storage, statemanagement::StateManager *stateManager, lap::LapDetector *lapDetector, battery::BatteryMgr *batteryMgr, unsigned long loopTime, lap::Rssi *rssi, const char *version);
             static String getChipIdAsString();
 
         private:

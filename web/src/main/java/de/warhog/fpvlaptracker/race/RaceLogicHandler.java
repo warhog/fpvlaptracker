@@ -1,21 +1,18 @@
 package de.warhog.fpvlaptracker.race;
 
-import de.warhog.fpvlaptracker.entities.RaceState;
 import de.warhog.fpvlaptracker.controllers.WebSocketController;
-import de.warhog.fpvlaptracker.controllers.dtos.RaceStateResult;
-import de.warhog.fpvlaptracker.entities.Participant;
-import de.warhog.fpvlaptracker.entities.ToplistEntry;
+import de.warhog.fpvlaptracker.util.RaceType;
+import de.warhog.fpvlaptracker.util.RaceState;
+import de.warhog.fpvlaptracker.dtos.RaceDataResult;
+import de.warhog.fpvlaptracker.dtos.ToplistEntry;
 import de.warhog.fpvlaptracker.service.AudioService;
-import de.warhog.fpvlaptracker.service.ConfigService;
-import de.warhog.fpvlaptracker.service.RestService;
-import de.warhog.fpvlaptracker.service.ServiceLayerException;
+import de.warhog.fpvlaptracker.service.PilotsService;
 import java.time.LocalDateTime;
 import java.util.List;
 import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -27,28 +24,19 @@ public class RaceLogicHandler {
     private RaceType raceType = RaceType.ROUND_BASED;
 
     @Autowired
-    ParticipantsRaceList participantsRaceList;
+    private PilotsService pilotsService;
 
     @Autowired
-    WebSocketController webSocketController;
+    private AudioService audioService;
 
     @Autowired
-    RestService restService;
+    private RaceLogicFixedTime raceLogicFixedTime;
 
     @Autowired
-    AudioService audioService;
+    private RaceLogicRoundBased raceLogicRoundBased;
 
     @Autowired
-    RaceLogicFixedTime raceLogicFixedTime;
-
-    @Autowired
-    RaceLogicRoundBased raceLogicRoundBased;
-
-    @Autowired
-    LapStorage lapStorage;
-    
-    @Autowired
-    ConfigService configService;
+    private WebSocketController webSocketController;
 
     @PostConstruct
     public void postConstruct() {
@@ -66,30 +54,11 @@ public class RaceLogicHandler {
         raceLogic.init();
     }
 
-    public void addParticipant(Participant participant) {
-        if (raceLogic.isRunning()) {
-            throw new IllegalStateException("cannot add participants to running race");
-        }
-        participantsRaceList.addParticipant(participant);
-    }
-
-    public void removeParticipant(Participant participant) {
-        if (raceLogic.isRunning()) {
-            throw new IllegalStateException("cannot remove participants from running race");
-        }
-        participantsRaceList.removeParticipant(participant);
-        if (!participantsRaceList.hasParticipants()) {
-            LOG.info("no participants anymore, setting state to waiting");
-            raceLogic.setState(RaceState.WAITING);
-        }
-    }
-
     public void startRace() {
         raceLogic.init();
-        participantsRaceList.resetValidity();
+        pilotsService.resetValidity();
         LOG.info("starting race");
-        lapStorage.repopulate();
-        checkParticipantsStillAvailable();
+        pilotsService.resetAllLapData();
         raceLogic.startRace();
         setStartTime(LocalDateTime.now());
     }
@@ -107,6 +76,7 @@ public class RaceLogicHandler {
     public void addLap(Long chipId, Long duration, Integer rssi) {
         LOG.debug("add lap", chipId, duration, rssi);
         raceLogic.addLap(chipId, duration, rssi);
+        webSocketController.sendReloadRaceData();
     }
 
     public RaceState getState() {
@@ -129,50 +99,16 @@ public class RaceLogicHandler {
         raceLogic.setStartTime(startTime);
     }
 
-    @Scheduled(fixedDelay = 60000L)
-    public void checkParticipantsStillAvailable() {
-        LOG.debug("checking for non-existing participants");
-        if (!raceLogic.isRunning()) {
-            for (Participant participant : participantsRaceList.getParticipants()) {
-                try {
-                    if (restService.checkAvailability(participant.getIp())) {
-                        LOG.debug("participant with chipid " + participant.getChipId() + " found");
-                    } else {
-                        LOG.info("participant with chipid " + participant.getChipId() + " not found, removing");
-                        participantsRaceList.removeParticipant(participant);
-                        webSocketController.sendNewParticipantMessage(participant.getChipId());
-                        audioService.speakUnregistered(participant.getName());
-                    }
-                } catch (Exception ex) {
-                    LOG.error("cannot check availability for " + participant.toString());
-                }
-            }
-        } else {
-            LOG.debug("race is running, skipping check");
-        }
-    }
-    
-    public RaceStateResult getRaceData() {
-        RaceStateResult rsr = new RaceStateResult();
-        rsr.setState(raceLogic.getState());
-        rsr.setLapData(lapStorage.getLapDataExtended());
-        rsr.setToplist(raceLogic.getToplist());
-        rsr.setStartTime(raceLogic.getStartTime());
-        rsr.setRaceType(getRaceType());
-        rsr.setParticipantExtraData(raceLogic.getParticipantExtraData());
-        try {
-            if (getRaceType() == RaceType.ROUND_BASED) {
-                rsr.addTypeSpecific("maxLaps", configService.getNumberOfLaps().toString());
-            } else if (getRaceType() == RaceType.FIXED_TIME) {
-                rsr.addTypeSpecific("startInterval", configService.getStartInterval().toString());
-                rsr.addTypeSpecific("raceDuration", configService.getRaceDuration().toString());
-                rsr.addTypeSpecific("overtimeDuration", configService.getOvertimeDuration().toString());
-            }
-            rsr.addTypeSpecific("preparationTime", configService.getPreparationDuration().toString());
-        } catch (ServiceLayerException ex) {
-            LOG.error("cannot get data: " + ex.getMessage(), ex);
-        }
-        return rsr;
+    public RaceDataResult getRaceData() {
+        RaceDataResult rdr = new RaceDataResult();
+        rdr.setState(raceLogic.getState());
+        rdr.setStartTime(raceLogic.getStartTime());
+        rdr.setRaceType(getRaceType());
+        rdr.setToplist(raceLogic.getToplist());
+        rdr.setTypeSpecific(raceLogic.getRaceTypeSpecificData());
+        rdr.setPilots(pilotsService.getPilotsWithNodes());
+        rdr.setPilotDurations(raceLogic.getDurations());
+        return rdr;
     }
 
 }

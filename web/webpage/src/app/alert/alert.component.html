@@ -1,0 +1,11 @@
+<div class="alert-message">
+    <div style="padding: 5px;">
+        <div *ngFor="let alert of alerts; let i = index" class="alert-inner-message alert alert-dismissable fade show" [ngClass]="alert.cssClass">
+            <button type="button" class="close" data-dismiss="alert" aria-label="close" (click)="closeAlert(i);">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <div *ngIf="alert.title"><span style="text-decoration: underline; font-weight: bold;">{{alert.title}}</span><br /><br /></div>
+            {{alert.message}}
+        </div>
+    </div>
+</div>

@@ -145,7 +145,7 @@ void BtComm::processIncomingMessage() {
  * received get device data message
  *-------------------------------------------------*/
 void BtComm::processGetDeviceData() {
-    this->sendBtMessageWithNewline(comm::CommTools::getDeviceDataAsJsonStringFromStorage(this->_storage, this->_stateManager, this->_lapDetector, this->_batteryMgr, *this->_loopTime, this->_rssi));
+    this->sendBtMessageWithNewline(comm::CommTools::getDeviceDataAsJsonStringFromStorage(this->_storage, this->_stateManager, this->_lapDetector, this->_batteryMgr, *this->_loopTime, this->_rssi, this->_version));
 }
 
 /*---------------------------------------------------
