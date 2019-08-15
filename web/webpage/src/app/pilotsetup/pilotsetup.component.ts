@@ -67,7 +67,7 @@ export class PilotsetupComponent implements OnInit {
 
     // TODO put to service
     this.httpClient.post<StatusResponse>('/api/auth/pilot', me.pilot, {})
-      .pipe(timeout(2000), catchError(error => {
+      .pipe(timeout(5000), catchError(error => {
         this.alertService.error('error during connecting to the server.', 'server error');
         return of(null);
       })).subscribe(response => {
@@ -88,7 +88,7 @@ export class PilotsetupComponent implements OnInit {
       // TODO put to service
       let params: HttpParams = new HttpParams().set('name', me.pilot.name);
       me.httpClient.delete<StatusResponse>('/api/auth/pilot', { params: params })
-        .pipe(timeout(2000), catchError(error => {
+        .pipe(timeout(5000), catchError(error => {
           me.alertService.error('error during connecting to the server.', 'server error');
           return of(null);
         })).subscribe(response => {

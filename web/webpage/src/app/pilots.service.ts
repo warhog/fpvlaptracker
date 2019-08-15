@@ -36,7 +36,7 @@ export class PilotsService {
   createPilot(pilot: Pilot, fnSuccess: () => void, fnFailure: (message: string) => void) {
     let me = this;
     this.httpClient.post<StatusResponse>('/api/auth/pilot', pilot, {})
-      .pipe(timeout(2000), catchError(error => {
+      .pipe(timeout(5000), catchError(error => {
         fnFailure && fnFailure('error during connecting to the server.');
         return of(null);
       })).subscribe(response => {

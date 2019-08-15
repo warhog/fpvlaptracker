@@ -187,7 +187,7 @@ export class NodesetupComponent implements OnInit {
     this.utilService.toggleOverlay(true);
     let me = this;
     this.httpClient.post<StatusResponse>('/api/auth/node', me.node, {})
-      .pipe(timeout(2000), catchError(error => {
+      .pipe(timeout(5000), catchError(error => {
         this.alertService.error('error during connecting to the server.', 'server error');
         return of(null);
       })).subscribe(response => {
@@ -255,7 +255,7 @@ export class NodesetupComponent implements OnInit {
       me.utilService.toggleOverlay(true);
       let params: HttpParams = new HttpParams().set('chipid', String(me.chipid)).set('name', name);
       me.httpClient.delete<StatusResponse>('/api/auth/pilot/profile', { params: params })
-        .pipe(timeout(2000), catchError(error => {
+        .pipe(timeout(5000), catchError(error => {
           me.alertService.error('error during connecting to the server.', 'server error');
           return of(null);
         })).subscribe(response => {
@@ -292,7 +292,7 @@ export class NodesetupComponent implements OnInit {
       chipId: this.chipid,
       name: useName
     }, {})
-      .pipe(timeout(2000), catchError(error => {
+      .pipe(timeout(5000), catchError(error => {
         this.alertService.error('error during connecting to the server.', 'server error');
         return of(null);
       })).subscribe(response => {

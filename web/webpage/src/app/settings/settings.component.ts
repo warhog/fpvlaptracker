@@ -57,7 +57,7 @@ export class SettingsComponent implements OnInit {
     this.storing = true;
     this.utilService.toggleOverlay(true);
     this.http.post<StatusResponse>('api/auth/settings/data', this.data, {})
-      .pipe(timeout(2000), catchError(error => {
+      .pipe(timeout(5000), catchError(error => {
         this.alertService.error('error during connecting to the server.', 'saving failed');
         return of(null);
       })).subscribe(response => {
@@ -73,6 +73,7 @@ export class SettingsComponent implements OnInit {
   shutdown() {
     let me = this;
     me.confirmDialogService.confirmYesNo('really shutdown?', 'do you really want to shutdown the system?', function () {
+      me.utilService.toggleOverlay(true);
       me.http.get('api/auth/settings/shutdown', {}).subscribe(response => {
         me.utilService.toggleOverlay(true);
       }, error => {
