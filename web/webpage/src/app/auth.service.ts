@@ -13,7 +13,7 @@ export class AuthService {
   private admin: boolean = false;
   private principal: any = null;
 
-  constructor(private http: HttpClient, private router: Router) { }
+  constructor(private httpClient: HttpClient, private router: Router) { }
 
   authenticate(credentials: Credentials, rememberMe: boolean = false, callback: Function = undefined, callbackFailure: Function = undefined) {
 
@@ -21,15 +21,15 @@ export class AuthService {
       authorization: 'Basic ' + btoa(credentials.username + ':' + credentials.password)
     } : {});
 
-    let params: HttpParams = new HttpParams().append('remember-me', (rememberMe ? 'true' : 'false'));
+    let params: HttpParams = new HttpParams().set('remember-me', (rememberMe ? 'true' : 'false'));
 
-    this.http.get('user', { headers: headers, params: params }).subscribe(response => {
+    this.httpClient.get<any>('user', { headers: headers, params: params }).subscribe(response => {
       this.handleAuthData(response);
       return callback && callback();
-    },
-      error => {
-        return callbackFailure && callbackFailure();
-      });
+    }, error => {
+      return callbackFailure && callbackFailure();
+    });
+
   }
 
   private handleAuthData(response) {
@@ -53,7 +53,7 @@ export class AuthService {
   }
 
   logout() {
-    this.http.post('logout', {}).subscribe(response => {
+    this.httpClient.post('logout', {}).subscribe(response => {
       this.authenticated = false;
       this.principal = null;
       this.router.navigateByUrl('/');

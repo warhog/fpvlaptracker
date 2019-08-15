@@ -28,7 +28,6 @@ export class LoginComponent implements OnInit {
 
   login() {
     this.loading = true;
-    this.alertService.clear();
     this.auth.authenticate(this.credentials, this.rememberMe, () => {
       this.loading = false;
       this.router.navigateByUrl(this.path);

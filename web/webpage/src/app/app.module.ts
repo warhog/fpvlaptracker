@@ -33,6 +33,7 @@ import { DeviceDetectorModule } from 'ngx-device-detector';
 import { PilotStatePipe } from './race/pilot-state.pipe';
 import { RaceTypePipe } from './race/race-type.pipe';
 import { DurationPipe } from './duration.pipe';
+import { AutofocusDirective } from './autofocus.directive';
 
 @Injectable()
 export class XhrInterceptor implements HttpInterceptor {
@@ -51,8 +52,10 @@ export class XhrInterceptor implements HttpInterceptor {
         } else {
           this.router.navigate(['login', this.router.url]);
           this.utilService.toggleOverlay(false);
+          return new Observable<HttpEvent<any>>();
         }
-        return new Observable<HttpEvent<any>>();
+        const error = err.error.message || err.statusText;
+        return throwError(error);
       }
       const error = err.error.message || err.statusText;
       return throwError(error);
@@ -82,7 +85,8 @@ export class XhrInterceptor implements HttpInterceptor {
     RaceStatePipe,
     PilotStatePipe,
     RaceTypePipe,
-    DurationPipe
+    DurationPipe,
+    AutofocusDirective
   ],
   imports: [
     BrowserModule,
@@ -99,7 +103,7 @@ export class XhrInterceptor implements HttpInterceptor {
     }, {
       provide: InjectableRxStompConfig,
       useValue: myRxStompConfig
-    },{
+    }, {
       provide: RxStompService,
       useFactory: rxStompServiceFactory,
       deps: [InjectableRxStompConfig]
