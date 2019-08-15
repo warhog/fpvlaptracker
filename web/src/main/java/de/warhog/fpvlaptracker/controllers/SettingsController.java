@@ -7,6 +7,7 @@ import de.warhog.fpvlaptracker.service.ConfigService;
 import de.warhog.fpvlaptracker.service.ServiceLayerException;
 import de.warhog.fpvlaptracker.util.ShutdownUtil;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,16 +65,24 @@ public class SettingsController {
     @RequestMapping(path = "/shutdown", method = RequestMethod.GET)
     public void shutdown() {
         LOG.info("received shutdown");
-        if (applicationConfig.isShutdownMachine()) {
+        new Thread(() -> {
+            LOG.debug("shutdown thread running");
             try {
-                LOG.debug("shutting down machine");
-                ShutdownUtil.shutdown();
+                Thread.sleep(1000);
+            } catch (InterruptedException ex) {
+                LOG.info("interrupted");
+            }
+            try {
+                if (applicationConfig.isShutdownMachine()) {
+                    LOG.debug("shutting down machine");
+                    ShutdownUtil.shutdown();
+                }
             } catch (Exception ex) {
                 LOG.error("could not shutdown machine: " + ex.getMessage(), ex);
             }
-        }
-        LOG.info("shutting down application");
-        System.exit(0);
+            LOG.info("shutting down application");
+            System.exit(0);
+        }).start();
     }
 
 }
