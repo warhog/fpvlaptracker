@@ -150,9 +150,6 @@ void WifiWebServer::begin() {
                 this->_stateManager->setState(statemanagement::state_enum::CALIBRATION_DONE);
                 this->_lapDetector->disableCalibrationMode();
                 this->_jsonDocument["result"] = "OK";
-            } else if (newState == "RSSI") {
-                this->_stateManager->setState(statemanagement::state_enum::RSSI);
-                this->_jsonDocument["result"] = "OK";
             } else if (newState == "RESTORE_STATE") {
                 this->_stateManager->restoreState();
                 this->_jsonDocument["result"] = "OK";

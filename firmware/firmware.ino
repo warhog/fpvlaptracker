@@ -63,7 +63,7 @@
 //#define DEBUG
 //#define MEASURE
 
-#define VERSION "FLT32-R1.5"
+#define VERSION "FLT32-R1.6"
 
 // pin configurations
 const unsigned int PIN_SPI_SLAVE_SELECT = 16;
@@ -88,7 +88,7 @@ comm::WifiWebServer wifiWebServer(&storage, &rssi, &rx5808, &lapDetector, &batte
 comm::WifiComm wifiComm(&storage, &rssi, &rx5808, &lapDetector, &batteryMgr, VERSION, &stateManager, &loopTime);
 comm::BtComm btComm(&btSerial, &storage, &rssi, &rx5808, &lapDetector, &batteryMgr, VERSION, &stateManager, &wifiComm, &loopTime);
 comm::WifiAp wifiAp;
-unsigned long fastRssiTimeout = 0L;
+unsigned long rssiTimeout = 0L;
 unsigned long lowVoltageTimeout = 0L;
 
 void wifiConnect();
@@ -285,15 +285,6 @@ void loop() {
 			rx5808.setScanChannel(currentChannel);
 			rx5808.startScan(freq::Frequency::getFrequencyForChannelIndex(currentChannel));
 		}
-	} else if (stateManager.isStateRssi()) {
-		if (millis() > fastRssiTimeout) {
-			fastRssiTimeout = millis() + 250;
-			if (btComm.isConnected()) {
-				btComm.sendFastRssiData(rssi.getRssi());
-			} else if (wifiComm.isConnected()) {
-				wifiComm.sendFastRssiData(rssi.getRssi());
-			}
-		}
 	} else if (stateManager.isStateCalibration()) {
 #ifdef MEASURE
 		Serial.println(F("STATE: CALIBRATION"));
@@ -375,6 +366,15 @@ void loop() {
 #endif
 	} else {
 		blinkError(10);
+	}
+
+	if (millis() >= rssiTimeout && (stateManager.isStateCalibration() || stateManager.isStateRace())) {
+		rssiTimeout = millis() + 500;
+		if (btComm.isConnected()) {
+			btComm.sendRssiData(rssi.getRssi());
+		} else if (wifiComm.isConnected()) {
+			wifiComm.sendRssiData(rssi.getRssi());
+		}
 	}
 
 	if (wifiComm.isConnected()) {

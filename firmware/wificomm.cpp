@@ -130,7 +130,7 @@ void WifiComm::sendScanData(unsigned int frequency, unsigned int rssi) {
     this->_udp.flush();
 }
 
-void WifiComm::sendFastRssiData(unsigned int rssi) {
+void WifiComm::sendRssiData(unsigned int rssi) {
     this->_jsonDocument.clear();
     this->_jsonDocument["type"] = "rssi";
     this->_jsonDocument["chipid"] = comm::CommTools::getChipIdAsString();
@@ -201,6 +201,7 @@ void WifiComm::reg() {
 #endif
     this->_jsonDocument.clear();
     this->_jsonDocument["type"] = "register32";
+    this->_jsonDocument["version"] = this->_version;
     this->_jsonDocument["chipid"] = comm::CommTools::getChipIdAsString();
     this->sendUdpBroadcastMessage(this->generateJsonString());
 }

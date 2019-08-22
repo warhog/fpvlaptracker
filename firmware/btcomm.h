@@ -27,7 +27,7 @@ namespace comm {
         int connect();
         void processIncomingMessage();
         void sendScanData(unsigned int frequency, unsigned int rssi);
-        void sendFastRssiData(unsigned int rssi);
+        void sendRssiData(unsigned int rssi);
         void sendCalibrationDone();
         void sendVoltageAlarm(double voltage);
         void sendGenericState(const char* type, const char* state);

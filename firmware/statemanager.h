@@ -13,7 +13,6 @@ namespace statemanagement {
         SCAN,
         DEEPSCAN,
         RACE,
-        RSSI,
         RESTORE_STATE,
         ERROR,
         VREF_OUTPUT,
@@ -36,8 +35,6 @@ namespace statemanagement {
                 return "Scan";
             } else if (state == state_enum::DEEPSCAN) {
                 return "Deep scan";
-            } else if (state == state_enum::RSSI) {
-                return "RSSI";
             } else if (state == state_enum::STARTUP) {
                 return "Startup";
             } else if (state == state_enum::VREF_OUTPUT) {
@@ -78,10 +75,6 @@ namespace statemanagement {
 
         boolean isStateRace() {
             return this->_state == state_enum::RACE;
-        }
-
-        boolean isStateRssi() {
-            return this->_state == state_enum::RSSI;
         }
 
         state_enum getState() {

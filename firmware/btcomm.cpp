@@ -90,7 +90,7 @@ void BtComm::processIncomingMessage() {
             this->sendJson();
         } else if (this->_serialString.length() >= 8 && this->_serialString.substring(0, 8) == "GET rssi") {
             // get the current rssi
-            this->sendFastRssiData(this->_rssi->getRssi());
+            this->sendRssiData(this->_rssi->getRssi());
         } else if (this->_serialString.length() >= 6 && this->_serialString.substring(0, 6) == "REBOOT") {
             // reboot the device
 #ifdef DEBUG
@@ -123,14 +123,6 @@ void BtComm::processIncomingMessage() {
             this->_rx5808->stopScan();
             this->_stateManager->update(statemanagement::state_enum::RESTORE_STATE);
             this->sendGenericState("scan", "stopped");
-        } else if (this->_serialString.length() >= 10 && this->_serialString.substring(0, 10) == "START rssi") {
-            // start fast rssi scan
-            this->_stateManager->update(statemanagement::state_enum::RSSI);
-            this->sendGenericState("rssi", "started");
-        } else if (this->_serialString.length() >= 9 && this->_serialString.substring(0, 9) == "STOP rssi") {
-            // stop fast rssi scan
-            this->_stateManager->update(statemanagement::state_enum::RESTORE_STATE);
-            this->sendGenericState("rssi", "stopped");
         } else {
             String cmd = F("UNKNOWN_COMMAND: ");
             cmd += this->_serialString;
@@ -243,7 +235,7 @@ void BtComm::sendScanData(unsigned int frequency, unsigned int rssi) {
     this->sendJson();
 }
 
-void BtComm::sendFastRssiData(unsigned int rssi) {
+void BtComm::sendRssiData(unsigned int rssi) {
     this->_jsonDocument["type"] = "rssi";
     this->_jsonDocument["rssi"] = rssi;
     this->sendJson();

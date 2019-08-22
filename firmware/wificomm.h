@@ -29,7 +29,7 @@ namespace comm {
         void sendData();
         void disconnect();
         void sendVoltageAlarm(double voltage);
-        void sendFastRssiData(unsigned int rssi);
+        void sendRssiData(unsigned int rssi);
         void sendScanData(unsigned int frequency, unsigned int rssi);
 
     private:
