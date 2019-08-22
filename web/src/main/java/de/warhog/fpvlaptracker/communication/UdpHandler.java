@@ -32,6 +32,8 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +50,7 @@ public class UdpHandler implements Runnable {
     private Thread broadcastThread;
     private Thread unicastThread;
     private Long lastPacketReceived = 0L;
+    private final LinkedBlockingQueue<DatagramPacket> packetQueue = new LinkedBlockingQueue<>();
 
     @Autowired
     private ApplicationConfig applicationConfig;
@@ -148,8 +151,9 @@ public class UdpHandler implements Runnable {
                     LOG.debug("waiting for broadcast packet");
                     socket.receive(packet);
                     LOG.debug("got broadcast packet: " + new String(packet.getData(), Charset.defaultCharset()).trim());
-
-                    processIncomingPacket(socket, packet, true);
+                    if (!packetQueue.offer(packet)) {
+                        LOG.error("cannot offer packet to queue! " + packet.toString());
+                    }
                 } catch (Exception ex) {
                     LOG.error("error during broadcast handler run: " + ex.getMessage(), ex);
                 }
@@ -179,8 +183,9 @@ public class UdpHandler implements Runnable {
                     LOG.debug("waiting for unicast packet");
                     socket.receive(packet);
                     LOG.debug("got unicast packet: " + new String(packet.getData(), Charset.defaultCharset()).trim());
-
-                    processIncomingPacket(socket, packet, false);
+                    if (!packetQueue.offer(packet)) {
+                        LOG.error("cannot offer packet to queue! " + packet.toString());
+                    }
                 } catch (Exception ex) {
                     LOG.error("error during unicast handler run: " + ex.getMessage(), ex);
                 }
@@ -189,12 +194,12 @@ public class UdpHandler implements Runnable {
     }
 
     @SuppressFBWarnings(value = "REC_CATCH_EXCEPTION", justification = "catch exception to make sure all types of exceptions are catched and the loop is not ended in this cases")
-    public void processIncomingPacket(DatagramSocket socket, DatagramPacket packet, boolean ignoreLocalPackets) {
+    public void processIncomingPacket(DatagramPacket packet) {
         LOG.debug("processing incoming packet");
         ObjectMapper mapper = new ObjectMapper();
         try {
             // test if address is from any local address, if so skip this as we sent it out
-            if (ignoreLocalPackets && testLocalAddress(((InetSocketAddress) packet.getSocketAddress()).getAddress())) {
+            if (testLocalAddress(packet.getAddress())) {
                 LOG.debug("packet from any local address, skipping");
                 return;
             }
@@ -287,10 +292,13 @@ public class UdpHandler implements Runnable {
 
         while (run) {
             try {
-                Thread.sleep(100);
+                LOG.debug("waiting for next packet from queue");
+                DatagramPacket datagramPacket = packetQueue.take();
+                LOG.debug("got next packet from queue -> processing");
+                processIncomingPacket(datagramPacket);
             } catch (InterruptedException ex) {
-                LOG.debug("interrupted udp handler thread");
-
+                LOG.info("interrupted while taking packet from packetQueue");
+                run = false;
             }
         }
     }
