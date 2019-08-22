@@ -28,14 +28,6 @@
             <button [disabled]="node.state === 'RSSI'" class="btn btn-primary btn-sm" (click)="openScan();">open
                 scanner</button><br />
 
-            <br /><b>fast RSSI update:</b><br />
-            disables all other functionality of the tracker node while running!<br />
-            <span [hidden]="node.state !== 'RSSI'">RSSI: {{fastRssi}} (gate enter trigger is {{upperRssi}}, lap
-                detection end trigger is {{lowerRssi}})<br /></span>
-            <input type="button" value="fast RSSI update" (click)="enableFastRssiUpdate();"
-                [hidden]="node.state === 'RSSI'" class="btn btn-primary btn-sm" />
-            <input type="button" value="return to normal mode" (click)="restoreOldState();"
-                [hidden]="node.state !== 'RSSI'" class="btn btn-primary btn-sm" />
         </div>
         <div class="float-right" [hidden]="node.state === 'RSSI'">
             <u>Profiles:</u><br />

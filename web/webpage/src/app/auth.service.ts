@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Credentials } from './interfaces/credentials'
 import { Router } from '@angular/router';
-import { array } from '@amcharts/amcharts4/core';
 
 @Injectable({
   providedIn: 'root'

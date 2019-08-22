@@ -11,6 +11,7 @@ public class UdpPacketRegister extends UdpPacket {
 
     private Long chipid;
     private Long ip;
+    private String version;
 
     public Long getChipid() {
         return chipid;
@@ -28,9 +29,17 @@ public class UdpPacketRegister extends UdpPacket {
         this.ip = ip;
     }
 
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
     @Override
     public String toString() {
-        return "UdpPacketRegister{" + "chipid=" + chipid + ", ip=" + ip + '}';
+        return "UdpPacketRegister{" + "chipid=" + chipid + ", ip=" + ip + ", version=" + version + '}';
     }
 
 }

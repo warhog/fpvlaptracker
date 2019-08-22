@@ -27,13 +27,12 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,6 +84,13 @@ public class UdpHandler implements Runnable {
 
     private void processRegister(UdpPacketRegister udpPacketRegister, InetAddress sourceInetAddress) {
         try {
+            ArrayList<String> supportedNodeVersions = new ArrayList<>();
+            supportedNodeVersions.add("FLT32-R1.6");
+            if (!supportedNodeVersions.contains(udpPacketRegister.getVersion())) {
+                LOG.error("node has not supported version: " + udpPacketRegister.getVersion());
+                webSocketController.sendAlertMessage(WebSocketController.WarningMessageTypes.WARNING, "unsupported firmware version", "the node " + udpPacketRegister.getChipid().toString() + " is running an unsupported firmware version (" + udpPacketRegister.getVersion() + "). expected version: " + String.join(", ", supportedNodeVersions));
+                return;
+            }
             Node node = new Node(udpPacketRegister.getChipid(), sourceInetAddress);
             if (nodeService.hasNode(node)) {
                 LOG.error("node already existing: " + udpPacketRegister.getChipid(), node);

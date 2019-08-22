@@ -68,7 +68,6 @@ export class NodesetupComponent implements OnInit {
   private _profiles: Profile[] = [];
   private _upperRssi: number = 0;
   private _lowerRssi: number = 0;
-  private _fastRssi: number = 0;
   private rssiTopicSubscription: Subscription;
 
   constructor(private authService: AuthService, private nodeService: NodeService, private route: ActivatedRoute, private httpClient: HttpClient, public utilService: UtilService, private alertService: AlertService, private confirmDialogService: ConfirmDialogService, private router: Router, private rxStompService: RxStompService) { }
@@ -86,7 +85,7 @@ export class NodesetupComponent implements OnInit {
       console.log("got new rssi message", message);
       let rssidata = JSON.parse(message.body);
       if (rssidata.chipid == me.chipid) {
-        me.fastRssi = rssidata.rssi;
+        me.node.rssi = rssidata.rssi;
       }
     });
 
@@ -166,14 +165,6 @@ export class NodesetupComponent implements OnInit {
       this.alertService.error('cannot set calibration state: ' + message);
     });
   }
-
-  enableFastRssiUpdate() {
-    this.nodeService.setState(this.chipid, 'RSSI', () => {
-      this.loadNode();
-    }, (message) => {
-      this.alertService.error('cannot set rssi state: ' + message);
-    });
-  };
 
   restoreOldState() {
     this.nodeService.setState(this.chipid, 'RESTORE_STATE', () => {
@@ -343,12 +334,6 @@ export class NodesetupComponent implements OnInit {
   }
   public set lowerRssi(value: number) {
     this._lowerRssi = value;
-  }
-  public get fastRssi(): number {
-    return this._fastRssi;
-  }
-  public set fastRssi(value: number) {
-    this._fastRssi = value;
   }
   public get chipid(): number {
     return this._chipid;
