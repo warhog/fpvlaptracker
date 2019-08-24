@@ -8,6 +8,7 @@ import { AlertService } from '../alert.service';
 import { NodeDeviceData } from '../nodedevicedata';
 import { NodeService } from '../node.service';
 import { AuthService } from '../auth.service';
+import { UtilService } from '../util.service';
 
 @Component({
   selector: 'app-nodes',
@@ -20,7 +21,7 @@ export class NodesComponent implements OnInit {
   private nodesCountTopicSubscription: Subscription;
   private _authenticated: boolean = false;
 
-  constructor(private authService: AuthService, private nodeService: NodeService, private alertService: AlertService, private httpClient: HttpClient, private rxStompService: RxStompService, private router: Router) { }
+  constructor(private authService: AuthService, private nodeService: NodeService, private alertService: AlertService, private httpClient: HttpClient, private rxStompService: RxStompService, private router: Router, private utilService: UtilService) { }
 
   ngOnInit() {
     this.authenticated = this.authService.isAuthenticated();

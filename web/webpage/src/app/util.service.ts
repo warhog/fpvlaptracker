@@ -71,7 +71,7 @@ export class UtilService {
     if (ret != null) {
       return ret;
     }
-    console.log('getValidFrequency(' + frequency + '): not valid, using default');
+    console.log('getFrequencyObject(' + frequency + '): not valid, using default');
     return this.frequencyObjects[0];
   };
 
