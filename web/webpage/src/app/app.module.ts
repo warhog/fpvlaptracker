@@ -34,6 +34,7 @@ import { PilotStatePipe } from './race/pilot-state.pipe';
 import { RaceTypePipe } from './race/race-type.pipe';
 import { DurationPipe } from './duration.pipe';
 import { AutofocusDirective } from './autofocus.directive';
+import { FrequencyPipe } from './frequency.pipe';
 
 @Injectable()
 export class XhrInterceptor implements HttpInterceptor {
@@ -86,7 +87,8 @@ export class XhrInterceptor implements HttpInterceptor {
     PilotStatePipe,
     RaceTypePipe,
     DurationPipe,
-    AutofocusDirective
+    AutofocusDirective,
+    FrequencyPipe
   ],
   imports: [
     BrowserModule,
