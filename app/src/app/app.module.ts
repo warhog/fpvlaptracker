@@ -1,77 +1,45 @@
-import {NgModule, ErrorHandler} from '@angular/core';
-import {BrowserModule} from '@angular/platform-browser';
-import {IonicApp, IonicModule, IonicErrorHandler} from 'ionic-angular';
-import {FpvlaptrackerApp} from './app.component';
-import {HttpClientModule} from '@angular/common/http';
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { RouteReuseStrategy } from '@angular/router';
 
-import {BluetoothPage} from '../pages/bluetooth/bluetooth';
-import {SettingsPage} from '../pages/settings/settings';
-import {ScannerPage} from '../pages/scanner/scanner';
-import {RacePage} from '../pages/race/race';
-import {DevicePage} from '../pages/device/device';
-import {HomePage} from '../pages/home/home';
-import {TabsPage} from '../pages/tabs/tabs';
-import {FastrssiPage} from '../pages/fastrssi/fastrssi';
+import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
+import { SplashScreen } from '@ionic-native/splash-screen/ngx';
+import { StatusBar } from '@ionic-native/status-bar/ngx';
 
-import {StatusBar} from '@ionic-native/status-bar';
-import {SplashScreen} from '@ionic-native/splash-screen';
-
-import {BluetoothSerial} from '@ionic-native/bluetooth-serial';
-import {IonicStorageModule} from '@ionic/storage';
-import {SmartAudioProvider} from '../providers/smart-audio/smart-audio';
-import {SpeechProvider} from '../providers/speech/speech'
-import {TextToSpeech} from '@ionic-native/text-to-speech'
-import {NativeAudio} from '@ionic-native/native-audio';
-import {Insomnia} from '@ionic-native/insomnia';
-import {FltutilProvider} from '../providers/fltutil/fltutil';
-import {FltunitProvider} from '../providers/fltunit/fltunit';
-import { HelpPage } from '../pages/help/help';
+import { AppComponent } from './app.component';
+import { AppRoutingModule } from './app-routing.module';
+import { FormsModule } from '@angular/forms';
+import { NativeAudio } from '@ionic-native/native-audio/ngx';
+import { IonicStorageModule } from '@ionic/storage';
+import { BluetoothSerial } from '@ionic-native/bluetooth-serial/ngx';
+import { TextToSpeech } from '@ionic-native/text-to-speech/ngx';
+import { Insomnia } from '@ionic-native/insomnia/ngx';
+import { SmartAudioProvider } from './services/smart-audio/smart-audio';
+import { SpeechProvider } from './services/speech/speech';
 
 @NgModule({
-    declarations: [
-        FpvlaptrackerApp,
-        BluetoothPage,
-        SettingsPage,
-        ScannerPage,
-        DevicePage,
-        RacePage,
-        HomePage,
-        TabsPage,
-        FastrssiPage,
-        HelpPage
-    ],
-    imports: [
-        BrowserModule,
-        HttpClientModule,
-        IonicModule.forRoot(FpvlaptrackerApp),
-        IonicStorageModule.forRoot()
-    ],
-    bootstrap: [IonicApp],
-    entryComponents: [
-        FpvlaptrackerApp,
-        BluetoothPage,
-        SettingsPage,
-        ScannerPage,
-        DevicePage,
-        RacePage,
-        HomePage,
-        TabsPage,
-        FastrssiPage,
-        HelpPage
-    ],
-    providers: [
-        StatusBar,
-        SplashScreen,
-        BluetoothSerial,
-        {provide: ErrorHandler, useClass: IonicErrorHandler},
-        NativeAudio,
-        SmartAudioProvider,
-        TextToSpeech,
-        SpeechProvider,
-        Insomnia,
-        FltutilProvider,
-        FltunitProvider,
-        FltunitProvider
-    ]
+  declarations: [
+    AppComponent
+  ],
+  entryComponents: [],
+  imports: [
+    BrowserModule, 
+    IonicModule.forRoot(), 
+    AppRoutingModule,
+    FormsModule,
+    IonicStorageModule.forRoot()
+  ],
+  providers: [
+    StatusBar,
+    SplashScreen,
+    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    NativeAudio,
+    BluetoothSerial,
+    TextToSpeech,
+    Insomnia,
+    SmartAudioProvider,
+    SpeechProvider
+  ],
+  bootstrap: [AppComponent]
 })
-export class AppModule {}
+export class AppModule { }

@@ -1,0 +1,196 @@
+<ion-header>
+    <ion-toolbar color="red">
+        <ion-title>
+            {{deviceName}}
+        </ion-title>
+        <ion-buttons slot="end">
+            <ion-button icon-start (click)="requestData()">
+                <ion-icon name="refresh"></ion-icon>
+                Reload
+            </ion-button>
+            <ion-button icon-start (click)="saveData()">
+                <ion-icon name="checkmark"></ion-icon>
+                Save
+            </ion-button>
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content fullscreen>
+
+    <h2>Profiles</h2>
+    <ion-list>
+        <ion-item>
+            <ion-label position="stacked">Set profile</ion-label>
+            <ion-select [(ngModel)]="profile" interface="popover">
+                <ion-select-option *ngFor="let i of profiles" (ionSelect)="changeProfile($event, i)">
+                    {{i == null ? "---" : i.name}}</ion-select-option>
+            </ion-select>
+        </ion-item>
+        <ion-item lines="none" text-wrap>
+            <ion-button icon-start (click)="newProfile()">
+                <ion-icon name="add"></ion-icon>
+                New
+            </ion-button>
+            <ion-button *ngIf="profile != ''" icon-start (click)="updateProfile()">
+                <ion-icon name="arrow-up"></ion-icon>
+                Update
+            </ion-button>
+            <ion-button *ngIf="profile != ''" icon-start (click)="removeProfile()">
+                <ion-icon name="trash"></ion-icon>
+                Remove
+            </ion-button>
+        </ion-item>
+    </ion-list>
+
+    <h2>Receiver</h2>
+    <p>The frequency this tracker unit is listening on.</p>
+    <ion-list>
+        <ion-item>
+            <ion-label>Frequency</ion-label>
+            <ion-select [(ngModel)]="deviceData.frequency" interface="popover">
+                <ion-select-option *ngFor="let freqData of freqArr" [value]="freqData.frequency">
+                    {{freqData.name}}
+                </ion-select-option>
+            </ion-select>
+        </ion-item>
+        <ion-item text-wrap>
+            <ion-label position="stacked">
+                <h1 style="padding-top: 5px;">RSSI scanner</h1>
+            </ion-label>
+            <p>Scan all available channels for their signal strength.</p>
+            <ion-button icon-start routerLink="/tabs/scanner">
+                <ion-icon name="stats"></ion-icon>
+                Scan all channels
+            </ion-button>
+        </ion-item>
+        <ion-item>
+            <ion-label position="stacked">RSSI</ion-label>
+            <ion-input type="number" disabled value="" [(ngModel)]="deviceData.rssi"></ion-input>
+        </ion-item>
+        <ion-item>
+            <ion-label position="stacked">State</ion-label>
+            <ion-input type="text" disabled value="" [(ngModel)]="deviceData.state"></ion-input>
+        </ion-item>
+    </ion-list>
+
+    <h2>Lap detection</h2>
+    <ion-list>
+        <ion-item text-wrap lines="none">
+            <ion-button icon-start routerLink="/tabs/help">Open the help</ion-button>
+        </ion-item>
+
+        <ion-item text-wrap>
+            <ion-label position="stacked">
+                <h1 style="padding-top: 5px;">Minimum lap time</h1>
+            </ion-label>
+            <p class="help">The duration of the lap detection lock in seconds.</p>
+            <ion-input type="number" min="1" max="300" step="1" value="" [(ngModel)]="deviceData.minimumLapTime">
+            </ion-input>
+        </ion-item>
+
+        <ion-item text-wrap>
+            <ion-label position="stacked">
+                <h1 style="padding-top: 5px;">Current trigger value</h1>
+            </ion-label>
+            <p class="help">The RSSI value that triggers a new lap detection.</p>
+            <ion-input type="text" value="" [(ngModel)]="deviceData.triggerValue"></ion-input>
+        </ion-item>
+
+        <ion-item text-wrap>
+            <ion-label position="stacked">
+                <h1 style="padding-top: 5px;">RSSI trigger threshold</h1>
+            </ion-label>
+            <p class="help">The trigger threshold defines the RSSI window in which the lap detection is active. The lap
+                    detection ends if RSSI is below trigger value minus trigger threshold.</p>
+            <ion-input type="number" min="0" max="4096" step="1" value="" [(ngModel)]="deviceData.triggerThreshold">
+            </ion-input>
+        </ion-item>
+
+        <ion-item text-wrap>
+            <ion-label position="stacked">
+                <h1 style="padding-top: 5px;">RSSI trigger <b>calibration</b> threshold</h1>
+            </ion-label>
+            <p class="help">The RSSI trigger threshold during calibration state. The calibration ends if RSSI is below trigger
+                    value (see below) minus calibration trigger threshold.</p>
+            <ion-input type="number" min="0" max="4096" step="1" value=""
+                [(ngModel)]="deviceData.triggerThresholdCalibration"></ion-input>
+        </ion-item>
+
+        <ion-item text-wrap>
+            <ion-label position="stacked">
+                <h1 style="padding-top: 5px;">RSSI calibration offset</h1>
+            </ion-label>
+            <p class="help">The RSSI offset that is substracted from found peek during calibration. Improves lap detection but
+                    can add jitter to lap times.</p>
+            <ion-input type="number" min="0" max="4096" step="1" value="" [(ngModel)]="deviceData.calibrationOffset">
+            </ion-input>
+        </ion-item>
+
+        <ion-item text-wrap>
+            <ion-label position="stacked">
+                <h1 style="padding-top: 5px;">Filter ratio</h1>
+            </ion-label>
+            <p class="help">The filter ratio for smoothing the RSSI signal. 0 = only old values, 1 = only new values.</p>
+            <ion-input type="number" min="0.01" max="0.99" step="0.01" value="" [(ngModel)]="deviceData.filterRatio">
+            </ion-input>
+        </ion-item>
+
+        <ion-item text-wrap>
+            <ion-label position="stacked">
+                <h1 style="padding-top: 5px;">Filter ratio <b>calibration</b></h1>
+            </ion-label>
+            <p class="help">The filter ratio for smoothing the RSSI signal during calibration. 0 = only old values, 1 = only
+                    new values.</p>
+            <ion-input type="number" min="0.001" max="0.99" step="0.001" value=""
+                [(ngModel)]="deviceData.filterRatioCalibration"></ion-input>
+        </ion-item>
+
+    </ion-list>
+
+    <h2>WiFi</h2>
+    <p><b>Only non standalone mode!</b><br />Credentials for the WiFi network this tracker unit is connecting to.</p>
+    <ion-list>
+        <ion-item>
+            <ion-label position="stacked">SSID</ion-label>
+            <ion-input type="text" value="" [(ngModel)]="deviceData.ssid"></ion-input>
+        </ion-item>
+
+        <ion-item>
+            <ion-label position="stacked">Password</ion-label>
+            <ion-input type="password" [(ngModel)]="deviceData.password"></ion-input>
+        </ion-item>
+
+    </ion-list>
+
+    <ion-list>
+        <h2>Misc</h2>
+        <ion-item lines="none">
+            <ion-label position="stacked">
+                <p>Reboot the tracker unit.</p>
+            </ion-label>
+            <ion-button icon-start (click)="reboot()">
+                <ion-icon name="build"></ion-icon>
+                Reboot unit
+            </ion-button>
+        </ion-item>
+    </ion-list>
+    <ion-list>
+        <div>
+            Tracker battery voltage: {{deviceData.voltage | number:'2.1-1'}} Volt (Cells:
+            {{deviceData.voltage / cells | number:'1.1-1'}} Volt)
+        </div>
+        <div>Uptime: {{deviceData.uptime}} seconds</div>
+        <div>Looptime: {{deviceData.loopTime}} µs</div>
+
+        <ion-item text-wrap>
+            <ion-label position="stacked">
+                <h1 style="padding-top: 5px;">Voltage calibration</h1>
+            </ion-label>
+            <p class="help">Calibration value for the default reference voltage in mV</p>
+            <ion-input type="number" min="1000" max="1200" step="1" value="" [(ngModel)]="deviceData.defaultVref">
+            </ion-input>
+        </ion-item>
+    </ion-list>
+
+</ion-content>
