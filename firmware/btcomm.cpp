@@ -236,6 +236,7 @@ void BtComm::sendScanData(unsigned int frequency, unsigned int rssi) {
 }
 
 void BtComm::sendRssiData(unsigned int rssi) {
+    this->prepareJson();
     this->_jsonDocument["type"] = "rssi";
     this->_jsonDocument["rssi"] = rssi;
     this->sendJson();

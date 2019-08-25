@@ -22,6 +22,8 @@ String CommTools::getDeviceDataAsJsonStringFromStorage(util::Storage *storage, s
     jsonDocument["filterRatio"] = storage->getFilterRatio();
     jsonDocument["filterRatioCalibration"] = storage->getFilterRatioCalibration();
     jsonDocument["version"] = version;
+    jsonDocument["ssid"] = storage->getSsid();
+    jsonDocument["password"] = storage->getWifiPassword();
     String result("");
     serializeJson(jsonDocument, result);
     return result;
