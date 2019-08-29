@@ -11,9 +11,9 @@ import { Router } from '@angular/router';
 })
 export class BluetoothPage {
 
-    private items: object[] = [];
-    private bluetoothAvailable: boolean = false;
-    private bluetoothNoDevices: boolean = false;
+    private _items: object[] = [];
+    private _bluetoothAvailable: boolean = false;
+    private _bluetoothNoDevices: boolean = false;
 
     itemSelected(item: any) {
         this.storage.set("bluetooth.id", item.id);
@@ -57,4 +57,22 @@ export class BluetoothPage {
         this.loadBluetoothDevices();
     }
 
+    public get items(): object[] {
+        return this._items;
+    }
+    public set items(value: object[]) {
+        this._items = value;
+    }
+    public get bluetoothAvailable(): boolean {
+        return this._bluetoothAvailable;
+    }
+    public set bluetoothAvailable(value: boolean) {
+        this._bluetoothAvailable = value;
+    }
+    public get bluetoothNoDevices(): boolean {
+        return this._bluetoothNoDevices;
+    }
+    public set bluetoothNoDevices(value: boolean) {
+        this._bluetoothNoDevices = value;
+    }
 }

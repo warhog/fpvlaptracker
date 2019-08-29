@@ -18,19 +18,18 @@ import { FltunitProvider } from '../services/fltunit/fltunit';
 })
 export class RacePage {
 
-    private raceState: RACESTATE = RACESTATE.STOP;
-    private raceStateText: string = "";
-    private lastLapTime: number = 0;
-    private lastLapRssi: number = 0;
-    private lapTimes: number[] = [];
-    private lapRssis: number[] = [];
-    private currentLap: number = 0;
-    private maxLaps: number = 10;
-    private fastestLap: number = 1;
-    private fastestLapTime: number = 0;
-    private averageLapTime: number = 0;
-    private totalTime: number = 0;
-
+    private _raceState: RACESTATE = RACESTATE.STOP;
+    private _raceStateText: string = "";
+    private _lastLapTime: number = 0;
+    private _lastLapRssi: number = 0;
+    private _lapTimes: number[] = [];
+    private _lapRssis: number[] = [];
+    private _currentLap: number = 0;
+    private _maxLaps: number = 10;
+    private _fastestLap: number = 1;
+    private _fastestLapTime: number = 0;
+    private _averageLapTime: number = 0;
+    private _totalTime: number = 0;
 
     constructor(
         public zone: NgZone,
@@ -202,6 +201,78 @@ export class RacePage {
         });
     }
 
+    public get raceState(): RACESTATE {
+        return this._raceState;
+    }
+    public set raceState(value: RACESTATE) {
+        this._raceState = value;
+    }
+    public get raceStateText(): string {
+        return this._raceStateText;
+    }
+    public set raceStateText(value: string) {
+        this._raceStateText = value;
+    }
+    public get lastLapTime(): number {
+        return this._lastLapTime;
+    }
+    public set lastLapTime(value: number) {
+        this._lastLapTime = value;
+    }
+    public get lastLapRssi(): number {
+        return this._lastLapRssi;
+    }
+    public set lastLapRssi(value: number) {
+        this._lastLapRssi = value;
+    }
+    public get lapTimes(): number[] {
+        return this._lapTimes;
+    }
+    public set lapTimes(value: number[]) {
+        this._lapTimes = value;
+    }
+    public get lapRssis(): number[] {
+        return this._lapRssis;
+    }
+    public set lapRssis(value: number[]) {
+        this._lapRssis = value;
+    }
+    public get currentLap(): number {
+        return this._currentLap;
+    }
+    public set currentLap(value: number) {
+        this._currentLap = value;
+    }
+    public get maxLaps(): number {
+        return this._maxLaps;
+    }
+    public set maxLaps(value: number) {
+        this._maxLaps = value;
+    }
+    public get fastestLap(): number {
+        return this._fastestLap;
+    }
+    public set fastestLap(value: number) {
+        this._fastestLap = value;
+    }
+    public get fastestLapTime(): number {
+        return this._fastestLapTime;
+    }
+    public set fastestLapTime(value: number) {
+        this._fastestLapTime = value;
+    }
+    public get averageLapTime(): number {
+        return this._averageLapTime;
+    }
+    public set averageLapTime(value: number) {
+        this._averageLapTime = value;
+    }
+    public get totalTime(): number {
+        return this._totalTime;
+    }
+    public set totalTime(value: number) {
+        this._totalTime = value;
+    }
 }
 
 enum RACESTATE {

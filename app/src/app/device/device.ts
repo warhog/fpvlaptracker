@@ -17,7 +17,7 @@ import * as RssiData from '../models/rssidata'
 
 export class DevicePage {
 
-    private deviceData: DeviceData.DeviceData = {
+    private _deviceData: DeviceData.DeviceData = {
         type: "devicedata",
         ssid: "",
         password: "",
@@ -37,12 +37,12 @@ export class DevicePage {
         filterRatio: 0.0,
         filterRatioCalibration: 0.0
     };
-    private deviceName: string = "";
-    private profile: string = "";
-    private profiles: ProfileData[] = [];
-    private cells = 1;
+    private _deviceName: string = "";
+    private _profile: string = "";
+    private _profiles: ProfileData[] = [];
+    private _cells = 1;
 
-    private freqArr: any[] = [
+    private _freqArr: any[] = [
         { frequency: 5865, name: "Band A 1" },
         { frequency: 5845, name: "Band A 2" },
         { frequency: 5825, name: "Band A 3" },
@@ -51,7 +51,6 @@ export class DevicePage {
         { frequency: 5765, name: "Band A 6" },
         { frequency: 5745, name: "Band A 7" },
         { frequency: 5725, name: "Band A 8" },
-
         { frequency: 5733, name: "Band B 1" },
         { frequency: 5752, name: "Band B 2" },
         { frequency: 5771, name: "Band B 3" },
@@ -60,7 +59,6 @@ export class DevicePage {
         { frequency: 5828, name: "Band B 6" },
         { frequency: 5847, name: "Band B 7" },
         { frequency: 5866, name: "Band B 8" },
-
         { frequency: 5705, name: "Band E 1" },
         { frequency: 5685, name: "Band E 2" },
         { frequency: 5665, name: "Band E 3" },
@@ -69,7 +67,6 @@ export class DevicePage {
         { frequency: 5905, name: "Band E 6" },
         { frequency: 5925, name: "Band E 7" },
         { frequency: 5945, name: "Band E 8" },
-
         { frequency: 5740, name: "Band F 1" },
         { frequency: 5760, name: "Band F 2" },
         { frequency: 5780, name: "Band F 3" },
@@ -78,7 +75,6 @@ export class DevicePage {
         { frequency: 5840, name: "Band F 6" },
         { frequency: 5860, name: "Band F 7" },
         { frequency: 5880, name: "Band F 8" },
-
         { frequency: 5658, name: "Band R 1" },
         { frequency: 5695, name: "Band R 2" },
         { frequency: 5732, name: "Band R 3" },
@@ -87,7 +83,6 @@ export class DevicePage {
         { frequency: 5843, name: "Band R 6" },
         { frequency: 5880, name: "Band R 7" },
         { frequency: 5917, name: "Band R 8" },
-
         { frequency: 5362, name: "Band D 1" },
         { frequency: 5399, name: "Band D 2" },
         { frequency: 5436, name: "Band D 3" },
@@ -357,6 +352,43 @@ export class DevicePage {
 
     ionViewWillLeave() {
 
+    }
+
+    public get cells() {
+        return this._cells;
+    }
+    public set cells(value) {
+        this._cells = value;
+    }
+    public get profiles(): ProfileData[] {
+        return this._profiles;
+    }
+    public set profiles(value: ProfileData[]) {
+        this._profiles = value;
+    }
+    public get profile(): string {
+        return this._profile;
+    }
+    public set profile(value: string) {
+        this._profile = value;
+    }
+    public get deviceData(): DeviceData.DeviceData {
+        return this._deviceData;
+    }
+    public set deviceData(value: DeviceData.DeviceData) {
+        this._deviceData = value;
+    }
+    public get deviceName(): string {
+        return this._deviceName;
+    }
+    public set deviceName(value: string) {
+        this._deviceName = value;
+    }
+    public get freqArr(): any[] {
+        return this._freqArr;
+    }
+    public set freqArr(value: any[]) {
+        this._freqArr = value;
     }
 
 }

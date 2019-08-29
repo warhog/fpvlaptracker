@@ -23,7 +23,7 @@
         <ion-item>
             <ion-label position="stacked">Set profile</ion-label>
             <ion-select [(ngModel)]="profile" interface="popover">
-                <ion-select-option *ngFor="let i of profiles" (ionSelect)="changeProfile($event, i)">
+                <ion-select-option *ngFor="let i of profiles" (ionSelect)="changeProfile($event)">
                     {{i == null ? "---" : i.name}}</ion-select-option>
             </ion-select>
         </ion-item>

@@ -7,9 +7,9 @@ import { Storage } from '@ionic/storage';
 })
 export class SettingsPage {
 
-    private bluetoothDevice: string = "none";
-    private numberOfLaps: number = 10;
-    private keepAwakeDuringRace: boolean = false;
+    private _bluetoothDevice: string = "none";
+    private _numberOfLaps: number = 10;
+    private _keepAwakeDuringRace: boolean = false;
 
     constructor(private storage: Storage) {
 
@@ -38,4 +38,22 @@ export class SettingsPage {
         this.storage.set("race.keepAwakeDuringRace", this.keepAwakeDuringRace);
     }
 
+    public get bluetoothDevice(): string {
+        return this._bluetoothDevice;
+    }
+    public set bluetoothDevice(value: string) {
+        this._bluetoothDevice = value;
+    }
+    public get numberOfLaps(): number {
+        return this._numberOfLaps;
+    }
+    public set numberOfLaps(value: number) {
+        this._numberOfLaps = value;
+    }
+    public get keepAwakeDuringRace(): boolean {
+        return this._keepAwakeDuringRace;
+    }
+    public set keepAwakeDuringRace(value: boolean) {
+        this._keepAwakeDuringRace = value;
+    }
 }

@@ -13,11 +13,15 @@ import * as ScanData from '../models/scandata'
 })
 export class ScannerPage {
 
-    private maxFreq: number = 0;
-    private maxRssi: number = 0;
-    private maxChannel: string = "-";
-    private channels: { freq: number, channel: string, rssi: number }[] = [];
-    private scanRunning: boolean = false;
+    private _maxFreq: number = 0;
+    private _maxRssi: number = 0;
+    private _maxChannel: string = "-";
+    private _channels: {
+        freq: number;
+        channel: string;
+        rssi: number;
+    }[] = [];
+    private _scanRunning: boolean = false;
 
     constructor(public zone: NgZone, private storage: Storage, private fltutil: FltutilProvider, private fltunit: FltunitProvider, public router: Router) {
         for (let i: number = 0; i < fltutil.getFrequencyTable().length; i++) {
@@ -97,4 +101,44 @@ export class ScannerPage {
     ionViewWillLeave() {
         this.stopScanChannels();
     }
+
+    public get maxFreq(): number {
+        return this._maxFreq;
+    }
+    public set maxFreq(value: number) {
+        this._maxFreq = value;
+    }
+    public get maxRssi(): number {
+        return this._maxRssi;
+    }
+    public set maxRssi(value: number) {
+        this._maxRssi = value;
+    }
+    public get maxChannel(): string {
+        return this._maxChannel;
+    }
+    public set maxChannel(value: string) {
+        this._maxChannel = value;
+    }
+    public get channels(): {
+        freq: number;
+        channel: string;
+        rssi: number;
+    }[] {
+        return this._channels;
+    }
+    public set channels(value: {
+        freq: number;
+        channel: string;
+        rssi: number;
+    }[]) {
+        this._channels = value;
+    }
+    public get scanRunning(): boolean {
+        return this._scanRunning;
+    }
+    public set scanRunning(value: boolean) {
+        this._scanRunning = value;
+    }
+
 }
