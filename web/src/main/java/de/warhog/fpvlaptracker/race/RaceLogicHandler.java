@@ -21,7 +21,7 @@ public class RaceLogicHandler {
     private static final Logger LOG = LoggerFactory.getLogger(RaceLogicHandler.class);
 
     private IRaceLogic raceLogic = null;
-    private RaceType raceType = RaceType.ROUND_BASED;
+    private RaceType raceType = RaceType.FIXED_TIME;
 
     @Autowired
     private PilotsService pilotsService;
@@ -40,8 +40,8 @@ public class RaceLogicHandler {
 
     @PostConstruct
     public void postConstruct() {
-        init(RaceType.ROUND_BASED);
-        raceLogic = raceLogicRoundBased;
+        init(RaceType.FIXED_TIME);
+        raceLogic = raceLogicFixedTime;
     }
 
     public void init(RaceType raceType) {
