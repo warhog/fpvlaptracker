@@ -1,0 +1,43 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-title>
+            Settings
+        </ion-title>
+        <ion-buttons slot="end">
+            <ion-button icon-start (click)="saveValues()">
+                <ion-icon name="checkmark"></ion-icon>
+                Save
+            </ion-button>
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content padding>
+    <ion-list>
+        <h2>Selected unit</h2>
+        <ion-item lines="none">
+            <p>Currently selected unit: {{bluetoothDevice}}</p>
+        </ion-item>
+        <ion-item lines="none">
+            <ion-button icon-start routerLink='/tabs/bluetooth'>
+                <ion-icon name="bluetooth"></ion-icon>
+                Select bluetooth device
+            </ion-button>
+        </ion-item>
+    </ion-list>
+    <hr />
+
+    <ion-list>
+        <h2>Race settings</h2>
+        <ion-item>
+            <ion-label position="stacked" color="primary">Number of laps</ion-label>
+            <ion-input type="number" [(ngModel)]="numberOfLaps" placeholder="laps"></ion-input>
+        </ion-item>
+
+        <ion-item>
+            <ion-label>Keep awake during race</ion-label>
+            <ion-checkbox [(ngModel)]="keepAwakeDuringRace"></ion-checkbox>
+        </ion-item>
+    </ion-list>
+    <hr />
+</ion-content>

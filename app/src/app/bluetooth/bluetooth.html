@@ -1,0 +1,35 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-title>
+            Bluetooth
+        </ion-title>
+        <ion-buttons slot="end">
+            <ion-button icon-start (click)="reload()">
+                <ion-icon name="refresh"></ion-icon>
+                Reload
+            </ion-button>
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content padding>
+    <p>
+        Select the device you want to connect to:
+    </p>
+
+    <p [hidden]="bluetoothAvailable">
+        <b>Bluetooth is not available</b>
+    </p>
+
+    <p [hidden]="!bluetoothNoDevices">
+        <b>No bluetooth device found</b>
+    </p>
+
+    <ion-list>
+        <ion-item *ngFor="let item of items" lines="none">
+            <ion-button (click)="itemSelected(item)">
+                {{ item.name }}
+            </ion-button>
+        </ion-item>
+    </ion-list>
+</ion-content>

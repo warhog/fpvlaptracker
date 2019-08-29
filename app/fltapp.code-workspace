@@ -1,0 +1,15 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"search.exclude": {
+			"**/dist": true,
+			"**/platforms": true,
+			"**/plugins": true,
+			"**/www": true
+		}
+	}
+}
