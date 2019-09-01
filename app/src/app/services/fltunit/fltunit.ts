@@ -132,28 +132,33 @@ export class FltunitProvider {
                 bluetoothIdToConnectTo = bluetoothId;
                 return me.storage.get('bluetooth.name');
             }).then((name: string) => {
-                me.deviceName = name;
-                me.fltutil.showLoader('Connecting to ' + name + ', please wait...');
-                console.log('connecting to bluetooth ' + bluetoothIdToConnectTo);
-                me.bluetoothSerial.connect(bluetoothIdToConnectTo).subscribe((data) => {
-                    console.log('bluetooth connected');
+                if (name == null || name == "null") {
                     me.fltutil.hideLoader();
-                    me.state = FLT_UNIT_STATES.CONNECTED;
-                    me.bluetoothSerial.subscribe('\n').subscribe((data) => {
-                        me.onReceive(data);
-                        me.bluetoothSerial.clear();
+                    reject('No tracker selected.');
+                } else {
+                    me.deviceName = name;
+                    me.fltutil.showLoader('Connecting to ' + name + ', please wait...');
+                    console.log('connecting to bluetooth ' + bluetoothIdToConnectTo);
+                    me.bluetoothSerial.connect(bluetoothIdToConnectTo).subscribe((data) => {
+                        console.log('bluetooth connected');
+                        me.fltutil.hideLoader();
+                        me.state = FLT_UNIT_STATES.CONNECTED;
+                        me.bluetoothSerial.subscribe('\n').subscribe((data) => {
+                            me.onReceive(data);
+                            me.bluetoothSerial.clear();
+                        }, (errMsg) => {
+                            me.disconnect();
+                            reject(errMsg);
+                        });
+                        me.checkValidDevice();
+                        resolve();
                     }, (errMsg) => {
+                        console.log('cannot connect: ', errMsg);
+                        me.fltutil.hideLoader();
                         me.disconnect();
                         reject(errMsg);
                     });
-                    me.checkValidDevice();
-                    resolve();
-                }, (errMsg) => {
-                    console.log('cannot connect: ', errMsg);
-                    me.fltutil.hideLoader();
-                    me.disconnect();
-                    reject(errMsg);
-                });
+                }
             }).catch(() => {
                 console.log('cannot load bluetooth name');
                 me.fltutil.hideLoader();
