@@ -15,26 +15,21 @@ export class FooterComponent implements OnInit {
   private _udpStatus: string = 'unavailable';
   private _udpStatusClasses: string = '';
   private _version: string = '-';
-  
+
   ngOnInit() {
     this.rxStompService.watch('/topic/status').subscribe((message: Message) => {
       console.log("got new status message", message);
       let status = JSON.parse(message.body);
       if (status.udp !== undefined) {
-          //var statusUdpDiv = angular.element(document.querySelector("#statusUdp"));
-          this.udpStatus = status.udp;
-          if (status.udp == "down") {
-              this.udpStatusClasses = 'blink bold';
-              //statusUdpDiv.html(status.udp);
-              //statusUdpDiv.addClass("blink bold");
-          } else {
-            this.udpStatusClasses = '';
-            //statusUdpDiv.html(status.udp);
-              //statusUdpDiv.removeClass("blink bold");
-          }
+        this.udpStatus = status.udp;
+        if (status.udp == "down") {
+          this.udpStatusClasses = 'blink bold';
+        } else {
+          this.udpStatusClasses = '';
+        }
       } else {
-          //statusUdpDiv.html("unavailable");
-          this.udpStatus = 'unavailable';
+        this.udpStatusClasses = 'blink bold';
+        this.udpStatus = 'unavailable';
       }
     });
 
@@ -46,7 +41,7 @@ export class FooterComponent implements OnInit {
     });
 
   }
-  
+
   public get udpStatus(): string {
     return this._udpStatus;
   }
