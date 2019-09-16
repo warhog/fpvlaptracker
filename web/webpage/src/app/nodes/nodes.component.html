@@ -12,16 +12,16 @@
                     <tr>
                         <td><span class="bold">frequency:</span></td>
                         <td>{{node.frequency | frequency}}</td>
+                    </tr><tr>
                         <td><span class="bold">state:</span></td>
                         <td>{{node.state}}</td>
-                    </tr>
-                    <tr>
+                    </tr><tr>
                         <td><span class="bold">ip:</span></td>
                         <td>{{node.inetAddress}}</td>
+                    </tr><tr>
                         <td><span class="bold">version:</span></td>
                         <td>{{node.version}}</td>
                     </tr>
-
                 </tbody>
             </table>
             <button [disabled]="!authenticated" (click)="nodeSetup(node.chipId)" class="btn btn-primary">node setup</button>
