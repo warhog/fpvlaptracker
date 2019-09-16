@@ -358,6 +358,14 @@ public class RaceLogicFixedTime implements IRaceLogic {
             return;
         }
 
+        if (!isRunning()) {
+            LOG.info("cannot add lap when race is not running, pilot: " + pilot.getName());
+            webSocketController.sendAlertMessage(WebSocketController.WarningMessageTypes.INFO, "invalid lap", "invalid lap for pilot " + name, false);
+            audioService.speakInvalidLap(name);
+            ledService.countdownColor(Color.RED, 100);
+            return;
+        }
+        
         if (null == pilot.getState()) {
             LOG.error("invalid state: " + pilot.getState().getText());
         } else {
