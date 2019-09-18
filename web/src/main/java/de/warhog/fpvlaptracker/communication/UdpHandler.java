@@ -15,6 +15,7 @@ import de.warhog.fpvlaptracker.communication.entities.UdpPacketRegisterResponse;
 import de.warhog.fpvlaptracker.communication.entities.UdpPacketRssi;
 import de.warhog.fpvlaptracker.communication.entities.UdpPacketScan;
 import de.warhog.fpvlaptracker.configuration.ApplicationConfig;
+import de.warhog.fpvlaptracker.configuration.NodeVersionConfig;
 import de.warhog.fpvlaptracker.controllers.WebSocketController;
 import de.warhog.fpvlaptracker.entities.Node;
 import de.warhog.fpvlaptracker.race.RaceLogicHandler;
@@ -68,6 +69,9 @@ public class UdpHandler implements Runnable {
     
     @Autowired
     private RaceLogicHandler raceLogicHandler;
+    
+    @Autowired
+    private NodeVersionConfig nodeVersionConfig;
 
     public void setup() {
         thr = new Thread(this, "UdphandlerMain");
@@ -84,11 +88,9 @@ public class UdpHandler implements Runnable {
 
     private void processRegister(UdpPacketRegister udpPacketRegister, InetAddress sourceInetAddress) {
         try {
-            ArrayList<String> supportedNodeVersions = new ArrayList<>();
-            supportedNodeVersions.add("FLT32-R1.6");
-            if (!supportedNodeVersions.contains(udpPacketRegister.getVersion())) {
+            if (!nodeVersionConfig.isSupportedNodeVersion(udpPacketRegister.getVersion())) {
                 LOG.error("node has not supported version: " + udpPacketRegister.getVersion());
-                webSocketController.sendAlertMessage(WebSocketController.WarningMessageTypes.WARNING, "unsupported firmware version", "the node " + udpPacketRegister.getChipid().toString() + " is running an unsupported firmware version (" + udpPacketRegister.getVersion() + "). expected version: " + String.join(", ", supportedNodeVersions));
+                webSocketController.sendAlertMessage(WebSocketController.WarningMessageTypes.WARNING, "unsupported firmware version", "the node " + udpPacketRegister.getChipid().toString() + " is running an unsupported firmware version (" + udpPacketRegister.getVersion() + "). expected version: " + String.join(", ", nodeVersionConfig.getSupportedNodeVersions()));
                 return;
             }
             Node node = new Node(udpPacketRegister.getChipid(), sourceInetAddress);
