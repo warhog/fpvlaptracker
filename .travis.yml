@@ -1,0 +1,92 @@
+#language: java
+#jdk:
+#  - oraclejdk8
+
+#script: "gradle build"
+
+#env:
+#  - TRAVIS_NODE_VERSION="7.7"
+
+#before_install:
+#  - rm -rf ~/.nvm && git clone https://github.com/creationix/nvm.git ~/.nvm && (cd ~/.nvm && git checkout `git describe --abbrev=0 --tags`) && source ~/.nvm/nvm.sh && nvm install $TRAVIS_NODE_VERSION
+#  - npm install
+  
+  
+  
+matrix:
+  include:
+    # web page build
+    - language: java
+      os: linux
+      dist: bionic
+      jdk:
+        - oraclejdk11
+      install:
+        - cd web
+        - npm install
+      script:
+        - ./build_travis.sh
+
+    # app for browser (just for testing)
+    - language: node_js
+      node_js:
+        - 11
+      os: linux
+      dist: bionic
+      install:
+        - cd app
+        - npm install -g ionic cordova
+        - npm install
+      script:
+        - ionic cordova platform add browser
+        - ionic cordova build --release --prod browser
+
+    # app for android
+    - language: android
+      os: linux
+      dist: trusty
+      sudo: true
+      android:
+        components:
+          - build-tools-28.0.3
+          - android-28
+      addons:
+        apt:
+          packages:
+            - ant
+            - oracle-java8-installer
+            - oracle-java8-set-default
+      install:
+        - curl -sL https://deb.nodesource.com/setup_11.x | sudo -E bash -
+        - sudo apt-get install nodejs
+        - sudo apt-get install build-essential
+        - cd app
+        - sudo npm install -g ionic cordova
+        - sudo npm install
+      script:
+        - sudo ionic cordova platform add android
+        - sudo ionic cordova build --release --prod android
+      
+      
+    # firmware
+    - language: cpp
+      os: linux
+      dist: bionic
+      script:
+        - cd firmware
+        - ./build_travis.sh
+
+deploy:
+  provider: releases
+  skip_cleanup: true
+  api_key: $GITHUB_TOKEN  # set as env variable in the travis build settings page
+  file_glob: true
+  file:
+    - web/fpvlaptracker-*.zip
+    - build-firmware/firmware-*.bin
+  keep_history: true
+  prerelease: true
+  overwrite: true
+  on:
+    tags: true
+

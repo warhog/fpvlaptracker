@@ -2,6 +2,7 @@
 
 licensed under [MIT](LICENSE.md)
 
+[![Build Status](https://travis-ci.org/warhog/fpvlaptracker.svg?branch=master)](https://travis-ci.org/warhog/fpvlaptracker)
 
 open source diy fpv vtx lap tracking system
 
