@@ -9,8 +9,9 @@ open source diy fpv vtx lap tracking system
 ## features
 - uses your analog vtx to do the lap detection
 - 48 channels supported
-- standalone (app) and connected mode available
+- standalone (app) or connected mode (web frontend) available for single practicing or fun with friends
 - connected mode supports up to 8 tracker units and comfortable access using web ui
+- 2ms accuracy (tested with 4 parallel nodes)
 
 ## how does it work?
 the tracker unit measures the video signal strength (rssi) of the selected video channel to detect laps using peak detection. it has a stand alone mode for single participants or a connected mode supporting multiple participants and a web ui. in standalone mode the tracker unit is controlled using bluetooth and a mobile app for configuration and single user race (e.g. practicing). the connected mode is used with any hardware that can run the java software backend.
@@ -21,10 +22,10 @@ the tracker unit is accessed using bluetooth and a mobile application (older ver
 the application is available in the play store (only android right now, [play store](https://play.google.com/store/apps/details?id=de.warhog.fpvlaptracker)), the source is in the app folder).
 
 ### standalone mode
-the tracker can be used in standalone mode for single user races.
+the tracker can be used in standalone mode for single user races. only one tracker node and the app is needed.
 
 ### connected mode
-running in the connected mode the tracker connects to a host software using wifi. races and particpants can be organized inside the host software. the host software includes a webserver that serves a web ui for watching / controlling races.
+running in the connected mode the tracker connects to a host software using wifi. races and particpants can be organized inside the host software. the host software includes a webserver that serves a web ui for watching / controlling races. one to multiple (max. 8) tracker nodes and server with wifi (e.g. raspi) required.
 
 ## tested devices
 * immersion rc vtx
@@ -46,9 +47,9 @@ due to the low price, simplicity and size a raspberry pi (>= 2) powered by a pow
 this repository contains everything needed to build your own tracker(s).
 
 * app: the mobile app
-* firmware-single-node: firmware for a single node
-* hardware-single-node: hardware for a single node
-* web: the java backend and web frontend
+* firmware: firmware for a single node
+* hardware: hardware for a single node
+* web: the java backend and web frontend for multiple node races
 
 ## sound files used
 _lap:_ [freesound](https://www.freesound.org/people/StaneStane/sounds/73560/)
