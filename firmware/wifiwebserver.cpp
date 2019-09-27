@@ -59,7 +59,7 @@ void WifiWebServer::begin() {
         this->_server.sendHeader("Connection", "close");
         this->_storage->loadFactoryDefaults();
         this->_storage->store();
-        this->_server.send(200, "text/html", this->concat("factory defaults loaded.<br /><script>rebooting();</script>"));
+        this->_server.send(200, "text/html", this->concat("factory defaults loaded.<br /><script>window.setTimeout(function() { rebooting(); }, 50);</script>"));
     });
 
     // this reset is used for the node web ui
@@ -69,7 +69,7 @@ void WifiWebServer::begin() {
     });
     this->_server.on("/doreset", HTTP_GET, [&]() {
         this->_server.sendHeader("Connection", "close");
-        this->_server.send(200, "text/html", this->concat("<script>rebooting();</script>"));
+        this->_server.send(200, "text/html", this->concat("<script>window.setTimeout(function() { rebooting(); }, 50);</script>"));
         this->disconnectClients();
         ESP.restart();
     });
