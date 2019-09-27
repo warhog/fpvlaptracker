@@ -10,6 +10,6 @@ src/main/resources/static
 node_modules/
 fpvlaptracker.log
 /nbproject/private/
-application.properties
+/application.properties
 *.log
 fpvlaptracker-*.zip
