@@ -51,15 +51,16 @@ namespace comm {
             char const *_header = R"(
                 <html>
                 <head>
-                <style>
-                    body { font-family: Arial; background-color: #ffffff; } 
-                    a { color: #b35000; } 
-                    #content { margin: auto; border-radius: 5px; border: 1px solid #b6b6b6; padding: 20px; width: 600px;} 
-                    #overlay { position: fixed; display: none; width: 100%; height: 100%; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); z-index: 2; cursor:wait;}
-                    #overlaydata { width: 500px; padding: 20px; border: 1px solid #005b74; border-radius: 5px; background-color: #bff1ff; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
-                    h1,h2,h3 { color: #0082a6; }
-                    .button { font-size: 1.0em; border: none; border-radius: 5px; background-color: #80e3ff; color: #005b74; text-decoration: none; display: inline-block; margin: 5px; padding: 8px;}
-                </style>
+                    <style>
+                        body { font-family: Arial; background-color: #ffffff; } 
+                        a { color: #b35000; } 
+                        #content { margin: auto; border-radius: 5px; border: 1px solid #b6b6b6; padding: 20px; width: 600px;} 
+                        #overlay { position: fixed; display: none; width: 100%; height: 100%; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); z-index: 2; cursor:wait;}
+                        #overlaydata { width: 500px; padding: 20px; border: 1px solid #005b74; border-radius: 5px; background-color: #bff1ff; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+                        h1,h2,h3 { color: #0082a6; }
+                        .button { font-size: 1.0em; border: none; border-radius: 5px; background-color: #80e3ff; color: #005b74; text-decoration: none; display: inline-block; margin: 5px; padding: 8px;}
+                    </style>
+                    <title>fpvlaptracker node</title>
                 </head>
                 <body>
                 <div id='overlay'>
