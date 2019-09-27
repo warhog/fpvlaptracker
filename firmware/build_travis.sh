@@ -50,14 +50,14 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "install library ArduinoJson"
-DEPENDENCY_OUTPUT=$(arduino --install-library ArduinoJson > /dev/null 2>&1)
+DEPENDENCY_OUTPUT=$(arduino --install-library ArduinoJson:6.11.5 > /dev/null 2>&1)
 if [ $? -ne 0 ]; then
     echo "failed to install ArduinoJson: ${DEPENDENCY_OUTPUT}"
     exit 1
 fi
 
 echo "install library ResponsiveAnalogRead"
-DEPENDENCY_OUTPUT=$(arduino --install-library ResponsiveAnalogRead > /dev/null 2>&1)
+DEPENDENCY_OUTPUT=$(arduino --install-library ResponsiveAnalogRead:1.2.1 > /dev/null 2>&1)
 if [ $? -ne 0 ]; then
     echo "failed to install ResponsiveAnalogRead: ${DEPENDENCY_OUTPUT}"
     exit 1
