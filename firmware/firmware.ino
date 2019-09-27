@@ -37,6 +37,7 @@
  * no blinking - connected mode
  * blinking 2 times - BT init failed
  * blinking 3 times - mdns not started
+ * blinking 4 times - wifi ap cannot be started
  * blinking 9 times - shutdown voltage
  * blinking 10 times - internal failure
  * 
@@ -130,7 +131,12 @@ void setup() {
 #ifdef DEBUG
 		Serial.println(F("force wifi ap mode"));
 #endif
-		wifiAp.connect();
+		if (!wifiAp.connect()) {
+#ifdef DEBUG
+			Serial.println(F("cannot enable wifi ap mode"));
+#endif
+			blinkError(4);
+		}
 	}
 
 #ifdef DEBUG
@@ -188,7 +194,6 @@ void setup() {
 #ifdef DEBUG
 		Serial.println(F("setting up mdns"));
 #endif
-		MDNS.addService("http", "tcp", 80);
 		String mdnsName = "flt-unit-";
 		mdnsName += comm::CommTools::getChipIdAsString();
 		if (!MDNS.begin(mdnsName.c_str())) {
@@ -197,6 +202,7 @@ void setup() {
 #endif
 			blinkError(3);
 		}
+		MDNS.addService("http", "tcp", 80);
 	}
 
 #ifdef DEBUG

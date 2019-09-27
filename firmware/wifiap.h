@@ -2,12 +2,13 @@
 
 #include <Arduino.h>
 #include <WiFi.h>
+#include "commtools.h"
 
 namespace comm {
 
     class WifiAp {
     public:
-        void connect();
+        bool connect();
         bool isConnected() const {
             return this->_connected;
         }

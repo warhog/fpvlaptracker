@@ -32,11 +32,6 @@ String CommTools::getDeviceDataAsJsonStringFromStorage(util::Storage *storage, s
 
 String CommTools::getChipIdAsString() {
     unsigned long chipIdLong = static_cast<unsigned long>(ESP.getEfuseMac());
-//    String chipIdString = chipIdLong;
     return String(chipIdLong);
-    // uint64_t chipId = ESP.getEfuseMac();
-    // char strChipId[15] = { 0 };
-    // sprintf(strChipId, "%u", chipId);
-    // String chipString = strChipId;
 
 }

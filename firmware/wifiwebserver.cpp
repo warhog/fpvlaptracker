@@ -38,12 +38,13 @@ void WifiWebServer::begin() {
         String temp(this->_serverIndex);
         temp.replace("%VERSION%", this->_version);
         temp.replace("%CHIPID%", comm::CommTools::getChipIdAsString());
+        temp.replace("%DATETIME%", __DATE__ " " __TIME__);
         this->_server.send(200, "text/html", this->concat(temp));
     });
     
     this->_server.on("/factorydefaults", HTTP_GET, [&]() {
         this->_server.sendHeader("Connection", "close");
-        this->_server.send(200, "text/html", this->concat("really load factory defaults? <a href='/dofactorydefaults'>yes</a> <a href='/'>no</a>"));
+        this->_server.send(200, "text/html", this->concat("really load factory defaults?<br /><a class='button' href='/dofactorydefaults'>yes</a> <a class='button' href='/'>no</a>"));
     });
     this->_server.on("/dofactorydefaults", HTTP_GET, [&]() {
         this->_server.sendHeader("Connection", "close");
@@ -52,14 +53,27 @@ void WifiWebServer::begin() {
         this->_server.send(200, "text/html", this->concat("factory defaults loaded"));
     });
 
+    this->_server.on("/reset", HTTP_GET, [&]() {
+        this->_server.sendHeader("Connection", "close");
+        this->_server.send(200, "text/html", this->concat("really restart the tracker node?<br /><a class='button' href='/doreset'>yes</a> <a class='button' href='/'>no</a>"));
+    });
+    this->_server.on("/doreset", HTTP_GET, [&]() {
+        this->_server.sendHeader("Connection", "close");
+        this->_server.send(200, "text/html", this->concat("restarting node, please wait a few seconds...<br /><a class='button' href='/'>back</a>"));
+        this->_server.client().setNoDelay(true);
+        delay(100);
+        this->_server.client().stop();
+        ESP.restart();
+    });
+
     this->_server.on("/vref", HTTP_GET, [&]() {
         this->_server.sendHeader("Connection", "close");
-        this->_server.send(200, "text/html", this->concat("really goto vref mode? <a href='/dovref'>yes</a> <a href='/'>no</a>"));
+        this->_server.send(200, "text/html", this->concat("really goto voltage reference output mode?<br /><a class='button' href='/dovref'>yes</a> <a class='button' href='/'>no</a>"));
     });
     this->_server.on("/dovref", HTTP_GET, [&]() {
         this->_server.sendHeader("Connection", "close");
         this->_stateManager->update(statemanagement::state_enum::VREF_OUTPUT);
-        this->_server.send(200, "text/html", this->concat("start VREF output, wifi/bluetooth disabled! reboot to exit this mode."));
+        this->_server.send(200, "text/html", this->concat("starting voltage reference output mode, wifi/bluetooth is now disabled! reboot node to exit this mode."));
     });
 
     this->_server.on("/bluetooth", HTTP_GET, [&]() {
@@ -70,7 +84,7 @@ void WifiWebServer::begin() {
 
     this->_server.on("/update", HTTP_POST, [&]() {
         this->_server.sendHeader("Connection", "close");
-        this->_server.send(200, "text/html", this->concat((Update.hasError()) ? "update failed!\n" : "update successful! rebooting...<a href='/'>back</a>"));
+        this->_server.send(200, "text/html", this->concat((Update.hasError()) ? "update failed!\n" : "update successful! rebooting...<br /><a class='button' href='/'>back</a>"));
         this->_server.client().setNoDelay(true);
         delay(100);
         this->_server.client().stop();
