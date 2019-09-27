@@ -11,6 +11,10 @@ matrix:
         - npm install
       script:
         - ./build_travis.sh
+      addons:
+        apt:
+          packages:
+            - tree
 
     # app for browser (just for testing)
     - language: node_js
