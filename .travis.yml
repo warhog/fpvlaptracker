@@ -70,7 +70,7 @@ matrix:
           packages:
             - tree
 
-before_deploy:
+after_script:
   - pwd
   - tree ..
   
