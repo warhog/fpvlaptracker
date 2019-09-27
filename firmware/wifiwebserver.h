@@ -53,13 +53,13 @@ namespace comm {
                 <html>
                 <head>
                     <style>
-                        body { font-family: Arial; background-color: #ffffff; } 
-                        a { color: #b35000; } 
-                        #content { margin: auto; border-radius: 5px; border: 1px solid #b6b6b6; padding: 20px; width: 600px;} 
+                        body { font-family: Arial; background-color: #BCD8C1; } 
+                        a { color: #422040; } 
+                        #content { background-color: #ffffff; margin: auto; border-radius: 5px; border: 1px solid #736F72; padding: 20px; width: 600px;} 
                         #overlay { position: fixed; display: none; width: 100%; height: 100%; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); z-index: 2; cursor:wait;}
-                        #overlaydata { width: 500px; padding: 20px; border: 1px solid #005b74; border-radius: 5px; background-color: #bff1ff; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
-                        h1,h2,h3 { color: #0082a6; }
-                        .button { font-size: 1.0em; border: 1px solid #005b74; border-radius: 5px; background-color: #80e3ff; color: #005b74; text-decoration: none; display: inline-block; margin: 5px; padding: 8px;}
+                        #overlaydata { width: 500px; padding: 20px; border: 1px solid #736F72; border-radius: 5px; background-color: #BCD8C1; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+                        h1,h2,h3 { color: #E57A44; }
+                        .button { font-size: 1.0em; border: none; border-radius: 5px; background-color: #E3D985; color: #422040; text-decoration: none; display: inline-block; margin: 5px; padding: 8px;}
                     </style>
                     <title>fpvlaptracker node</title>
                 </head>
@@ -71,7 +71,7 @@ namespace comm {
                             <progress id='progress' style='margin-top: 10px; width: 90%;'></progress> <span id='percent'></span>
                         </div>
                         <div id='rebooting' style='display: none;'>
-                            upload finished.<br />rebooting...please wait...
+                            rebooting node...please wait...
                         </div>
                     </div>
                 </div>
@@ -90,7 +90,7 @@ namespace comm {
                     document.getElementById('rebooting').style.display = 'block';
                     document.getElementById('progressbar').style.display = 'none';
                     window.setTimeout(function() {
-                        location.reload();
+                        window.location.href = '/';
                     }, 15000);
                 }
                 if (document.getElementById('upload_form') !== null) {
