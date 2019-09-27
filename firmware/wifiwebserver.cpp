@@ -14,6 +14,15 @@ String WifiWebServer::concat(String text) {
     return this->_header + text + this->_footer;
 }
 
+void WifiWebServer::disconnectClients() {
+    this->_server.client().setNoDelay(true);
+    delay(100);
+    this->_server.client().flush();
+    this->_server.client().stop();
+    this->_server.stop();
+    delay(100);
+}
+
 void WifiWebServer::begin() {
 
 	this->_server.onNotFound([&]() {
@@ -50,19 +59,18 @@ void WifiWebServer::begin() {
         this->_server.sendHeader("Connection", "close");
         this->_storage->loadFactoryDefaults();
         this->_storage->store();
-        this->_server.send(200, "text/html", this->concat("factory defaults loaded"));
+        this->_server.send(200, "text/html", this->concat("factory defaults loaded.<br /><script>rebooting();</script>"));
     });
 
+    // this reset is used for the node web ui
     this->_server.on("/reset", HTTP_GET, [&]() {
         this->_server.sendHeader("Connection", "close");
         this->_server.send(200, "text/html", this->concat("really restart the tracker node?<br /><a class='button' href='/doreset'>yes</a> <a class='button' href='/'>no</a>"));
     });
     this->_server.on("/doreset", HTTP_GET, [&]() {
         this->_server.sendHeader("Connection", "close");
-        this->_server.send(200, "text/html", this->concat("restarting node, please wait a few seconds...<br /><a class='button' href='/'>back</a>"));
-        this->_server.client().setNoDelay(true);
-        delay(100);
-        this->_server.client().stop();
+        this->_server.send(200, "text/html", this->concat("<script>rebooting();</script>"));
+        this->disconnectClients();
         ESP.restart();
     });
 
@@ -72,22 +80,22 @@ void WifiWebServer::begin() {
     });
     this->_server.on("/dovref", HTTP_GET, [&]() {
         this->_server.sendHeader("Connection", "close");
-        this->_stateManager->update(statemanagement::state_enum::VREF_OUTPUT);
         this->_server.send(200, "text/html", this->concat("starting voltage reference output mode, wifi/bluetooth is now disabled! reboot node to exit this mode."));
+        this->disconnectClients();
+        this->_stateManager->update(statemanagement::state_enum::VREF_OUTPUT);
     });
 
     this->_server.on("/bluetooth", HTTP_GET, [&]() {
         this->_server.sendHeader("Connection", "close");
         this->_server.send(200, "text/html", this->concat("switching to bluetooth mode, wifi is now disabled!"));
+        this->disconnectClients();
         this->_stateManager->update(statemanagement::state_enum::SWITCH_TO_BLUETOOTH);
     });
 
     this->_server.on("/update", HTTP_POST, [&]() {
         this->_server.sendHeader("Connection", "close");
         this->_server.send(200, "text/html", this->concat((Update.hasError()) ? "update failed!\n" : "update successful! rebooting...<br /><a class='button' href='/'>back</a>"));
-        this->_server.client().setNoDelay(true);
-        delay(100);
-        this->_server.client().stop();
+        this->disconnectClients();
         ESP.restart();
     }, [&]() {
         HTTPUpload& upload = this->_server.upload();
@@ -130,13 +138,11 @@ void WifiWebServer::begin() {
         this->sendJson();
     });
 
+    // reboot is used by the connected web ui (not the node one)
     this->_server.on("/reboot", HTTP_GET, [&]() {
         this->_server.sendHeader("Connection", "close");
         this->_server.send(200, "text/html", "OK");
-        this->_server.client().flush();
-        this->_server.client().stop();
-        this->_server.stop();
-        delay(100);
+        this->disconnectClients();
         ESP.restart();
     });
 

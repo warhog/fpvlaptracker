@@ -8,13 +8,13 @@ the node tries to connect to its configured wifi first. if the wifi is available
 ![flowchart startup](https://raw.githubusercontent.com/warhog/fpvlaptracker/master/docs/startup.png)
 
 ### leds
-the leds show the state of the tracker node. the red led lights if 3.3v is available. the green led shows different states of the tracker.
+the leds show the state of the tracker node. the red led is showing if the 3.3v supply voltage is available. the green led shows different states of the tracker.
 
 after connecting the supply voltage the green led blinks the number of cells detected (2 blinks = 2s, 3 blinks = 3s, ...).
 
-the green led blinks fast constantly when in standalone mode. in connected mode the led should be off.
+the green led blinks very slow when in standalone mode. in connected mode the led is off.
 
-the led can blink out error codes:
+the led can blink out error codes (quick pulses, longer pause):
 
 | number of blinks | reason |
 |------------------|--------|

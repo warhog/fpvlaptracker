@@ -1,4 +1,8 @@
-# fpvlaptracker [![Build Status](https://travis-ci.org/warhog/fpvlaptracker.svg?branch=master)](https://travis-ci.org/warhog/fpvlaptracker)
+# fpvlaptracker
+
+master: [![Build Status](https://travis-ci.org/warhog/fpvlaptracker.svg?branch=master)](https://travis-ci.org/warhog/fpvlaptracker)
+
+dev: [![Build Status](https://travis-ci.org/warhog/fpvlaptracker.svg?branch=dev)](https://travis-ci.org/warhog/fpvlaptracker)
 
 licensed under [MIT](LICENSE.md)
 

@@ -33,7 +33,8 @@
 			"slist": "cpp",
 			"initializer_list": "cpp",
 			"bitset": "cpp",
-			"complex": "cpp"
+			"complex": "cpp",
+			"ostream": "cpp"
 		}
 	}
 }
