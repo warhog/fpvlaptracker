@@ -58,6 +58,7 @@
 #include "batterymgr.h"
 #include "wifiwebserver.h"
 #include "wifiap.h"
+#include "commtools.h"
 
 // debug mode flags
 //#define DEBUG
@@ -188,7 +189,9 @@ void setup() {
 		Serial.println(F("setting up mdns"));
 #endif
 		MDNS.addService("http", "tcp", 80);
-		if (!MDNS.begin("flt-unit")) {
+		String mdnsName = "flt-unit-";
+		mdnsName += comm::CommTools::getChipIdAsString();
+		if (!MDNS.begin(mdnsName.c_str())) {
 #ifdef DEBUG
 			Serial.println(F("error setting up MDNS responder!"));
 #endif
