@@ -3,7 +3,7 @@
 START_PATH=`pwd`
 
 VERSION=""
-if [[ -z "${TRAVIS_TAG}}" ]]; then
+if [[ -z "${TRAVIS_TAG}" ]]; then
     # no travis tag, use commit
     VERSION=${TRAVIS_COMMIT}
 else

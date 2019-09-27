@@ -2,9 +2,8 @@
 # heavily inspired by https://github.com/adafruit/travis-ci-arduino/blob/master/install.sh
 ARDUINO_IDE_VERSION="1.8.10"
 
-printenv
 VERSION=""
-if [[ -z "${TRAVIS_TAG}}" ]]; then
+if [[ -z "${TRAVIS_TAG}" ]]; then
     # no travis tag, use commit
     VERSION=${TRAVIS_COMMIT}
 else
