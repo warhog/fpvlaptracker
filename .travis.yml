@@ -11,10 +11,6 @@ matrix:
         - npm install
       script:
         - ./build_travis.sh
-      addons:
-        apt:
-          packages:
-            - tree
 
     # app for browser (just for testing)
     - language: node_js
@@ -45,7 +41,6 @@ matrix:
             - ant
             - oracle-java8-installer
             - oracle-java8-set-default
-            - tree
       install:
         - curl -sL https://deb.nodesource.com/setup_11.x | sudo -E bash -
         - sudo apt-get install nodejs
@@ -65,15 +60,7 @@ matrix:
       script:
         - cd firmware
         - ./build_travis.sh
-      addons:
-        apt:
-          packages:
-            - tree
 
-after_script:
-  - pwd
-  - tree ..
-  
 deploy:
   provider: releases
   skip_cleanup: true
