@@ -67,8 +67,8 @@ deploy:
   api_key: $GITHUB_TOKEN  # set as env variable in the travis build settings page
   file_glob: true
   file:
-    - web/fpvlaptracker-*.zip
-    - build-firmware/firmware-*.bin
+    - fpvlaptracker-*.zip
+    - firmware-*.bin
   keep_history: true
   prerelease: true
   overwrite: true
