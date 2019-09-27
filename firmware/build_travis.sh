@@ -79,5 +79,5 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "renaming binary"
-mv ${BUILD_PATH}/firmware.ino.bin ${BUILD_PATH}/firmware-${VERSION}.bin
+cp ${BUILD_PATH}/firmware.ino.bin ${BUILD_PATH}/firmware-${VERSION}.bin
 echo "done"

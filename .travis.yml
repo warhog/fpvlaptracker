@@ -60,6 +60,7 @@ matrix:
       script:
         - cd firmware
         - ./build_travis.sh
+        - cd ../build-firmware
 
 deploy:
   provider: releases
