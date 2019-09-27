@@ -66,6 +66,36 @@ when in standalone mode the node is configurable and usable using the mobile app
 **do not interrupt power during flashing**
 
 ### using serial adapter
+the easiest way is to use the esptool provided by espressif using python ([link to esptool documentation](https://github.com/espressif/esptool)).
+
+to install esptool execute a pip install command in a command line / shell:
+
+`pip install esptool`
+
+now connect your 3.3v serial adapter to the node pcb.
+
+> double check that your adapter is able to work with 3.3v! a 5v adapter might break your esp32!
+
+TODO put picture here
+
+1. connect ground pin of node to the ground pin of the serial adapter
+2. connect rx pin of the node to the tx pin of the serial adapter
+2. connect tx pin of the node to the rx pin of the serial adapter
+
+to boot the node into serial flash mode follow the following procedure:
+1. press and hold FLASH button
+2. press RESET button
+3. stop pressing RESET button
+4. wait 1s
+5. stop pressing FLASH button
+6. the esp32 is now in serial update mode and can be flashed now
+
+then run esptool with the following command:
+
+`esptool --chip esp32 --port "[SERIAL_PORT]" --baud 921600  --before default_reset --after hard_reset write_flash -z --flash_mode qio --flash_freq 80 --flash_size detect 0x10000 "firmware-[VERSION].bin"`
+
+* replace [SERIAL_PORT] with your serial port (e.g. COM4 for windows, /dev/ttyUSB0 or /dev/ttyACM5 on linux)
+* replace [VERSION] with the firmware version you want to flash
 
 ### ota update
 * start the node in connected mode or using the OTA button to start wifi ap (see OTA button description above)

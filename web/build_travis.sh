@@ -20,8 +20,7 @@ rm -fr *
 
 cp ../libs/fpvlaptracker-${VERSION}.jar ./
 cp -r ../../lang/ ./
-cp -r -v ../../release_files/* ./
-tree .
+cp -r ../../release_files/* ./
 sed -i "s/0.0.0/${VERSION}/g" ./fpvlaptracker.service
 zip -9 -r fpvlaptracker-${VERSION}.zip *
 cp fpvlaptracker-${VERSION}.zip ${START_PATH}/fpvlaptracker-${VERSION}.zip
