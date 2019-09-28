@@ -13,7 +13,7 @@ namespace comm {
 
     class Comm {
     public:
-        Comm(util::Storage *storage, lap::Rssi *rssi, radio::Rx5808 *rx5808, lap::LapDetector *lapDetector, battery::BatteryMgr *batteryMgr, const char *version, statemanagement::StateManager *stateManager, unsigned long *loopTime);
+        Comm(util::Storage *storage, lap::Rssi *rssi, radio::Rx5808 *rx5808, lap::LapDetector *lapDetector, battery::BatteryMgr *batteryMgr, statemanagement::StateManager *stateManager, unsigned long *loopTime);
         void reg();
         void lap();
         int connect();
@@ -27,7 +27,6 @@ namespace comm {
         radio::Rx5808 *_rx5808;
         lap::LapDetector *_lapDetector;
         battery::BatteryMgr *_batteryMgr;
-        const char *_version;
         statemanagement::StateManager *_stateManager;
         unsigned long *_loopTime;
         bool _connected;

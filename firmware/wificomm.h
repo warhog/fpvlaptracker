@@ -13,12 +13,13 @@
 #include "statemanager.h"
 #include "lapdetector.h"
 #include "batterymgr.h"
+#include "version.h"
 
 namespace comm {
 
     class WifiComm : public Comm {
     public:
-        WifiComm(util::Storage *storage, lap::Rssi *rssi, radio::Rx5808 *rx5808, lap::LapDetector *lapDetector, battery::BatteryMgr *batteryMgr, const char *version, statemanagement::StateManager *stateManager, unsigned long *loopTime);
+        WifiComm(util::Storage *storage, lap::Rssi *rssi, radio::Rx5808 *rx5808, lap::LapDetector *lapDetector, battery::BatteryMgr *batteryMgr, statemanagement::StateManager *stateManager, unsigned long *loopTime);
         void reg();
         void lap(unsigned long duration, unsigned int rssi);
         int connect();

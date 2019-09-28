@@ -65,8 +65,6 @@
 //#define DEBUG
 //#define MEASURE
 
-#define VERSION "FLT32-R3.1"
-
 // pin configurations
 const unsigned int PIN_SPI_SLAVE_SELECT = 16;
 const unsigned int PIN_SPI_CLOCK = 17;
@@ -86,9 +84,9 @@ battery::BatteryMgr batteryMgr(PIN_ANALOG_BATTERY, &storage);
 statemanagement::StateManager stateManager;
 unsigned long loopTime = 0L;
 unsigned long lastLoopTimeRun = 0L;
-comm::WifiWebServer wifiWebServer(&storage, &rssi, &rx5808, &lapDetector, &batteryMgr, VERSION, &stateManager, &loopTime);
-comm::WifiComm wifiComm(&storage, &rssi, &rx5808, &lapDetector, &batteryMgr, VERSION, &stateManager, &loopTime);
-comm::BtComm btComm(&btSerial, &storage, &rssi, &rx5808, &lapDetector, &batteryMgr, VERSION, &stateManager, &wifiComm, &loopTime);
+comm::WifiWebServer wifiWebServer(&storage, &rssi, &rx5808, &lapDetector, &batteryMgr, &stateManager, &loopTime);
+comm::WifiComm wifiComm(&storage, &rssi, &rx5808, &lapDetector, &batteryMgr, &stateManager, &loopTime);
+comm::BtComm btComm(&btSerial, &storage, &rssi, &rx5808, &lapDetector, &batteryMgr, &stateManager, &wifiComm, &loopTime);
 comm::WifiAp wifiAp;
 unsigned long rssiTimeout = 0L;
 unsigned long lowVoltageTimeout = 0L;

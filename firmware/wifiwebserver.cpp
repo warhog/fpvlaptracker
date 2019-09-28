@@ -45,9 +45,10 @@ void WifiWebServer::begin() {
     this->_server.on("/", HTTP_GET, [&]() {
         this->_server.sendHeader("Connection", "close");
         String temp(this->_serverIndex);
-        temp.replace("%VERSION%", this->_version);
+        temp.replace("%VERSION%", VERSION);
         temp.replace("%CHIPID%", comm::CommTools::getChipIdAsString());
-        temp.replace("%DATETIME%", __DATE__ " " __TIME__);
+        temp.replace("%DATETIME%", VERSION_DATETIME);
+        temp.replace("%COMMIT%", VERSION_COMMIT);
         this->_server.send(200, "text/html", this->concat(temp));
     });
     
@@ -148,7 +149,7 @@ void WifiWebServer::begin() {
 
     this->_server.on("/devicedata", HTTP_GET, [&]() {
         this->_server.sendHeader("Connection", "close");
-        this->_server.send(200, "application/json", comm::CommTools::getDeviceDataAsJsonStringFromStorage(this->_storage, this->_stateManager, this->_lapDetector, this->_batteryMgr, *this->_loopTime, this->_rssi, this->_version));
+        this->_server.send(200, "application/json", comm::CommTools::getDeviceDataAsJsonStringFromStorage(this->_storage, this->_stateManager, this->_lapDetector, this->_batteryMgr, *this->_loopTime, this->_rssi, VERSION));
     });
 
     this->_server.on("/setstate", HTTP_GET, [&]() {

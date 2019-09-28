@@ -11,6 +11,12 @@ else
 fi
 echo "building version ${VERSION}"
 
+sed -i "s/NO_TRAVIS_BUILD/${VERSION}/g" version.h
+
+# use the latest available tag here to make sure node can register on backend
+VERSION_SAFE=$(git describe --tags | awk '{split($0,a,"-"); print a[1]}')
+sed -i "s/FLT32-R0.0.0/FLT32-R${VERSION_SAFE}/g" version.h
+
 # make display available for arduino CLI
 /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_1.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :1 -ac -screen 0 1280x1024x16
 sleep 3

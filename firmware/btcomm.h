@@ -14,6 +14,7 @@
 #include "lapdetector.h"
 #include "batterymgr.h"
 #include "wificomm.h"
+#include "version.h"
 
 namespace comm {
 
@@ -21,7 +22,7 @@ namespace comm {
 
     class BtComm : public Comm {
     public:
-        BtComm(BluetoothSerial *btSerial, util::Storage *storage, lap::Rssi *rssi, radio::Rx5808 *rx5808, lap::LapDetector *lapDetector, battery::BatteryMgr *batteryMgr, const char *version, statemanagement::StateManager *stateManager, comm::WifiComm *wifiComm, unsigned long *loopTime);
+        BtComm(BluetoothSerial *btSerial, util::Storage *storage, lap::Rssi *rssi, radio::Rx5808 *rx5808, lap::LapDetector *lapDetector, battery::BatteryMgr *batteryMgr, statemanagement::StateManager *stateManager, comm::WifiComm *wifiComm, unsigned long *loopTime);
         void reg();
         void lap(unsigned long lapTime, unsigned int rssi);
         int connect();
@@ -46,7 +47,6 @@ namespace comm {
         bool _serialGotLine;
         String _serialString;
         DynamicJsonDocument _jsonDocument;
-        const char *_version;
         comm::WifiComm *_wifiComm;
     };
 

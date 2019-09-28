@@ -9,9 +9,13 @@ public class NodeVersionConfig {
     ArrayList<String> supportedNodeVersions = new ArrayList<>();
 
     public NodeVersionConfig() {
+        // 0.0.0 is dev version
+        supportedNodeVersions.add("FLT32-R0.0.0");
         supportedNodeVersions.add("FLT32-R1.6");
         supportedNodeVersions.add("FLT32-R3.0");
         supportedNodeVersions.add("FLT32-R3.1");
+        supportedNodeVersions.add("FLT32-R3.1.0");
+        supportedNodeVersions.add("FLT32-R3.2.0");
     }
     
     public boolean isSupportedNodeVersion(final String version) {

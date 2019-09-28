@@ -6,10 +6,10 @@ using namespace comm;
 const unsigned int UDP_PORT = 31337;
 
 WifiComm::WifiComm(util::Storage *storage, lap::Rssi *rssi, radio::Rx5808 *rx5808, lap::LapDetector *lapDetector,
-    battery::BatteryMgr *batteryMgr, const char *version, statemanagement::StateManager *stateManager,
+    battery::BatteryMgr *batteryMgr, statemanagement::StateManager *stateManager,
     unsigned long *loopTime) :
-    Comm(storage, rssi, rx5808, lapDetector, batteryMgr, version, stateManager, loopTime), _wifiSsidFound(false), _jsonDocument(1024), _serverIp("") {
-        this->_version = version;
+    Comm(storage, rssi, rx5808, lapDetector, batteryMgr, stateManager, loopTime), _wifiSsidFound(false), _jsonDocument(1024), _serverIp("") {
+
 }
 
 int WifiComm::connect() {
@@ -201,7 +201,7 @@ void WifiComm::reg() {
 #endif
     this->_jsonDocument.clear();
     this->_jsonDocument["type"] = "register32";
-    this->_jsonDocument["version"] = this->_version;
+    this->_jsonDocument["version"] = VERSION;
     this->_jsonDocument["chipid"] = comm::CommTools::getChipIdAsString();
     this->sendUdpBroadcastMessage(this->generateJsonString());
 }
@@ -242,7 +242,7 @@ void WifiComm::sendData() {
 #ifdef DEBUG 
     Serial.println(F("sending data message"));
 #endif
-    this->sendUdpUnicastToServerMessage(comm::CommTools::getDeviceDataAsJsonStringFromStorage(this->_storage, this->_stateManager, this->_lapDetector, this->_batteryMgr, *this->_loopTime, this->_rssi, this->_version));
+    this->sendUdpUnicastToServerMessage(comm::CommTools::getDeviceDataAsJsonStringFromStorage(this->_storage, this->_stateManager, this->_lapDetector, this->_batteryMgr, *this->_loopTime, this->_rssi, VERSION));
 }
 
 void WifiComm::disconnect() {

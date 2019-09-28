@@ -5,11 +5,11 @@ using namespace comm;
 //#define DEBUG
 
 BtComm::BtComm(BluetoothSerial *btSerial, util::Storage *storage, lap::Rssi *rssi, radio::Rx5808 *rx5808,
-    lap::LapDetector *lapDetector, battery::BatteryMgr *batteryMgr, const char *version,
+    lap::LapDetector *lapDetector, battery::BatteryMgr *batteryMgr,
     statemanagement::StateManager *stateManager, comm::WifiComm *wifiComm, unsigned long *loopTime) : 
-    Comm(storage, rssi, rx5808, lapDetector, batteryMgr, version, stateManager, loopTime), _serialGotLine(false),
+    Comm(storage, rssi, rx5808, lapDetector, batteryMgr, stateManager, loopTime), _serialGotLine(false),
     _serialString(false), _btSerial(btSerial), _wifiComm(wifiComm), _jsonDocument(1024) {
-        this->_version = version;
+
 }
 
 int BtComm::connect() {
@@ -86,7 +86,7 @@ void BtComm::processIncomingMessage() {
             // get the version
             this->prepareJson();
             this->_jsonDocument["type"] = "version";
-            this->_jsonDocument["version"] = this->_version;
+            this->_jsonDocument["version"] = VERSION;
             this->sendJson();
         } else if (this->_serialString.length() >= 8 && this->_serialString.substring(0, 8) == "GET rssi") {
             // get the current rssi
@@ -137,7 +137,7 @@ void BtComm::processIncomingMessage() {
  * received get device data message
  *-------------------------------------------------*/
 void BtComm::processGetDeviceData() {
-    this->sendBtMessageWithNewline(comm::CommTools::getDeviceDataAsJsonStringFromStorage(this->_storage, this->_stateManager, this->_lapDetector, this->_batteryMgr, *this->_loopTime, this->_rssi, this->_version));
+    this->sendBtMessageWithNewline(comm::CommTools::getDeviceDataAsJsonStringFromStorage(this->_storage, this->_stateManager, this->_lapDetector, this->_batteryMgr, *this->_loopTime, this->_rssi, VERSION));
 }
 
 /*---------------------------------------------------

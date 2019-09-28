@@ -13,15 +13,16 @@
 #include "lapdetector.h"
 #include "batterymgr.h"
 #include "commtools.h"
+#include "version.h"
 
 namespace comm {
     class WifiWebServer {
         public:
             WifiWebServer(util::Storage *storage, lap::Rssi *rssi, radio::Rx5808 *rx5808, lap::LapDetector *lapDetector,
-                battery::BatteryMgr *batteryMgr, const char *version, statemanagement::StateManager *stateManager,
+                battery::BatteryMgr *batteryMgr, statemanagement::StateManager *stateManager,
                 unsigned long *loopTime) :
                 _storage(storage), _rssi(rssi), _rx5808(rx5808), _lapDetector(lapDetector), _batteryMgr(batteryMgr),
-                _version(version), _stateManager(stateManager), _loopTime(loopTime), _jsonDocument(1024) {}
+                _stateManager(stateManager), _loopTime(loopTime), _jsonDocument(1024) {}
             void begin();
             void handle();
             bool isConnected() {
@@ -45,7 +46,6 @@ namespace comm {
             battery::BatteryMgr *_batteryMgr;
             statemanagement::StateManager *_stateManager;
             DynamicJsonDocument _jsonDocument;
-            const char *_version;
             bool _connected;
             unsigned long *_loopTime;
 
@@ -53,13 +53,14 @@ namespace comm {
                 <html>
                 <head>
                     <style>
-                        body { font-family: Arial; background-color: #BCD8C1; } 
-                        a { color: #422040; } 
-                        #content { background-color: #ffffff; margin: auto; border-radius: 5px; border: 1px solid #736F72; padding: 20px; width: 600px;} 
+                        body { font-family: Arial; background-color: #ffffff; color: #333333; } 
+                        a { color: #ae93d0; } 
+                        #content { background-color: #fcfcfc; margin: auto; border: 1px solid #357dbc; padding: 20px; width: 600px;} 
                         #overlay { position: fixed; display: none; width: 100%; height: 100%; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); z-index: 2; cursor:wait;}
-                        #overlaydata { width: 500px; padding: 20px; border: 1px solid #736F72; border-radius: 5px; background-color: #BCD8C1; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
-                        h1,h2,h3 { color: #E57A44; }
-                        .button { font-size: 1.0em; border: none; border-radius: 5px; background-color: #E3D985; color: #422040; text-decoration: none; display: inline-block; margin: 5px; padding: 8px;}
+                        #overlaydata { width: 500px; padding: 20px; border: 1px solid #357dbc; background-color: #fcfcfc; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+                        h1,h2,h3 { color: #ae93d0; }
+                        .button { font-size: 1.0em; border: 1px solid #357dbc; background-color: #428aca; color: #fcfcfc; text-decoration: none; display: inline-block; margin: 5px; padding: 8px;}
+                        .button-danger { border: 1px solid #e43725; background-color: #e74c3c; }
                     </style>
                     <title>fpvlaptracker node</title>
                 </head>
@@ -142,7 +143,7 @@ namespace comm {
             char const *_serverIndex = R"(
                 chip id: %CHIPID%<br />
                 current version: %VERSION%<br />
-                build date: %DATETIME%<br /><br />
+                build date: %DATETIME% (%COMMIT%)<br /><br />
                 <a class='button' href='/bluetooth'>switch to bluetooth</a> <a class='button' href='/reset'>restart node</a><br />
                 <hr size='1'/>
                 <h2>maintenance</h2>
@@ -161,7 +162,7 @@ namespace comm {
 
                 <h3>factory defaults</h3>
                 <b>attention:</b> all data is reset to factory defaults except voltage reference<br />
-                <a class='button' href='/factorydefaults'>restore factory defaults</a>
+                <a class='button button-danger' href='/factorydefaults'>restore factory defaults</a>
             )";
 
     };
