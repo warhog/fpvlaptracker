@@ -107,16 +107,15 @@ you should now see a wifi network called `flt-base`. try to connect to it with p
 ## install fpvlaptracker host software on the pi
 using the automatic installation method the tracker software is installed in /home/pi/fpvlaptracker
 
-connect to your new wifi and copy the `install.sh` file from the `/web` folder to your pi using scp or any other tool of your choice
-e.g. `scp install.sh pi@172.24.1.1:/home/pi/` for linux or using putty on windows `pscp install.sh pi@172.24.1.1:/home/pi/`
-
-login to the pi and execute `install.sh` for automatic installation.
+1. connect the raspi to your local network (easiest by cable).
+2. login to the raspi and issue the following wget to download the install shell script:
+`https://raw.githubusercontent.com/warhog/fpvlaptracker/master/web/install.sh`
+3. login to the pi and execute `install.sh` for automatic installation.
 ```chmod +x install.sh
 ./install.sh <version>
 ```
 replace version with the version you like to install (see [github releases](https://github.com/warhog/fpvlaptracker/releases)).
-
-after successful installation reboot the pi, connect to the wifi and call [`http://172.24.1.1`](http://172.24.1.1) in the browser of your choice.
+4. after successful installation reboot the pi, connect to the wifi and call [`http://172.24.1.1`](http://172.24.1.1) in the browser of your choice.
 
 ## config file
 you can set further options (like language for speech output) using the [config file](/docs/configuration.md) located in `/home/pi/fpvlaptracker/application.properties`
