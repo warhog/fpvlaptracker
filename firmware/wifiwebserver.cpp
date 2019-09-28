@@ -48,7 +48,12 @@ void WifiWebServer::begin() {
         temp.replace("%VERSION%", VERSION);
         temp.replace("%CHIPID%", comm::CommTools::getChipIdAsString());
         temp.replace("%DATETIME%", VERSION_DATETIME);
-        temp.replace("%COMMIT%", VERSION_COMMIT);
+        temp.replace("%RSSI%", String(this->_rssi->getRssi()));
+        String versionCommit = "";
+        if (VERSION_COMMIT != "NO_TRAVIS_BUILD") {
+            versionCommit = "(" VERSION_COMMIT ")";
+        }
+        temp.replace("%COMMIT%", versionCommit);
         this->_server.send(200, "text/html", this->concat(temp));
     });
     
@@ -132,27 +137,38 @@ void WifiWebServer::begin() {
         }
     });
     
-    this->_server.on("/rssi", HTTP_GET, [&]() {
+    // the /api commands are for the webui
+    this->_server.on("/api/rssi", HTTP_GET, [&]() {
         this->_server.sendHeader("Connection", "close");
         this->_jsonDocument.clear();
         this->_jsonDocument["rssi"] = this->_rssi->getRssi();
         this->sendJson();
     });
 
-    // reboot is used by the connected web ui (not the node one)
-    this->_server.on("/reboot", HTTP_GET, [&]() {
+    // the /api commands are for the webui
+    this->_server.on("/api/factorydefaults", HTTP_GET, [&]() {
+        this->_server.sendHeader("Connection", "close");
+        this->_storage->loadFactoryDefaults();
+        this->_storage->store();
+        this->_server.send(200, "text/html", "OK");
+    });
+
+    // the /api commands are for the webui
+    this->_server.on("/api/reboot", HTTP_GET, [&]() {
         this->_server.sendHeader("Connection", "close");
         this->_server.send(200, "text/html", "OK");
         this->disconnectClients();
         ESP.restart();
     });
 
-    this->_server.on("/devicedata", HTTP_GET, [&]() {
+    // the /api commands are for the webui
+    this->_server.on("/api/devicedata", HTTP_GET, [&]() {
         this->_server.sendHeader("Connection", "close");
         this->_server.send(200, "application/json", comm::CommTools::getDeviceDataAsJsonStringFromStorage(this->_storage, this->_stateManager, this->_lapDetector, this->_batteryMgr, *this->_loopTime, this->_rssi, VERSION));
     });
 
-    this->_server.on("/setstate", HTTP_GET, [&]() {
+    // the /api commands are for the webui
+    this->_server.on("/api/setstate", HTTP_GET, [&]() {
         this->_server.sendHeader("Connection", "close");
         this->_jsonDocument.clear();
         this->_jsonDocument["result"] = "NOK";
@@ -204,7 +220,8 @@ void WifiWebServer::begin() {
         this->sendJson();
     });
 
-    this->_server.on("/devicedata", HTTP_POST, [&]() {
+    // the /api commands are for the webui
+    this->_server.on("/api/devicedata", HTTP_POST, [&]() {
         this->_server.sendHeader("Connection", "close");
         if (this->_server.args() > 0) {
             DeserializationError error = deserializeJson(this->_jsonDocument, this->_server.arg(0));

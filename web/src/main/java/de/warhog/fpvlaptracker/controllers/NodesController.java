@@ -87,6 +87,28 @@ public class NodesController {
         return result;
     }
 
+    @RequestMapping(path = "/api/auth/node/factorydefaults", method = RequestMethod.GET)
+    public StatusResult factoryDefaultsDevice(@RequestParam(name = "chipid", required = true) Long chipid) {
+        StatusResult result = new StatusResult(StatusResult.Status.NOK);
+        try {
+            Node node = nodeService.getNode(chipid);
+            if (node.restoreNodeFactoryDefaults().isOK()) {
+                LOG.debug("restore factory defaults ok, rebooting node");
+                if (node.rebootNode().isOK()) {
+                    nodeService.removeNode(node);
+                    result = new StatusResult(StatusResult.Status.OK);
+                } else {
+                    LOG.error("cannot reboot device");
+                }
+            } else {
+                LOG.error("cannot restore factory defaults for device");
+            }
+        } catch (Exception ex) {
+            LOG.error("cannot reboot device", ex);
+        }
+        return result;
+    }
+    
     @RequestMapping(path = "/api/auth/node/setstate", method = RequestMethod.GET)
     public StatusResult setState(@RequestParam(name = "chipid", required = true) Long chipId, @RequestParam(name = "state", required = true) String state) {
         LOG.debug("setting state for " + chipId + " to " + state);

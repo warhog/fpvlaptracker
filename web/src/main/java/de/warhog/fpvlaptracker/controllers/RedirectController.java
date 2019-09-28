@@ -14,7 +14,7 @@ public class RedirectController {
 //    @RequestMapping(value = "/{[path:[^\\.]*}")
     // exclude /websocketEndpoint
 //    @RequestMapping(value = "/{[path:^(?:(?!websocketEndpoint).)*}")
-    @RequestMapping(value = {"/home", "/login", "/nodesetup", "/scan", "/settings", "/pilots", "/nodes", "/race"})
+    @RequestMapping(value = {"/home", "/login", "/nodesetup/**", "/scan", "/settings", "/pilots", "/nodes", "/race"})
     public String redirect(HttpServletRequest request) {
         LOG.debug("catching redirect: " + request.getRequestURI());
         return "forward:/";

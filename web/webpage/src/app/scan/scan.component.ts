@@ -164,6 +164,7 @@ export class ScanComponent implements OnInit {
   }
 
   deepscan() {
+    this.chartData = [];
     for (let i = 5362; i <= 5945; i++) {
       let text = i + " MHz";
       if (this.utilService.frequencies.indexOf(i) !== -1) {

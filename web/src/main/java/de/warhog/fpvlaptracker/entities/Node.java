@@ -147,7 +147,7 @@ public class Node {
                 throw new RuntimeException("invalid state given: " + state);
             }
             this.state = state;
-            return getRestTemplate().getForObject(buildUrl(getInetAddress(), "setstate") + "?state={state}", StringResult.class, state.toUpperCase());
+            return getRestTemplate().getForObject(buildUrl(getInetAddress(), "api/setstate") + "?state={state}", StringResult.class, state.toUpperCase());
         } catch (Exception ex) {
             LOG.error("cannot set state: " + ex.getMessage(), ex);
             return new StringResult("NOK");
@@ -265,7 +265,7 @@ public class Node {
     @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "null pointer dereferencing is intended")
     public Rssi loadRssi() {
         try {
-            Rssi rssi = getRestTemplate().getForObject(buildUrl(getInetAddress(), "rssi"), Rssi.class);
+            Rssi rssi = getRestTemplate().getForObject(buildUrl(getInetAddress(), "api/rssi"), Rssi.class);
             this.rssi = rssi.getRssi();
             return rssi;
         } catch (Exception ex) {
@@ -277,7 +277,7 @@ public class Node {
     @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH", justification = "null pointer dereferencing is intended")
     public void loadNodeDeviceData() {
         try {
-            Node node = getRestTemplate().getForObject(buildUrl(getInetAddress(), "devicedata"), Node.class);
+            Node node = getRestTemplate().getForObject(buildUrl(getInetAddress(), "api/devicedata"), Node.class);
             if (node != null) {
                 LOG.debug("loaded from node: " + node.toString());
             }
@@ -292,9 +292,19 @@ public class Node {
     public StringResult rebootNode() {
         LOG.debug("rebooting node");
         try {
-            return new StringResult(getRestTemplate().getForObject(buildUrl(getInetAddress(), "reboot"), String.class));
+            return new StringResult(getRestTemplate().getForObject(buildUrl(getInetAddress(), "api/reboot"), String.class));
         } catch (Exception ex) {
             LOG.error("cannot reboot device: " + ex.getMessage(), ex);
+            return new StringResult(StringResult.NOK);
+        }
+    }
+
+    public StringResult restoreNodeFactoryDefaults() {
+        LOG.debug("restoring node factory defaults");
+        try {
+            return new StringResult(getRestTemplate().getForObject(buildUrl(getInetAddress(), "api/factorydefaults"), String.class));
+        } catch (Exception ex) {
+            LOG.error("cannot restore factory defaults on device: " + ex.getMessage(), ex);
             return new StringResult(StringResult.NOK);
         }
     }
@@ -302,7 +312,7 @@ public class Node {
     public StringResult postNodeDeviceData() {
         try {
             LOG.debug("posting node data: " + toString());
-            String ret = getRestTemplate().postForObject(buildUrl(getInetAddress(), "devicedata"), this, String.class);
+            String ret = getRestTemplate().postForObject(buildUrl(getInetAddress(), "api/devicedata"), this, String.class);
             if (ret != null) {
                 if (ret.trim().contains(StringResult.NOK)) {
                     throw new RuntimeException("cannot set devicedata");

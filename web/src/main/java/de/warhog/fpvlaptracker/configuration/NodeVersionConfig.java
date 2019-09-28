@@ -11,10 +11,6 @@ public class NodeVersionConfig {
     public NodeVersionConfig() {
         // 0.0.0 is dev version
         supportedNodeVersions.add("FLT32-R0.0.0");
-        supportedNodeVersions.add("FLT32-R1.6");
-        supportedNodeVersions.add("FLT32-R3.0");
-        supportedNodeVersions.add("FLT32-R3.1");
-        supportedNodeVersions.add("FLT32-R3.1.0");
         supportedNodeVersions.add("FLT32-R3.2.0");
     }
     

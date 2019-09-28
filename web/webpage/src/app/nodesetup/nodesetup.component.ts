@@ -78,7 +78,7 @@ export class NodesetupComponent implements OnInit {
 
     this.route.paramMap.subscribe(params => {
       this.chipid = Number(params.get('id'));
-        this.loadNode();
+      this.loadNode();
     });
 
     this.rssiTopicSubscription = this.rxStompService.watch('/topic/rssi').subscribe((message: Message) => {
@@ -120,7 +120,7 @@ export class NodesetupComponent implements OnInit {
     let params: HttpParams = new HttpParams().set('chipid', String(this.chipid));
     this.httpClient.get<StatusResponse>('/api/auth/node/reboot', { params: params }).subscribe(response => {
       this.utilService.statusResponseHandler(response, () => {
-        me.router.navigateByUrl('/');
+        me.router.navigateByUrl('/nodes');
       }, (message) => {
         me.alertService.error('failed to reboot device: ' + message, 'reboot failed');
       });
@@ -128,6 +128,23 @@ export class NodesetupComponent implements OnInit {
       console.log('cannot reboot node: ', error);
       this.alertService.error('cannot reboot node: ' + error, 'reboot error');
     });
+  }
+
+  restoreFactoryDefaultsDevice() {
+    let me = this;
+    me.confirmDialogService.confirmYesNo('really restore factory defaults?', 'do you really want to restore the factory defaults for the node "' + String(me.chipid) + '"?<br /><br /><b>attention:</b> all data except the default voltage reference will be reset!', function () {
+      let params: HttpParams = new HttpParams().set('chipid', String(me.chipid));
+      me.httpClient.get<StatusResponse>('/api/auth/node/factorydefaults', { params: params }).subscribe(response => {
+        me.utilService.statusResponseHandler(response, () => {
+          me.router.navigateByUrl('/nodes');
+        }, (message) => {
+          me.alertService.error('failed to restore factory defaults for device: ' + message, 'reboot failed');
+        });
+      }, error => {
+        console.log('cannot reboot node: ', error);
+        me.alertService.error('cannot restore factory defaults node: ' + error, 'factory defaults error');
+      });
+    }, function () { });
   }
 
   calculateRssiLimits() {

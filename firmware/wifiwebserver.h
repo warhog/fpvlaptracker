@@ -114,7 +114,7 @@ namespace comm {
                             }
                         }, false);
                         xhr.upload.addEventListener('error', function(evt) {
-                            alert('error during upload!\n' + evt + '\n\nplease reset device manually!');
+                            alert('error during upload!\n\nplease reset device manually!');
                             console.log('error during upload', evt);
                         }, false);
                         xhr.upload.addEventListener('load', function(evt) {
@@ -143,7 +143,10 @@ namespace comm {
             char const *_serverIndex = R"(
                 chip id: %CHIPID%<br />
                 current version: %VERSION%<br />
-                build date: %DATETIME% (%COMMIT%)<br /><br />
+                build date: %DATETIME% %COMMIT%<br />
+                <br />
+                rssi: %RSSI%<br />
+                <br />
                 <a class='button' href='/bluetooth'>switch to bluetooth</a> <a class='button' href='/reset'>restart node</a><br />
                 <hr size='1'/>
                 <h2>maintenance</h2>

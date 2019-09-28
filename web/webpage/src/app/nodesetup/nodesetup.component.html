@@ -202,14 +202,28 @@
 
             <br />
             <button (click)="saveDeviceData()" class="btn btn-outline-secondary">save device settings</button>
-            <br /><br />
+        </form>
+    </div>
+</div>
+<br />
+<div class="card" [hidden]="node.state == 'RSSI'">
+    <div class="card-header">
+        <b>danger zone</b>
+    </div>
+    <div class="card-body">
+        <form>
             <div class="form-group">
                 <label for="rebootButton">reboot</label><br />
                 <small id="rebootButtonHelp" class="form-text text-muted">reboot the tracker unit</small>
                 <button name="reboot" name="rebootButton" class="btn btn-danger" (click)="rebootDevice();"
                     aria-describedby="rebootButtonHelp">reboot</button>
             </div>
-
+            <div class="form-group">
+                <label for="restoreFactoryDefaultsButton">restore factory defaults</label><br />
+                <small id="restoreFactoryDefaultsButtonHelp" class="form-text text-muted">restore the factory defaults of the tracker unit</small>
+                <button name="reboot" name="restoreFactoryDefaultsButton" class="btn btn-danger" (click)="restoreFactoryDefaultsDevice();"
+                    aria-describedby="restoreFactoryDefaultsButtonHelp">restore factory defaults</button>
+            </div>
         </form>
     </div>
 </div>
