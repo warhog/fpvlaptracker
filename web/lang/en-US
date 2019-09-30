@@ -1,4 +1,4 @@
-REGISTERED=Node registered. The node count is now %s.
+REGISTERED=Node registered. The node count is now %s
 UNREGISTERED=Node removed.
 FINISHED=Race finished.
 INVALID_LAP=Invalid lap %s.

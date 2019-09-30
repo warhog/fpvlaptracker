@@ -1,4 +1,4 @@
-REGISTERED=Knoten registriert. Die Knotenzahl beträgt nun %s.
+REGISTERED=Knoten registriert. Die Knotenzahl beträgt nun %s
 UNREGISTERED=Knoten entfern.
 FINISHED=Rennen beendet.
 INVALID_LAP=Ungültige Runde: %s

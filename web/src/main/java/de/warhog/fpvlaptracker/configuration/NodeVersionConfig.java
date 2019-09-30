@@ -13,6 +13,7 @@ public class NodeVersionConfig {
         supportedNodeVersions.add("FLT32-R0.0.0");
         supportedNodeVersions.add("FLT32-R3.2.0");
         supportedNodeVersions.add("FLT32-R3.3.0");
+        supportedNodeVersions.add("FLT32-R3.3.1");
     }
     
     public boolean isSupportedNodeVersion(final String version) {
