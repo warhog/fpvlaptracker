@@ -48,7 +48,7 @@ export class NodesComponent implements OnInit {
     }, (message) => {
       console.log('cannot load nodes: ', message);
       this.alertService.error('cannot load the nodes: ' + message, 'node load error');
-    });
+    }, true);
   }
 
   public get nodes(): NodeDeviceData[] {
