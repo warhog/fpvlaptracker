@@ -27,6 +27,7 @@ public class NodesController {
     public List<Node> getNodes(@RequestParam(name = "update", defaultValue = "false") boolean update) {
         LOG.debug("get all nodes");
         try {
+            nodeService.checkNodesStillAvailable();
             List<Node> nodes = nodeService.getNodes();
             if (update) {
                 LOG.debug("updating node device data");
