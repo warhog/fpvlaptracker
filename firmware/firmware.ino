@@ -431,7 +431,7 @@ void wifiConnect() {
 #endif
 		wifiWebServer.begin();
 #ifdef DEBUG
-		Serial.println(F("node registration done"));
+		Serial.println(F("webserver started"));
 	} else {
 		Serial.println(F("wifi not connected"));
 #endif
