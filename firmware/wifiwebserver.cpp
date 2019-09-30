@@ -11,7 +11,7 @@ void WifiWebServer::sendJson() {
 }
 
 String WifiWebServer::concat(String text) {
-    return this->_header + text + this->_footer;
+    return comm::WifiWebServerFiles::header + text + comm::WifiWebServerFiles::footer;
 }
 
 void WifiWebServer::disconnectClients() {
@@ -44,7 +44,7 @@ void WifiWebServer::begin() {
 
     this->_server.on("/", HTTP_GET, [&]() {
         this->_server.sendHeader("Connection", "close");
-        String temp(this->_serverIndex);
+        String temp(comm::WifiWebServerFiles::index);
         temp.replace("%VERSION%", VERSION);
         temp.replace("%CHIPID%", comm::CommTools::getChipIdAsString());
         temp.replace("%DATETIME%", VERSION_DATETIME);
@@ -92,6 +92,10 @@ void WifiWebServer::begin() {
     });
 
     this->_server.on("/bluetooth", HTTP_GET, [&]() {
+        this->_server.sendHeader("Connection", "close");
+        this->_server.send(200, "text/html", this->concat("really goto bluetooth mode? <b>attention:</b> wifi will not be available anymore till a reboot of the tracker node!<br /><a class='button' href='/dovref'>yes</a> <a class='button' href='/'>no</a>"));
+    });
+    this->_server.on("/dobluetooth", HTTP_GET, [&]() {
         this->_server.sendHeader("Connection", "close");
         this->_server.send(200, "text/html", this->concat("switching to bluetooth mode, wifi is now disabled!"));
         this->disconnectClients();
