@@ -77,8 +77,8 @@ export class NodesetupComponent implements OnInit {
     this.authService.redirectIfNotAuthenticated();
 
     this.route.paramMap.subscribe(params => {
-      this.chipid = Number(params.get('id'));
-      this.loadNode();
+      me.chipid = Number(params.get('id'));
+      me.loadNode();
     });
 
     this.rssiTopicSubscription = this.rxStompService.watch('/topic/rssi').subscribe((message: Message) => {

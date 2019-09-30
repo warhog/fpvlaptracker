@@ -24,9 +24,18 @@ public class NodesController {
     private NodesService nodeService;
 
     @RequestMapping(path = "/api/nodes", method = RequestMethod.GET)
-    public List<Node> getNodes() {
+    public List<Node> getNodes(@RequestParam(name = "update", defaultValue = "false") boolean update) {
+        LOG.debug("get all nodes");
         try {
-            return nodeService.getNodes();
+            List<Node> nodes = nodeService.getNodes();
+            if (update) {
+                LOG.debug("updating node device data");
+                for (Node node : nodes) {
+                    LOG.debug("updating device data for " + node.toString());
+                    node.loadNodeDeviceData();
+                }
+            }
+            return nodes;
         } catch (Exception ex) {
             LOG.error("cannot get nodes: " + ex.getMessage(), ex);
             throw ex;

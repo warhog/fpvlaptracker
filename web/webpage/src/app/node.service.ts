@@ -11,9 +11,13 @@ export class NodeService {
 
   constructor(private utilService: UtilService, private httpClient: HttpClient) { }
 
-  loadNodes(fnSuccess: (nodes: NodeDeviceData[]) => void, fnFailure: (message: string) => void) {
+  loadNodes(fnSuccess: (nodes: NodeDeviceData[]) => void, fnFailure: (message: string) => void, update: boolean = false) {
     let me = this;
-    this.httpClient.get<NodeDeviceData[]>('/api/nodes').subscribe(nodes => {
+    let params: HttpParams = new HttpParams();
+    if (update) {
+      params = new HttpParams().set('update', String(update));
+    }
+    this.httpClient.get<NodeDeviceData[]>('/api/nodes', { params: params }).subscribe(nodes => {
       nodes.forEach(function(node) {
         node.frequencyObj = me.utilService.getFrequencyObject(node.frequency);
       });

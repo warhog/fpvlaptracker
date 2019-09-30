@@ -17,7 +17,7 @@
         </encoder>
     </appender>
 
-    <logger name="de.warhog.fpvlaptracker" level="INFO" />
+    <logger name="de.warhog.fpvlaptracker" level="DEBUG" />
     <logger name="org.springframework" level="WARN" />
 
     <root level="WARN">
