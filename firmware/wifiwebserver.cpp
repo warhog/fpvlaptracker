@@ -93,7 +93,7 @@ void WifiWebServer::begin() {
 
     this->_server.on("/bluetooth", HTTP_GET, [&]() {
         this->_server.sendHeader("Connection", "close");
-        this->_server.send(200, "text/html", this->concat("really goto bluetooth mode? <b>attention:</b> wifi will not be available anymore till a reboot of the tracker node!<br /><a class='button' href='/dovref'>yes</a> <a class='button' href='/'>no</a>"));
+        this->_server.send(200, "text/html", this->concat("really goto bluetooth mode? <b>attention:</b> wifi will not be available anymore till a reboot of the tracker node!<br /><a class='button' href='/dobluetooth'>yes</a> <a class='button' href='/'>no</a>"));
     });
     this->_server.on("/dobluetooth", HTTP_GET, [&]() {
         this->_server.sendHeader("Connection", "close");
