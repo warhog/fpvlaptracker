@@ -86,7 +86,7 @@
                     <label for="audioLanguage">audio language</label>
                     <input class="form-control" type="text" name="audioLanguage" [(ngModel)]="data.audioLanguage" required
                         aria-describedby="audioLanguageHelp" />
-                    <small id="audioLanguageHelp" class="form-text text-muted">sets the audio language.</small>
+                    <small id="audioLanguageHelp" class="form-text text-muted">sets the audio language, usa a BCP 47 language tag (e.g. en-US or en-UK or de-DE).</small>
                 </div>
                 <button [disabled]="storing" (click)="storeSettings()" class="btn btn-outline-secondary">save</button>
                 <br /><br />
