@@ -8,11 +8,9 @@ bool WifiAp::connect() {
 #endif
     String wifiApName = "flt-unit-";
     wifiApName += comm::CommTools::getChipIdAsString();
-    esp_err_t result = WiFi.softAP(wifiApName.c_str(), "");
-    if (result != ESP_OK) {
+    if (!WiFi.softAP(wifiApName.c_str(), "")) {
 #ifdef DEBUG
-        Serial.print(F("wifi ap error: "));
-        Serial.println(result)
+        Serial.print(F("wifi ap error"));
 #endif
         return false;
     }
