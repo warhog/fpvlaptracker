@@ -1,4 +1,7 @@
-<div [hidden]="nodes.length != 0">
+<div [hidden]="loading == true">
+    loading nodes...
+</div>
+<div [hidden]="nodes.length != 0 && loading == false">
     no nodes registered yet.
 </div>
 <div *ngFor="let node of nodes; let i = index">

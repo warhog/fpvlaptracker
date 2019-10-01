@@ -30,9 +30,11 @@ public class NodesController {
             List<Node> nodes = nodeService.getNodes();
             if (update) {
                 LOG.debug("updating node device data");
-                for (Node node : nodes) {
-                    LOG.debug("updating device data for " + node.toString());
-                    node.loadNodeDeviceData();
+                synchronized(nodes)  {
+                    for (Node node : nodes) {
+                        LOG.debug("updating device data for " + node.toString());
+                        node.loadNodeDeviceData();
+                    }
                 }
             }
             return nodes;
@@ -117,7 +119,7 @@ public class NodesController {
         }
         return result;
     }
-    
+
     @RequestMapping(path = "/api/auth/node/setstate", method = RequestMethod.GET)
     public StatusResult setState(@RequestParam(name = "chipid", required = true) Long chipId, @RequestParam(name = "state", required = true) String state) {
         LOG.debug("setting state for " + chipId + " to " + state);

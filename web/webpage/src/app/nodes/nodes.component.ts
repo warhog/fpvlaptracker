@@ -17,6 +17,7 @@ import { UtilService } from '../util.service';
 })
 export class NodesComponent implements OnInit {
 
+  private _loading: boolean = false;
   private _nodes: NodeDeviceData[] = [];
   private nodesCountTopicSubscription: Subscription;
   private _authenticated: boolean = false;
@@ -43,10 +44,13 @@ export class NodesComponent implements OnInit {
   }
 
   loadNodes() {
+    this.loading = true;
     this.nodeService.loadNodes((nodes) => {
       this.nodes = nodes;
+      this.loading = false;
     }, (message) => {
       console.log('cannot load nodes: ', message);
+      this.loading = false;
       this.alertService.error('cannot load the nodes: ' + message, 'node load error');
     }, true);
   }
@@ -62,5 +66,11 @@ export class NodesComponent implements OnInit {
   }
   public set authenticated(value: boolean) {
     this._authenticated = value;
+  }
+  public get loading(): boolean {
+    return this._loading;
+  }
+  public set loading(value: boolean) {
+    this._loading = value;
   }
 }
