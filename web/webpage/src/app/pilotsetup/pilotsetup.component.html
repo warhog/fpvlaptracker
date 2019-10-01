@@ -16,7 +16,7 @@
                     class="form-control col-lg-5">
                     <option value='0'>-</option>
                     <option [ngValue]="node.chipId" *ngFor="let node of availableNodes">
-                        {{node.chipId}} - {{node.frequencyObj.name}}
+                        {{node.chipId}} - {{node.frequencyObj.name}} (online: {{!node.offline}})
                     </option>
                 </select>
                 <small id="nodeSelectionHelp" class="form-text text-muted">the node that is used by this pilot.</small>
