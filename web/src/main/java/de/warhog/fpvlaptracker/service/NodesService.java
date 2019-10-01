@@ -85,7 +85,7 @@ public class NodesService {
         List<Node> nodesToRemove = new ArrayList<>();
         for (Node node : nodes) {
             try {
-                if (node.getInetAddress().isReachable(100)) {
+                if (node.getInetAddress().isReachable(500)) {
                     LOG.debug("node with chipId " + node.getChipId() + " found");
                 } else {
                     LOG.info("node with chipid " + node.getChipId() + " not found, removing");
