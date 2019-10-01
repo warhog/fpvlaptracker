@@ -1,12 +1,15 @@
-<div [hidden]="loading == true">
-    loading nodes...
+<div class="text-center" [hidden]="loading == false">
+    <div class="spinner-border" role="status">
+        <span class="sr-only">loading nodes...</span>
+    </div>
 </div>
-<div [hidden]="nodes.length != 0 && loading == false">
+
+<div [hidden]="nodes.length != 0 || loading == true">
     no nodes registered yet.
 </div>
 <div *ngFor="let node of nodes; let i = index">
     <div class="card">
-        <div class="card-header">
+        <div class="card-header" [class.bg-warning]="node.offline == true">
             <b>node chipid: {{node.chipId}}</b>
         </div>
         <div class="card-body">
@@ -15,19 +18,27 @@
                     <tr>
                         <td><span class="bold">frequency:</span></td>
                         <td>{{node.frequency | frequency}}</td>
-                    </tr><tr>
+                    </tr>
+                    <tr>
                         <td><span class="bold">state:</span></td>
                         <td>{{node.state}}</td>
-                    </tr><tr>
+                    </tr>
+                    <tr>
                         <td><span class="bold">ip:</span></td>
                         <td>{{node.inetAddress}}</td>
-                    </tr><tr>
+                    </tr>
+                    <tr>
                         <td><span class="bold">version:</span></td>
                         <td>{{node.version}}</td>
                     </tr>
+                    <tr>
+                        <td><span class="bold">online:</span></td>
+                        <td>{{node.offline == false ? '&#10004;' : '	&#10060;'}}</td>
+                    </tr>
                 </tbody>
             </table>
-            <button [disabled]="!authenticated" (click)="nodeSetup(node.chipId)" class="btn btn-primary">node setup</button>
+            <button [disabled]="!authenticated" (click)="nodeSetup(node.chipId)" class="btn btn-primary">node
+                setup</button>
         </div>
     </div>
     <br />

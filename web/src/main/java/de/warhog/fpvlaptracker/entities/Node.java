@@ -4,9 +4,11 @@ import de.warhog.fpvlaptracker.dtos.Rssi;
 import de.warhog.fpvlaptracker.dtos.StringResult;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.time.Duration;
 import java.util.Objects;
+import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -36,6 +38,7 @@ public class Node {
     private String version = "unknown";
     private InetAddress inetAddress = null;
     private Long chipId = 0L;
+    private boolean offline = false;
 
     public Node() {
     }
@@ -133,6 +136,25 @@ public class Node {
         this.state = state;
     }
 
+    public boolean isOffline() {
+        return offline;
+    }
+
+    public void setOffline(boolean offline) {
+        this.offline = offline;
+    }
+
+    private boolean testOnline() {
+        try {
+            boolean online = getInetAddress().isReachable(100);
+            setOffline(!online);
+            return online;
+        } catch (IOException ex) {
+            LOG.error("cannot test node online status: " + ex.getMessage(), ex);
+            return false;
+        }
+    }
+    
     public StringResult postState(String state) {
         try {
             DeviceStates deviceStateFound = null;
@@ -147,9 +169,12 @@ public class Node {
                 throw new RuntimeException("invalid state given: " + state);
             }
             this.state = state;
-            return getRestTemplate().getForObject(buildUrl(getInetAddress(), "api/setstate") + "?state={state}", StringResult.class, state.toUpperCase());
+            StringResult result = getRestTemplate().getForObject(buildUrl(getInetAddress(), "api/setstate") + "?state={state}", StringResult.class, state.toUpperCase());
+            setOffline(false);
+            return result;
         } catch (Exception ex) {
             LOG.error("cannot set state: " + ex.getMessage(), ex);
+            testOnline();
             return new StringResult("NOK");
         }
     }
@@ -255,8 +280,8 @@ public class Node {
         if (restTemplate == null) {
             RestTemplateBuilder restTemplateBuilder = new RestTemplateBuilder();
             restTemplate = restTemplateBuilder
-                    .setConnectTimeout(Duration.ofSeconds(5L))
-                    .setReadTimeout(Duration.ofSeconds(5L))
+                    .setConnectTimeout(Duration.ofSeconds(1L))
+                    .setReadTimeout(Duration.ofSeconds(1L))
                     .build();
         }
         return restTemplate;
@@ -267,9 +292,11 @@ public class Node {
         try {
             Rssi rssi = getRestTemplate().getForObject(buildUrl(getInetAddress(), "api/rssi"), Rssi.class);
             this.rssi = rssi.getRssi();
+            setOffline(false);
             return rssi;
         } catch (Exception ex) {
             LOG.error("cannot load rssi: " + ex.getMessage(), ex);
+            testOnline();
             return new Rssi();
         }
     }
@@ -284,17 +311,22 @@ public class Node {
             node.setInetAddress(this.getInetAddress());
             node.setChipId(this.getChipId());
             copyFromNode(node);
+            setOffline(false);
         } catch (Exception ex) {
             LOG.error("cannot load device data: " + ex.getMessage(), ex);
+            testOnline();
         }
     }
 
     public StringResult rebootNode() {
         LOG.debug("rebooting node");
         try {
-            return new StringResult(getRestTemplate().getForObject(buildUrl(getInetAddress(), "api/reboot"), String.class));
+            StringResult result = new StringResult(getRestTemplate().getForObject(buildUrl(getInetAddress(), "api/reboot"), String.class));
+            setOffline(false);
+            return result;
         } catch (Exception ex) {
             LOG.error("cannot reboot device: " + ex.getMessage(), ex);
+            testOnline();
             return new StringResult(StringResult.NOK);
         }
     }
@@ -302,9 +334,12 @@ public class Node {
     public StringResult restoreNodeFactoryDefaults() {
         LOG.debug("restoring node factory defaults");
         try {
-            return new StringResult(getRestTemplate().getForObject(buildUrl(getInetAddress(), "api/factorydefaults"), String.class));
+            StringResult result = new StringResult(getRestTemplate().getForObject(buildUrl(getInetAddress(), "api/factorydefaults"), String.class));
+            setOffline(false);
+            return result;
         } catch (Exception ex) {
             LOG.error("cannot restore factory defaults on device: " + ex.getMessage(), ex);
+            testOnline();
             return new StringResult(StringResult.NOK);
         }
     }
@@ -318,9 +353,11 @@ public class Node {
                     throw new RuntimeException("cannot set devicedata");
                 }
             }
+            setOffline(false);
             return new StringResult(ret);
         } catch (Exception ex) {
             LOG.error("cannot post device data: " + ex.getMessage(), ex);
+            testOnline();
             return new StringResult(StringResult.NOK);
         }
     }
