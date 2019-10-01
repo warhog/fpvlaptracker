@@ -1,0 +1,19 @@
+<script>
+function setWifi(wifi) {
+    document.getElementById('ssid').value = wifi;
+    document.getElementById('password').value = '';
+}
+</script>
+<a class='button' href='/'>back</a>
+<br />
+<h2>wifi</h2>
+<form method='POST' action='/setwifi' enctype='multipart/form-data'>
+    ssid: <input type="text" id="ssid" name="ssid" value="%SSID%" /><br />
+    password: <input type="password" id="password" name="password" value="%PASSWORD%" /><br />
+    <input type='submit' class='button' value='set wifi' />
+</form>
+
+<h3>available wifi networks</h3>
+<ul>
+    %WIFIS%
+</ul>

@@ -38,6 +38,7 @@ namespace comm {
             void sendJson();
             String concat(String text);
             void disconnectClients();
+            void rebootNode();
 
             WebServer _server;
             util::Storage *_storage;

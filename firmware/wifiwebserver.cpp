@@ -11,7 +11,16 @@ void WifiWebServer::sendJson() {
 }
 
 String WifiWebServer::concat(String text) {
-    return comm::WifiWebServerFiles::header + text + comm::WifiWebServerFiles::footer;
+    String temp(comm::WifiWebServerFiles::header);
+    temp.replace("%VERSION%", VERSION);
+    temp.replace("%CHIPID%", comm::CommTools::getChipIdAsString());
+    temp.replace("%DATETIME%", VERSION_DATETIME);
+    String versionCommit = "";
+    if (VERSION_COMMIT != "NO_TRAVIS_BUILD") {
+        versionCommit = "(" VERSION_COMMIT ")";
+    }
+    temp.replace("%COMMIT%", versionCommit);
+    return temp + text + comm::WifiWebServerFiles::footer;
 }
 
 void WifiWebServer::disconnectClients() {
@@ -21,6 +30,12 @@ void WifiWebServer::disconnectClients() {
     this->_server.client().stop();
     this->_server.stop();
     delay(100);
+}
+
+void WifiWebServer::rebootNode() {
+    this->_server.send(200, "text/html", this->concat("<script>window.setTimeout(function() { rebooting(); }, 50);</script>rebooting node..."));
+    this->disconnectClients();
+    ESP.restart();
 }
 
 void WifiWebServer::begin() {
@@ -45,15 +60,7 @@ void WifiWebServer::begin() {
     this->_server.on("/", HTTP_GET, [&]() {
         this->_server.sendHeader("Connection", "close");
         String temp(comm::WifiWebServerFiles::index);
-        temp.replace("%VERSION%", VERSION);
-        temp.replace("%CHIPID%", comm::CommTools::getChipIdAsString());
-        temp.replace("%DATETIME%", VERSION_DATETIME);
         temp.replace("%RSSI%", String(this->_rssi->getRssi()));
-        String versionCommit = "";
-        if (VERSION_COMMIT != "NO_TRAVIS_BUILD") {
-            versionCommit = "(" VERSION_COMMIT ")";
-        }
-        temp.replace("%COMMIT%", versionCommit);
         this->_server.send(200, "text/html", this->concat(temp));
     });
     
@@ -65,7 +72,34 @@ void WifiWebServer::begin() {
         this->_server.sendHeader("Connection", "close");
         this->_storage->loadFactoryDefaults();
         this->_storage->store();
-        this->_server.send(200, "text/html", this->concat("factory defaults loaded.<br /><script>window.setTimeout(function() { rebooting(); }, 50);</script>"));
+        this->rebootNode();
+    });
+
+    this->_server.on("/wifi", HTTP_GET, [&]() {
+        this->_server.sendHeader("Connection", "close");
+        String temp(comm::WifiWebServerFiles::wifi);
+        temp.replace("%SSID%", this->_storage->getSsid());
+        temp.replace("%PASSWORD%", this->_storage->getWifiPassword());
+        String wifiList;
+        int nrOfWifis = WiFi.scanNetworks(false, false, false, 500);
+        for (unsigned int i = 0; i < nrOfWifis; i++) {
+            wifiList += "<li>" + WiFi.SSID(i) + " <a href=\"#\" onclick=\"setWifi('" + WiFi.SSID(i) + "');\">use</a></li>";
+        }
+
+        temp.replace("%WIFIS%", wifiList);
+        this->_server.send(200, "text/html", this->concat(temp));
+    });
+    this->_server.on("/setwifi", HTTP_POST, [&]() {
+        this->_server.sendHeader("Connection", "close");
+        if (this->_server.args() == 2) {
+            this->_storage->setSsid(this->_server.arg("ssid"));
+            this->_storage->setWifiPassword(this->_server.arg("password"));
+            this->_storage->store();
+            this->rebootNode();
+        } else {
+            this->_server.sendHeader("Connection", "close");
+            this->_server.send(500, "text/html", "invalid arguments");
+        }
     });
 
     // this reset is used for the node web ui
@@ -75,9 +109,7 @@ void WifiWebServer::begin() {
     });
     this->_server.on("/doreset", HTTP_GET, [&]() {
         this->_server.sendHeader("Connection", "close");
-        this->_server.send(200, "text/html", this->concat("<script>window.setTimeout(function() { rebooting(); }, 50);</script>"));
-        this->disconnectClients();
-        ESP.restart();
+        this->rebootNode();
     });
 
     this->_server.on("/vref", HTTP_GET, [&]() {

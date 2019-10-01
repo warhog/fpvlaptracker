@@ -79,7 +79,11 @@ constexpr static char const *header = R"(
 </div>
 <div id='content'>
     <h1>fpvlaptracker32</h1>
-)";
+    chip id: %CHIPID%<br />
+    current version: %VERSION%<br />
+    build date: %DATETIME% %COMMIT%<br />
+    <hr size='1'/>
+    <br />    )";
 
 constexpr static char const *footer = R"(
 </div>
@@ -143,14 +147,9 @@ constexpr static char const *footer = R"(
 )";
 
 constexpr static char const *index = R"(
-chip id: %CHIPID%<br />
-current version: %VERSION%<br />
-build date: %DATETIME% %COMMIT%<br />
-<br />
 rssi: %RSSI%<br />
 <br />
 <a class='button' href='/bluetooth'>switch to bluetooth</a> <a class='button' href='/reset'>restart node</a><br />
-<hr size='1'/>
 <h2>maintenance</h2>
 
 <h3>firmware update</h3>
@@ -165,9 +164,34 @@ select .bin file to flash and press update to start the over the air update.<br 
 calibration of the voltage readings<br />
 <a class='button' href='/vref'>output voltage reference</a><br />
 
+<h3>wifi settings</h3>
+<a class='button' href='/wifi'>wifi settings</a><br />
+
 <h3>factory defaults</h3>
 <b>attention:</b> all data is reset to factory defaults except voltage reference<br />
 <a class='button button-danger' href='/factorydefaults'>restore factory defaults</a>
+)";
+
+constexpr static char const *wifi = R"(
+<script>
+function setWifi(wifi) {
+    document.getElementById('ssid').value = wifi;
+    document.getElementById('password').value = '';
+}
+</script>
+<a class='button' href='/'>back</a>
+<br />
+<h2>wifi</h2>
+<form method='POST' action='/setwifi' enctype='multipart/form-data'>
+    ssid: <input type="text" id="ssid" name="ssid" value="%SSID%" /><br />
+    password: <input type="password" id="password" name="password" value="%PASSWORD%" /><br />
+    <input type='submit' class='button' value='set wifi' />
+</form>
+
+<h3>available wifi networks</h3>
+<ul>
+    %WIFIS%
+</ul>
 )";
 
 };

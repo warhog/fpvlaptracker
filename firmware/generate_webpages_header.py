@@ -14,6 +14,7 @@ def open_file_and_convert(filename):
 open_file_and_convert('html/header.html')
 open_file_and_convert('html/footer.html')
 open_file_and_convert('html/index.html')
+open_file_and_convert('html/wifi.html')
 
 data = ''
 print('generate header file')
