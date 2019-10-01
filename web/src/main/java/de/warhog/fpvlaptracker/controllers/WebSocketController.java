@@ -2,7 +2,7 @@ package de.warhog.fpvlaptracker.controllers;
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import de.warhog.fpvlaptracker.configuration.ApplicationConfig;
+import de.warhog.fpvlaptracker.service.ConfigService;
 import de.warhog.fpvlaptracker.util.RaceState;
 import de.warhog.fpvlaptracker.util.AudioFile;
 import org.slf4j.Logger;
@@ -22,7 +22,7 @@ public class WebSocketController {
     private SimpMessagingTemplate template;
     
     @Autowired
-    private ApplicationConfig applicationConfig;
+    private ConfigService configService;
 
     @MessageMapping("/lap")
     @SendTo("/topic/lap")
@@ -66,7 +66,7 @@ public class WebSocketController {
         LOG.debug("sending speech message: " + text);
         ObjectNode node = JsonNodeFactory.instance.objectNode();
         node.put("text", text);
-        node.put("language", applicationConfig.getAudioLanguage());
+        node.put("language", configService.getAudioLanguage());
         this.template.convertAndSend("/topic/speech", node.toString());
     }
     

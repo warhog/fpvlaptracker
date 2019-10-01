@@ -6,8 +6,8 @@ import de.warhog.fpvlaptracker.dtos.StatusResult;
 import de.warhog.fpvlaptracker.service.ConfigService;
 import de.warhog.fpvlaptracker.service.ServiceLayerException;
 import de.warhog.fpvlaptracker.util.ShutdownUtil;
+import de.warhog.fpvlaptracker.util.SpeechTexts;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +27,9 @@ public class SettingsController {
 
     @Autowired
     private ApplicationConfig applicationConfig;
+    
+    @Autowired
+    private SpeechTexts speechTexts;
 
     @RequestMapping(path = "/data", method = RequestMethod.GET)
     public SettingsResult loadSettings() {
@@ -38,6 +41,7 @@ public class SettingsController {
             result.setOvertimeDuration(configService.getOvertimeDuration());
             result.setStartInterval(configService.getStartInterval());
             result.setTimezone(configService.getTimezone());
+            result.setAudioLanguage(configService.getAudioLanguage());
         } catch (ServiceLayerException ex) {
             LOG.error("service layer exception: " + ex.getMessage(), ex);
         }
@@ -47,6 +51,7 @@ public class SettingsController {
     @RequestMapping(path = "/data", method = RequestMethod.POST)
     public StatusResult storeSettings(@RequestBody SettingsResult settingsResult) {
         LOG.error("storeSettings " + settingsResult.toString());
+        String oldLanguage = configService.getAudioLanguage();
         try {
             configService.setTimezone(settingsResult.getTimezone());
             configService.setNumberOfLaps(settingsResult.getNumberOfLaps());
@@ -54,8 +59,16 @@ public class SettingsController {
             configService.setPreparationTime(settingsResult.getPreparationDuration());
             configService.setRaceDuration(settingsResult.getRaceDuration());
             configService.setStartInterval(settingsResult.getStartInterval());
-        } catch (ServiceLayerException ex) {
+            configService.setAudioLanguage(settingsResult.getAudioLanguage());
+            LOG.debug("reloading audio texts");
+            speechTexts.speechTextsInitialize();
+        } catch (ServiceLayerException | RuntimeException ex) {
             LOG.error("cannot store settings: " + ex.getMessage(), ex);
+            try {
+                configService.setAudioLanguage(oldLanguage);
+            } catch (ServiceLayerException ex2) {
+                LOG.error("cannot restore audio language setting: " + ex2.getMessage(), ex2);
+            }
             return new StatusResult(StatusResult.Status.NOK);
         }
         return new StatusResult(StatusResult.Status.OK);

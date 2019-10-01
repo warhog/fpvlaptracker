@@ -14,6 +14,7 @@ interface SettingsData {
   overtimeDuration: number;
   preparationDuration: number;
   timezone: string;
+  audioLanguage: string;
 }
 
 @Component({
@@ -29,7 +30,8 @@ export class SettingsComponent implements OnInit {
     raceDuration: 0,
     overtimeDuration: 0,
     preparationDuration: 0,
-    timezone: '-'
+    timezone: '-',
+    audioLanguage: 'en-US'
   };
 
   private _storing: boolean = false;

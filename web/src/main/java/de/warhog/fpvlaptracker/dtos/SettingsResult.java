@@ -8,6 +8,7 @@ public class SettingsResult {
     private Integer overtimeDuration;
     private Integer raceDuration;
     private Integer startInterval;
+    private String audioLanguage;
 
     public Integer getNumberOfLaps() {
         return numberOfLaps;
@@ -57,9 +58,17 @@ public class SettingsResult {
         this.startInterval = startInterval;
     }
 
+    public String getAudioLanguage() {
+        return audioLanguage;
+    }
+
+    public void setAudioLanguage(String audioLanguage) {
+        this.audioLanguage = audioLanguage;
+    }
+
     @Override
     public String toString() {
-        return "SettingsResult{" + "numberOfLaps=" + numberOfLaps + ", timezone=" + timezone + ", preparationDuration=" + preparationDuration + ", overtimeDuration=" + overtimeDuration + ", raceDuration=" + raceDuration + ", startInterval=" + startInterval + '}';
+        return "SettingsResult{" + "numberOfLaps=" + numberOfLaps + ", timezone=" + timezone + ", preparationDuration=" + preparationDuration + ", overtimeDuration=" + overtimeDuration + ", raceDuration=" + raceDuration + ", startInterval=" + startInterval + ", audioLanguage=" + audioLanguage + '}';
     }
 
 }

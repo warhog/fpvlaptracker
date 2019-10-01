@@ -22,35 +22,20 @@ public class TimeUtil {
     private ConfigService configService;
 
     public LocalDateTime unixToLocalDateTime(Integer unixTimestamp) {
-        try {
-            ZoneOffset zoneOffset = ZoneId.of(configService.getTimezone()).getRules().getOffset(LocalDateTime.now());
-            LocalDateTime localDateTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(unixTimestamp), zoneOffset);
-            return localDateTime;
-        } catch (ServiceLayerException ex) {
-            LOG.error(ex.getMessage(), ex);
-            throw new RuntimeException("cannot convert unix timestamp to localdatetime");
-        }
+        ZoneOffset zoneOffset = ZoneId.of(configService.getTimezone()).getRules().getOffset(LocalDateTime.now());
+        LocalDateTime localDateTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(unixTimestamp), zoneOffset);
+        return localDateTime;
     }
 
     public Integer localDateTimeToUnix(LocalDateTime localDateTime) {
-        try {
-            ZoneOffset zoneOffset = ZoneId.of(configService.getTimezone()).getRules().getOffset(localDateTime);
-            return Math.toIntExact(localDateTime.toEpochSecond(zoneOffset));
-        } catch (ServiceLayerException ex) {
-            LOG.error(ex.getMessage(), ex);
-            throw new RuntimeException("cannot convert unix timestamp to localdatetime");
-        }
+        ZoneOffset zoneOffset = ZoneId.of(configService.getTimezone()).getRules().getOffset(localDateTime);
+        return Math.toIntExact(localDateTime.toEpochSecond(zoneOffset));
     }
 
     public String getUnixTimestampInIsoFormat(Integer startTime) {
-        try {
-            ZoneOffset zoneOffset = ZoneId.of(configService.getTimezone()).getRules().getOffset(LocalDateTime.now());
-            LocalDateTime date = LocalDateTime.ofInstant(Instant.ofEpochSecond(startTime), zoneOffset);
-            return date.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-        } catch (ServiceLayerException ex) {
-            LOG.error(ex.getMessage(), ex);
-            throw new RuntimeException("cannot convert unix timestamp to localdatetime");
-        }
+        ZoneOffset zoneOffset = ZoneId.of(configService.getTimezone()).getRules().getOffset(LocalDateTime.now());
+        LocalDateTime date = LocalDateTime.ofInstant(Instant.ofEpochSecond(startTime), zoneOffset);
+        return date.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
     }
 
 }

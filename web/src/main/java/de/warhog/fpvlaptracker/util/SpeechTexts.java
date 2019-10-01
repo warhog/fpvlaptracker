@@ -1,6 +1,6 @@
 package de.warhog.fpvlaptracker.util;
 
-import de.warhog.fpvlaptracker.configuration.ApplicationConfig;
+import de.warhog.fpvlaptracker.service.ConfigService;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -21,7 +21,7 @@ public class SpeechTexts {
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(SpeechTexts.class);
 
     @Autowired
-    private ApplicationConfig applicationConfig;
+    private ConfigService configService;
     
     private final Map<String, String> texts = new HashMap<>();
     
@@ -45,8 +45,9 @@ public class SpeechTexts {
     };
     
     @PostConstruct
-    public void speechTextsConstructor() {
-        String languageFile = "lang/" + applicationConfig.getAudioLanguage();
+    public void speechTextsInitialize() {
+        texts.clear();
+        String languageFile = "lang/" + configService.getAudioLanguage();
         LOG.info("parse language file " + languageFile);
         try (BufferedReader br = Files.newBufferedReader(Paths.get(languageFile), StandardCharsets.UTF_8)) {
             String line;

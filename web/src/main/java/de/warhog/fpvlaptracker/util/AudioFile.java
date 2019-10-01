@@ -1,6 +1,6 @@
 package de.warhog.fpvlaptracker.util;
 
-import de.warhog.fpvlaptracker.configuration.ApplicationConfig;
+import de.warhog.fpvlaptracker.service.ConfigService;
 import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,11 +21,11 @@ public enum AudioFile {
     public static class AudioLanguageInjector {
 
         @Autowired
-        private ApplicationConfig applicationConfig;
+        private ConfigService configService;
 
         @PostConstruct
         public void postConstruct() {
-            AudioFile.setAudioLanguage(applicationConfig.getAudioLanguage());
+            AudioFile.setAudioLanguage(configService.getAudioLanguage());
         }
 
     }

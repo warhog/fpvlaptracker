@@ -82,6 +82,12 @@
                             href="https://garygregory.wordpress.com/2013/06/18/what-are-the-java-timezone-ids/">timezone
                             list</a>).</small>
                 </div>
+                <div class="form-group">
+                    <label for="audioLanguage">audio language</label>
+                    <input class="form-control" type="text" name="audioLanguage" [(ngModel)]="data.audioLanguage" required
+                        aria-describedby="audioLanguageHelp" />
+                    <small id="audioLanguageHelp" class="form-text text-muted">sets the audio language.</small>
+                </div>
                 <button [disabled]="storing" (click)="storeSettings()" class="btn btn-outline-secondary">save</button>
                 <br /><br />
                 <div class="form-group">

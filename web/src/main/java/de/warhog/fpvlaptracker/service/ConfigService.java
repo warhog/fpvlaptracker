@@ -104,14 +104,27 @@ public class ConfigService {
         createOrUpdateKey("timezone", timezone);
     }
     
-    public String getTimezone() throws ServiceLayerException {
+    public String getTimezone() {
+        String timezone = TimeZone.getTimeZone(ZoneId.systemDefault()).getID();
         try {
-            String timezone = getValueForKey("timezone");
-            return timezone;
+            timezone = getValueForKey("timezone");
         } catch (ServiceLayerException ex) {
-            String timeZone = TimeZone.getTimeZone(ZoneId.systemDefault()).getID();
-            LOG.info("no timezone defined, fall back to " + timeZone);
-            return timeZone;
+            LOG.info("no timezone defined, fall back to " + timezone);
         }
+        return timezone;
+    }
+    
+    public void setAudioLanguage(String audioLanguage) throws ServiceLayerException {
+        createOrUpdateKey("audioLanguage", audioLanguage);
+    }
+    
+    public String getAudioLanguage() {
+        String audioLanguage = "en-US";
+        try {
+            audioLanguage = getValueForKey("audioLanguage");
+        } catch (ServiceLayerException ex) {
+            LOG.info("no audio language defined, fall back to " + audioLanguage);
+        }
+        return audioLanguage;
     }
 }

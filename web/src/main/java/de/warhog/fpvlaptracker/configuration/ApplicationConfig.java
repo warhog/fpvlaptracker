@@ -20,18 +20,11 @@ public class ApplicationConfig {
     @Value("${admin.password:Admin}")
     private String adminPassword;
 
-    @Value("${audio.language:en-US}")
-    private String audioLanguage;
-
     @Value("${network.server.ip:GET_FROM_wlan0}")
     private String networkServerIp;
 
     @Value("${network.server.broadcast:GET_FROM_wlan0}")
     private String networkServerBroadcast;
-
-    public String getAudioLanguage() {
-        return audioLanguage;
-    }
 
     public Boolean isShutdownMachine() {
         return shutdownMachine;
