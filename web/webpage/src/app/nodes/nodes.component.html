@@ -37,7 +37,7 @@
                     </tr>
                 </tbody>
             </table>
-            <button [disabled]="!authenticated" (click)="nodeSetup(node.chipId)" class="btn btn-primary">node
+            <button [disabled]="!authenticated || node.offline" (click)="nodeSetup(node.chipId)" class="btn btn-primary">node
                 setup</button>
         </div>
     </div>
