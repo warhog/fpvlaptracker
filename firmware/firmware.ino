@@ -62,7 +62,7 @@
 #include "commtools.h"
 
 // debug mode flags
-//#define DEBUG
+#define DEBUG
 //#define MEASURE
 
 // pin configurations
