@@ -23,7 +23,7 @@
     "@stomp/ng2-stompjs": "^7.2.0",
     "bootstrap": "^4.3.1",
     "howler": "^2.1.2",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "moment": "^2.24.0",
     "ngx-device-detector": "^1.3.9",
     "nosleep.js": "^0.9.0",
